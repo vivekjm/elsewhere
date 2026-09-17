@@ -1,552 +1,100 @@
 "use client";
-import type { FormEvent } from "react";
-import { Upload, Check } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Choice, Piece } from "./primitives";
-import type { Workspace, Trip } from "@/lib/model";
-export type Modal = {
-  kind: "trip" | "activity" | "item" | "outfit" | "day" | "extra";
-  id?: string;
-};
-// The editor holds a draft spanning the six validated domain record types.
+import React, { useState, type ReactNode } from 'react';
+import { ACTIVITY_TYPES, CATEGORIES, CURRENCIES, EXTRA_CATEGORIES, SHAPES, blankDay, dayOutfits, defaultShape, uid, type Workspace, type Trip, type Item, type Outfit, type Activity, type Day, type Extra } from '@/lib/model';
+import { emptyTrip } from '@/lib/planning';
+import { Button, Modal as Dialog, Piece, ItemPicker, OutfitPicker } from './primitives';
+export type Modal = { kind: 'trip' | 'activity' | 'item' | 'outfit' | 'day' | 'extra'; id?: string; date?: string };
 export type FormDraft = {
-  id?: string;
-  name?: string;
-  title?: string;
-  destination?: string;
-  start?: string;
-  end?: string;
-  date?: string;
-  time?: string;
-  travellers?: number;
-  budget?: number;
-  currency?: string;
-  weightLimit?: number;
-  category?: string;
-  weight?: number;
-  image?: string;
-  items?: string[];
-  place?: string;
-  cost?: number;
-  link?: string;
-  notes?: string;
-  outfitId?: string;
-  gear?: string[];
-  stay?: string;
-  quantity?: number;
-  packed?: boolean;
+ id?: string; name?: string; title?: string; destination?: string; start?: string; end?: string; date?: string; time?: string; endTime?: string;
+ travellers?: number; budget?: number; currency?: Trip['currency']; weightLimit?: number; theme?: Trip['theme']; sample?: boolean;
+ category?: string; weight?: number; image?: string; color?: string; shape?: Item['shape']; items?: string[]; occasion?: string;
+ place?: string; cost?: number; link?: string; notes?: string; outfitId?: string; outfitIds?: string[]; gear?: string[]; stay?: string;
+ quantity?: number; packed?: boolean; completed?: boolean; days?: Trip['days']; activities?: Activity[]; extras?: Extra[];
 };
-type Props = {
-  modal: Modal | null;
-  setModal: (m: Modal | null) => void;
-  title: string;
-  form: FormDraft;
-  f: (key: keyof FormDraft, v: string | number | boolean | string[]) => void;
-  w: Workspace;
-  trip?: Trip;
-  day: string;
-  dateLabel: (d: string, options?: Intl.DateTimeFormatOptions) => string;
-  outfitOptions: { value: string; label: string }[];
-  savingForm: boolean;
-  submit: (e: FormEvent) => Promise<void>;
-  upload: (f?: File) => Promise<void>;
-};
-export function Editor({
-  modal,
-  setModal,
-  title,
-  form,
-  f,
-  w,
-  trip,
-  day,
-  dateLabel,
-  outfitOptions,
-  savingForm,
-  submit,
-  upload,
-}: Props) {
-  return (
-    <Dialog
-      open={!!modal}
-      onOpenChange={(o) => {
-        if (!o && !savingForm) setModal(null);
-      }}
-    >
-      <DialogContent className="editor">
-        <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>
-          {modal?.kind === "activity"
-            ? "Make a plan. Leave room for the unexpected."
-            : modal?.kind === "outfit"
-              ? "Pick pieces from your wardrobe. Assigned outfits connect to packing."
-              : modal?.kind === "item"
-                ? "Add the things you love to travel with."
-                : "Keep the details in one place."}
-        </DialogDescription>
-        <form onSubmit={(e) => void submit(e)}>
-          {modal?.kind === "trip" && (
-            <>
-              <label>
-                Trip name
-                <input
-                  required
-                  maxLength={200}
-                  value={form.name || ""}
-                  onChange={(e) => f("name", e.target.value)}
-                  placeholder="A long weekend in…"
-                />
-              </label>
-              <label>
-                Destination
-                <input
-                  required
-                  maxLength={200}
-                  value={form.destination || ""}
-                  onChange={(e) => f("destination", e.target.value)}
-                  placeholder="City, country"
-                />
-              </label>
-              <div className="form-grid">
-                <label>
-                  Departure
-                  <input
-                    type="date"
-                    onInput={(e) =>
-                      f(
-                        (e.currentTarget.getAttribute("data-field") ||
-                          "date") as keyof FormDraft,
-                        e.currentTarget.value,
-                      )
-                    }
-                    required
-                    data-field="start"
-                    value={form.start || ""}
-                    onChange={(e) => f("start", e.target.value)}
-                  />
-                </label>
-                <label>
-                  Return
-                  <input
-                    type="date"
-                    onInput={(e) =>
-                      f(
-                        (e.currentTarget.getAttribute("data-field") ||
-                          "date") as keyof FormDraft,
-                        e.currentTarget.value,
-                      )
-                    }
-                    required
-                    min={form.start}
-                    data-field="end"
-                    value={form.end || ""}
-                    onChange={(e) => f("end", e.target.value)}
-                  />
-                </label>
-                <label>
-                  Travellers
-                  <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    required
-                    value={form.travellers ?? 1}
-                    onChange={(e) => f("travellers", Number(e.target.value))}
-                  />
-                </label>
-                <label>
-                  Budget
-                  <input
-                    type="number"
-                    min="0"
-                    max="10000000"
-                    required
-                    value={form.budget ?? 0}
-                    onChange={(e) => f("budget", Number(e.target.value))}
-                  />
-                </label>
-                <label>
-                  Currency
-                  <Choice
-                    value={form.currency || "EUR"}
-                    onChange={(v) => f("currency", v)}
-                    label="Currency"
-                    options={["EUR", "USD", "INR", "GBP"].map((v) => ({
-                      value: v,
-                      label: v,
-                    }))}
-                  />
-                </label>
-                <label>
-                  Luggage target (kg)
-                  <input
-                    type="number"
-                    min="0"
-                    max="1000"
-                    step="0.1"
-                    required
-                    value={form.weightLimit ?? 8}
-                    onChange={(e) => f("weightLimit", Number(e.target.value))}
-                  />
-                </label>
-              </div>
-            </>
-          )}
-          {modal?.kind === "activity" && (
-            <>
-              <label>
-                Activity
-                <input
-                  required
-                  maxLength={200}
-                  value={form.title || ""}
-                  onChange={(e) => f("title", e.target.value)}
-                  placeholder="What’s the plan?"
-                />
-              </label>
-              <div className="form-grid">
-                <label>
-                  Date
-                  <input
-                    type="date"
-                    onInput={(e) =>
-                      f(
-                        (e.currentTarget.getAttribute("data-field") ||
-                          "date") as keyof FormDraft,
-                        e.currentTarget.value,
-                      )
-                    }
-                    required
-                    min={trip?.start}
-                    max={trip?.end}
-                    value={form.date || ""}
-                    onChange={(e) => f("date", e.target.value)}
-                  />
-                </label>
-                <label>
-                  Time
-                  <input
-                    type="time"
-                    onInput={(e) => f("time", e.currentTarget.value)}
-                    required
-                    value={form.time || "10:00"}
-                    onChange={(e) => f("time", e.target.value)}
-                  />
-                </label>
-                <label>
-                  Category
-                  <Choice
-                    value={form.category || "Explore"}
-                    onChange={(v) => f("category", v)}
-                    label="Activity category"
-                    options={[
-                      "Explore",
-                      "Food & drink",
-                      "Travel",
-                      "Stay",
-                      "Other",
-                    ].map((v) => ({ value: v, label: v }))}
-                  />
-                </label>
-                <label>
-                  Cost ({trip?.currency})
-                  <input
-                    type="number"
-                    min="0"
-                    max="10000000"
-                    step="0.01"
-                    required
-                    value={form.cost ?? 0}
-                    onChange={(e) => f("cost", Number(e.target.value))}
-                  />
-                </label>
-              </div>
-              <label>
-                Place
-                <input
-                  maxLength={200}
-                  value={form.place || ""}
-                  onChange={(e) => f("place", e.target.value)}
-                  placeholder="Address or meeting point"
-                />
-              </label>
-              <label>
-                Reference link
-                <input
-                  type="url"
-                  value={form.link || ""}
-                  onChange={(e) => f("link", e.target.value)}
-                  placeholder="https://…"
-                />
-              </label>
-              <label>
-                Notes
-                <textarea
-                  maxLength={5000}
-                  value={form.notes || ""}
-                  onChange={(e) => f("notes", e.target.value)}
-                />
-              </label>
-              <label>
-                Outfit
-                <Choice
-                  value={form.outfitId || ""}
-                  label="Activity outfit"
-                  onChange={(v) => f("outfitId", v)}
-                  options={outfitOptions}
-                />
-              </label>
-              <fieldset>
-                <legend>Extra gear for this activity</legend>
-                <div className="selection-list">
-                  {w.items
-                    .filter(
-                      (i) =>
-                        i.category === "Gear" || i.category === "Accessories",
-                    )
-                    .map((i) => (
-                      <label key={i.id}>
-                        <Checkbox
-                          checked={form.gear?.includes(i.id) || false}
-                          onCheckedChange={(v) =>
-                            f(
-                              "gear",
-                              v
-                                ? [...(form.gear || []), i.id]
-                                : (form.gear || []).filter(
-                                    (x: string) => x !== i.id,
-                                  ),
-                            )
-                          }
-                        />
-                        {i.name}
-                      </label>
-                    ))}
-                  {!w.items.some(
-                    (i) =>
-                      i.category === "Gear" || i.category === "Accessories",
-                  ) && (
-                    <p className="muted">Add gear in your wardrobe first.</p>
-                  )}
-                </div>
-              </fieldset>
-            </>
-          )}
-          {modal?.kind === "item" && (
-            <>
-              <label>
-                Item name
-                <input
-                  required
-                  maxLength={200}
-                  value={form.name || ""}
-                  onChange={(e) => f("name", e.target.value)}
-                  placeholder="Your favourite linen shirt"
-                />
-              </label>
-              <div className="form-grid">
-                <label>
-                  Category
-                  <Choice
-                    value={form.category || "Tops"}
-                    label="Item category"
-                    onChange={(v) => f("category", v)}
-                    options={[
-                      "Tops",
-                      "Bottoms",
-                      "Layers",
-                      "Shoes",
-                      "Accessories",
-                      "Gear",
-                    ].map((v) => ({ value: v, label: v }))}
-                  />
-                </label>
-                <label>
-                  Weight (g)
-                  <input
-                    type="number"
-                    min="0"
-                    max="50000"
-                    required
-                    value={form.weight ?? 0}
-                    onChange={(e) => f("weight", Number(e.target.value))}
-                  />
-                </label>
-              </div>
-              <label className="photo-upload">
-                <Upload size={20} />
-                {savingForm ? "Uploading photo…" : "Add a photo"}
-                <small>JPEG, PNG or WebP · up to 5 MB</small>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={savingForm}
-                  onChange={(e) => void upload(e.target.files?.[0])}
-                />
-              </label>
-              {form.image && (
-                <div className="photo-preview">
-                  <img src={form.image} alt="Item preview" />
-                  <button
-                    type="button"
-                    className="text-btn"
-                    onClick={() => f("image", "")}
-                  >
-                    Remove photo
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-          {modal?.kind === "outfit" && (
-            <>
-              <label>
-                Outfit name
-                <input
-                  required
-                  maxLength={200}
-                  value={form.name || ""}
-                  onChange={(e) => f("name", e.target.value)}
-                  placeholder="The city wanderer"
-                />
-              </label>
-              <fieldset>
-                <legend>Choose your pieces</legend>
-                <div className="outfit-picker">
-                  {w.items.map((i) => (
-                    <label
-                      key={i.id}
-                      className={form.items?.includes(i.id) ? "picked" : ""}
-                    >
-                      <Piece item={i} />
-                      <span>{i.name}</span>
-                      <Checkbox
-                        aria-label={`Include ${i.name}`}
-                        checked={form.items?.includes(i.id) || false}
-                        onCheckedChange={(v) =>
-                          f(
-                            "items",
-                            v
-                              ? [...(form.items || []), i.id]
-                              : (form.items || []).filter(
-                                  (x: string) => x !== i.id,
-                                ),
-                          )
-                        }
-                      />
-                    </label>
-                  ))}
-                </div>
-                {!w.items.length && (
-                  <p className="muted">
-                    Add wardrobe items before creating an outfit.
-                  </p>
-                )}
-              </fieldset>
-            </>
-          )}
-          {modal?.kind === "day" && (
-            <>
-              <p className="muted">
-                {dateLabel(day, {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
-              <label>
-                Outfit for this day
-                <Choice
-                  value={form.outfitId || ""}
-                  label="Day outfit"
-                  onChange={(v) => f("outfitId", v)}
-                  options={outfitOptions}
-                />
-              </label>
-              <label>
-                Accommodation
-                <input
-                  maxLength={200}
-                  value={form.stay || ""}
-                  onChange={(e) => f("stay", e.target.value)}
-                  placeholder="Hotel, apartment, or a place to call home"
-                />
-              </label>
-              <label>
-                Day notes
-                <textarea
-                  maxLength={5000}
-                  value={form.notes || ""}
-                  onChange={(e) => f("notes", e.target.value)}
-                  placeholder="Reservations, reminders, little things to remember"
-                />
-              </label>
-            </>
-          )}
-          {modal?.kind === "extra" && (
-            <>
-              <label>
-                Essential
-                <input
-                  required
-                  maxLength={200}
-                  value={form.name || ""}
-                  onChange={(e) => f("name", e.target.value)}
-                  placeholder="Passport, charger, sunscreen…"
-                />
-              </label>
-              <div className="form-grid">
-                <label>
-                  Quantity
-                  <input
-                    type="number"
-                    min="1"
-                    max="999"
-                    required
-                    value={form.quantity ?? 1}
-                    onChange={(e) => f("quantity", Number(e.target.value))}
-                  />
-                </label>
-                <label>
-                  Weight per item (g)
-                  <input
-                    type="number"
-                    min="0"
-                    max="50000"
-                    required
-                    value={form.weight ?? 0}
-                    onChange={(e) => f("weight", Number(e.target.value))}
-                  />
-                </label>
-              </div>
-            </>
-          )}
-          <div className="form-actions">
-            <button
-              type="button"
-              className="outline"
-              onClick={() => setModal(null)}
-              disabled={savingForm}
-            >
-              Cancel
-            </button>
-            <button type="submit" className="primary" disabled={savingForm}>
-              <Check /> Save{" "}
-              {modal?.kind === "day"
-                ? "day"
-                : modal?.kind === "extra"
-                  ? "item"
-                  : modal?.kind}
-            </button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
+export type EditorResult = { kind: Modal['kind']; value: Trip | Item | Outfit | Activity | Day | Extra; shiftPlans: boolean };
+function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+  const id = React.useId();
+  return <div className="ew-field"><label htmlFor={id}>{label}</label>{React.Children.map(children, child => {
+    if (!React.isValidElement(child) || !['input', 'select', 'textarea'].includes(String(child.type))) return child;
+    return React.cloneElement(child as React.ReactElement<{ id?: string; 'aria-describedby'?: string }>, { id, 'aria-describedby': hint ? `${id}-hint` : undefined });
+  })}{hint && <small id={`${id}-hint`}>{hint}</small>}</div>;
+}
+export function Editor({ modal, w, trip, day, onClose, onSave }: { modal: Modal; w: Workspace; trip?: Trip; day: string; onClose: () => void; onSave: (result: EditorResult) => void }) {
+  const date = modal.date || day || trip?.start || emptyTrip().start;
+  const [initial] = useState<FormDraft>(() => structuredClone(
+    modal.kind === 'trip' ? (w.trips.find(t => t.id === modal.id) || emptyTrip()) :
+    modal.kind === 'item' ? (w.items.find(i => i.id === modal.id) || { id: uid(), name: '', category: 'Tops', weight: 0, image: '', color: '#a79e87', shape: 'shirt', notes: '' }) :
+    modal.kind === 'outfit' ? (w.outfits.find(o => o.id === modal.id) || { id: uid(), name: '', items: [], occasion: 'Everyday', notes: '' }) :
+    modal.kind === 'day' ? ({ ...blankDay(), ...trip?.days[date], outfitIds: dayOutfits(trip?.days[date]) }) :
+    modal.kind === 'activity' ? (trip?.activities.find(a => a.id === modal.id) || { id: uid(), date, time: '10:00', endTime: '', title: '', category: 'Explore', place: '', cost: 0, link: '', notes: '', outfitId: '', gear: [], completed: false }) :
+    (trip?.extras.find(e => e.id === modal.id) || { id: uid(), name: '', quantity: 1, weight: 0, packed: false, category: 'Essentials' })
+  ) as FormDraft);
+  const [form, setForm] = useState(initial), [shift, setShift] = useState(false), [error, setError] = useState(''), [uploading, setUploading] = useState(false), [discard, setDiscard] = useState(false);
+  const f = (key: string, value: unknown) => { setForm(prev => ({ ...prev, [key]: value })); setError(''); };
+  const dirty = JSON.stringify(initial) !== JSON.stringify(form) || shift;
+  const dismiss = () => { if (uploading) return; if (dirty) setDiscard(true); else onClose(); };
+  const names = { trip: 'trip', activity: 'activity', item: 'wardrobe piece', outfit: 'outfit', day: 'day details', extra: 'packing item' };
+  const title = modal.kind === 'day' ? 'Make this day yours' : `${modal.id ? 'Edit' : 'New'} ${names[modal.kind]}`;
+  async function upload(file?: File) {
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) { setError('Choose a JPEG, PNG or WebP photo under 5 MB.'); return; }
+    setUploading(true); setError('');
+    try {
+      const data = new FormData(); data.set('image', file);
+      const r = await fetch('/api/images', { method: 'POST', credentials: 'same-origin', body: data });
+      const body = await r.json().catch(() => ({})) as { url?: string; error?: string };
+      if (!r.ok || !body.url) throw new Error(body.error || 'The photo could not be uploaded. Please try again.');
+      f('image', body.url);
+    } catch (e) { setError(e instanceof Error ? e.message : 'Upload failed.'); } finally { setUploading(false); }
+  }
+  function submit(e: React.FormEvent) {
+    e.preventDefault(); if (uploading) return;
+    try {
+      if (modal.kind === 'outfit' && !form.items?.length) throw new Error('Choose at least one wardrobe piece.');
+      const value = { ...form };
+      if (modal.kind === 'day') value.outfitId = value.outfitIds?.[0] || '';
+      onSave({ kind: modal.kind, value: value as EditorResult['value'], shiftPlans: shift });
+    } catch (e) { setError(e instanceof Error ? e.message : 'Please check the form.'); }
+  }
+  const notes = (label = 'Notes', placeholder = 'The little things worth remembering…') => <Field label={label}><textarea maxLength={5000} rows={3} value={form.notes || ''} onChange={e => f('notes', e.target.value)} placeholder={placeholder} /></Field>;
+  const number = (key: string, label: string, value: number, max: number, min = 0, step = '1') => <Field label={label}><input type="number" min={min} max={max} step={step} required value={value} onChange={e => f(key, e.target.value === '' ? '' : Number(e.target.value))} /></Field>;
+  const outfit = <Field label="Outfit for this activity"><select value={form.outfitId || ''} onChange={e => f('outfitId', e.target.value)}><option value="">No activity-specific outfit</option>{w.outfits.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select></Field>;
+  return <Dialog title={title} onDismiss={dismiss} wide={['item', 'outfit', 'day', 'activity'].includes(modal.kind)} description={modal.kind === 'activity' ? 'A place, a plan, and the things you’ll need.' : modal.kind === 'outfit' ? 'Pieces you love. A look you can use again.' : 'Everything in its place, before you go.'}>
+    <form onSubmit={submit}>
+      <fieldset disabled={uploading} className="ew-editor-body">
+        {modal.kind === 'trip' && <>
+          <Field label="Trip name"><input autoFocus required maxLength={200} value={form.name || ''} onChange={e => f('name', e.target.value)} placeholder="A little time in the mountains" /></Field>
+          <Field label="Destination"><input required maxLength={200} value={form.destination || ''} onChange={e => f('destination', e.target.value)} placeholder="City, region or country" /></Field>
+          <div className="ew-form-grid"><Field label="Departure"><input type="date" required min="1900-01-01" max="2200-12-31" value={form.start || ''} onChange={e => f('start', e.target.value)} /></Field><Field label="Return"><input type="date" required min={form.start} max="2200-12-31" value={form.end || ''} onChange={e => f('end', e.target.value)} /></Field></div>
+          {modal.id && form.start !== initial.start && <label className="ew-check-line"><input type="checkbox" checked={shift} onChange={e => setShift(e.target.checked)} />Move all existing plans by the same number of days</label>}
+          <div className="ew-form-grid">{number('travellers', 'Travellers', form.travellers ?? 1, 100, 1)}{number('budget', 'Trip budget', form.budget ?? 0, 10000000, 0, '0.01')}<Field label="Currency"><select value={form.currency} onChange={e => f('currency', e.target.value)}>{CURRENCIES.map(c => <option key={c}>{c}</option>)}</select></Field>{number('weightLimit', 'Luggage target (kg)', form.weightLimit ?? 15, 1000, 0, '0.1')}</div>
+          <p className="ew-hint">A zero budget or luggage target means you haven’t set one yet.</p>
+          <Field label="Cover mood"><select value={form.theme || 'mountains'} onChange={e => f('theme', e.target.value)}><option value="mountains">Quiet mountains</option><option value="coast">By the coast</option><option value="city">City wandering</option></select></Field>{notes('Trip notes')}
+        </>}
+        {modal.kind === 'activity' && <>
+          <Field label="Activity"><input autoFocus required maxLength={200} value={form.title || ''} onChange={e => f('title', e.target.value)} placeholder="What’s the plan?" /></Field>
+          <div className="ew-form-grid"><Field label="Date"><input type="date" required min={trip?.start} max={trip?.end} value={form.date || date} onChange={e => f('date', e.target.value)} /></Field><Field label="Activity type"><select value={form.category || 'Explore'} onChange={e => f('category', e.target.value)}>{ACTIVITY_TYPES.map(c => <option key={c}>{c}</option>)}</select></Field><Field label="Start time" hint="Leave empty for an all-day plan."><input type="time" value={form.time || ''} onChange={e => { f('time', e.target.value); if (!e.target.value) f('endTime', ''); }} /></Field><Field label="End time (optional)"><input type="time" disabled={!form.time} min={form.time} value={form.endTime || ''} onChange={e => f('endTime', e.target.value)} /></Field></div>
+          <Field label="Place"><input maxLength={200} value={form.place || ''} onChange={e => f('place', e.target.value)} placeholder="Venue, neighbourhood or meeting point" /></Field>
+          <div className="ew-form-grid">{number('cost', `Estimated cost (${trip?.currency || 'INR'})`, form.cost ?? 0, 10000000, 0, '0.01')}{outfit}</div>
+          <Field label="Reference link (optional)"><input type="url" maxLength={2000} value={form.link || ''} onChange={e => f('link', e.target.value)} placeholder="https://…" /></Field>{notes()}
+          <ItemPicker w={w} label="Clothes & equipment for this activity" selected={form.gear || []} onChange={v => f('gear', v)} />
+        </>}
+        {modal.kind === 'day' && <>
+          <Field label="Day title"><input autoFocus maxLength={200} value={form.title || ''} onChange={e => f('title', e.target.value)} placeholder="A slow morning, a new adventure" /></Field>
+          <Field label="Accommodation"><input maxLength={200} value={form.stay || ''} onChange={e => f('stay', e.target.value)} placeholder="Where you’re staying tonight" /></Field>{notes('Day notes')}
+          <OutfitPicker w={w} selected={form.outfitIds || []} onChange={v => f('outfitIds', v)} /><ItemPicker w={w} label="Daily essentials" selected={form.gear || []} onChange={v => f('gear', v)} />
+        </>}
+        {modal.kind === 'item' && <div className="ew-item-editor"><div><div className="ew-item-preview"><Piece item={form as Item} large /></div><label className="ew-button ew-secondary ew-upload"><input className="ew-sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={e => { void upload(e.target.files?.[0]); e.target.value = ''; }} />{uploading ? 'Uploading photo…' : 'Upload your own photo'}</label><p className="ew-hint">JPEG, PNG or WebP · up to 5 MB.<br />Photos stay private to this workspace.</p>{form.image && <Button variant="quiet" onClick={() => f('image', '')}>Remove photo</Button>}</div><div>
+          <Field label="Item name"><input autoFocus required maxLength={200} value={form.name || ''} onChange={e => f('name', e.target.value)} placeholder="Your favourite linen shirt" /></Field>
+          <Field label="Category"><select value={form.category} onChange={e => { f('category', e.target.value); f('shape', defaultShape(e.target.value)); }}>{CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></Field>
+          <div className="ew-form-grid"><Field label="Illustration"><select value={form.shape || defaultShape(form.category || 'Tops')} onChange={e => f('shape', e.target.value)}>{SHAPES.map(c => <option key={c} value={c}>{c[0].toUpperCase() + c.slice(1)}</option>)}</select></Field><Field label="Colour"><input type="color" value={form.color || '#8b8b73'} onChange={e => f('color', e.target.value)} /></Field></div>{number('weight', 'Weight (g)', form.weight ?? 0, 50000, 0, '0.1')}{notes('Item notes')}
+        </div></div>}
+        {modal.kind === 'outfit' && <><div className="ew-form-grid"><Field label="Outfit name"><input autoFocus required maxLength={200} value={form.name || ''} onChange={e => f('name', e.target.value)} placeholder="The mountain morning" /></Field><Field label="Occasion"><input maxLength={100} list="ew-occasions" value={form.occasion || ''} onChange={e => f('occasion', e.target.value)} /><datalist id="ew-occasions">{['Everyday', 'Exploring', 'Travel', 'Evening', 'Hiking', 'Work', 'Formal'].map(o => <option value={o} key={o} />)}</datalist></Field></div><ItemPicker w={w} selected={form.items || []} onChange={v => f('items', v)} />{notes('Outfit notes')}</>}
+        {modal.kind === 'extra' && <><Field label="Packing item"><input autoFocus required maxLength={200} value={form.name || ''} onChange={e => f('name', e.target.value)} placeholder="Passport, charger, toiletries…" /></Field><Field label="Packing category"><select value={form.category || 'Essentials'} onChange={e => f('category', e.target.value)}>{EXTRA_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></Field><div className="ew-form-grid">{number('quantity', 'Quantity', form.quantity ?? 1, 999, 1)}{number('weight', 'Weight per item (g)', form.weight ?? 0, 50000, 0, '0.1')}</div><label className="ew-check-line"><input type="checkbox" checked={form.packed || false} onChange={e => f('packed', e.target.checked)} />Already packed</label><p className="ew-hint">Clothes assigned to plans appear automatically. Add other essentials here.</p></>}
+        {error && <p role="alert" className="ew-inline-error">{error}</p>}
+        {discard && <div className="ew-inline-error" role="alert"><p>Discard your unsaved form changes?</p><div className="ew-actions"><Button variant="danger" onClick={onClose}>Discard changes</Button><Button onClick={() => setDiscard(false)}>Keep editing</Button></div></div>}
+      </fieldset>
+      <footer className="ew-dialog-footer"><Button onClick={dismiss} disabled={uploading}>Cancel</Button><Button type="submit" variant="primary" icon="check" disabled={uploading}>{uploading ? 'Uploading…' : 'Save changes'}</Button></footer>
+    </form>
+  </Dialog>;
 }
