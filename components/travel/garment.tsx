@@ -209,10 +209,10 @@ export function Garment({ item }: { item: Item }) {
       </>
     ),
   };
-  // These private image URLs require the visitor cookie; an optimization proxy cannot read them.
-  // eslint-disable-next-line @next/next/no-img-element
   if (item.image && item.image !== failedImage)
     return (
+      // Private images need the visitor cookie, which the optimization proxy cannot forward.
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         onError={() => setFailedImage(item.image)}
         className="garment-image"
