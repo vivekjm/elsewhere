@@ -2,7 +2,7 @@ import { packing, safeLink, type Workspace, type Trip } from './model.ts';
 export function download(name: string, content: string | Blob, type = 'application/json') {
   const blob = typeof content === 'string' ? new Blob([content], { type }) : content;
   const url = URL.createObjectURL(blob), link = document.createElement('a');
-  link.href = url; link.download = name; document.body.append(link); link.click(); link.remove();
+  link.href = url; link.download = name; document.body.appendChild(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 // Quote every cell and neutralise spreadsheet formulas, including whitespace-prefixed ones.
