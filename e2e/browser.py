@@ -115,7 +115,7 @@ with sync_playwright() as pw:
         page.get_by_role('button', name='Add a plan', exact=True).click()
         d = page.get_by_role('dialog')
         d.get_by_label('Activity', exact=True).fill('Museum reservation')
-        d.get_by_label('Start time', exact=False).fill('11:00')
+        d.get_by_label('Start time', exact=True).fill('11:00')
         d.get_by_label('End time (optional)', exact=True).fill('12:30')
         d.get_by_label('Place', exact=True).fill('City museum')
         d.locator('.ew-editor-more > summary').click()

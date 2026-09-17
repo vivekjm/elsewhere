@@ -56,7 +56,7 @@ export function PickerPanel({ anchor, children, onClose, label, className = "", 
     const observer = new ResizeObserver(position);
     observer.observe(panel);
     if (anchor.current) observer.observe(anchor.current);
-    const focus = requestAnimationFrame(() => {
+    {
       ["[data-autofocus]", "button[aria-selected='true']", "button[tabindex='0']", "input", "button"].map(selector => panel.querySelector<HTMLElement>(selector)).find(Boolean)?.focus({ preventScroll: true });
       // Reveal selected times/options without moving the page or editor beneath us.
       panel.querySelectorAll<HTMLElement>("[role=listbox]").forEach(list => {
@@ -65,7 +65,7 @@ export function PickerPanel({ anchor, children, onClose, label, className = "", 
           list.scrollTop += selected.getBoundingClientRect().top - list.getBoundingClientRect().top - (list.clientHeight - selected.offsetHeight) / 2;
         }
       });
-    });
+    }
     function outside(e: Event) {
       const target = e.target;
       if (target instanceof Node && !panel?.contains(target) && !anchor.current?.contains(target)) onClose(false);
@@ -88,7 +88,6 @@ export function PickerPanel({ anchor, children, onClose, label, className = "", 
     window.visualViewport?.addEventListener("resize", position);
     window.visualViewport?.addEventListener("scroll", position);
     return () => {
-      cancelAnimationFrame(focus);
       observer.disconnect();
       document.removeEventListener("pointerdown", outside, true);
       document.removeEventListener("focusin", outside);
@@ -174,6 +173,10 @@ export function DatePicker({ value, onChange, min = "1900-01-01", max = "2200-12
   const grid = useRef<HTMLDivElement>(null);
   const id = useId();
   const close = useCallback((restore = true) => { setOpen(false); if (restore) anchor.current?.focus({ preventScroll: true }); }, []);
+  // Commit roving focus before paint so a quick Arrow + Enter uses the new date.
+  useLayoutEffect(() => {
+    if (open && view === "days") grid.current?.querySelector<HTMLButtonElement>(`[data-picker-date="${focusDate}"]`)?.focus({ preventScroll: true });
+  }, [open, view, month, focusDate]);
   const allowed = (d: string) => d >= min && d <= max;
   const clamp = (d: string) => d < min ? min : d > max ? max : d;
   const year = Number(month.slice(0, 4));
@@ -185,7 +188,6 @@ export function DatePicker({ value, onChange, min = "1900-01-01", max = "2200-12
   function choose(d: string) { if (allowed(d)) { onChange(d); close(); } }
   function focus(d: string) {
     const next = clamp(d); setFocusDate(next); setMonth(next.slice(0, 7));
-    requestAnimationFrame(() => grid.current?.querySelector<HTMLButtonElement>(`[data-picker-date="${next}"]`)?.focus());
   }
   function keys(e: React.KeyboardEvent, d: string) {
     const day = (new Date(`${d}T12:00:00Z`).getUTCDay() + 6) % 7;
