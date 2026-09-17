@@ -1,2 +1,2 @@
 "use client";
-export { default } from '@/components/travel/workspace';
+export { default } from "@/components/travel/workspace";
