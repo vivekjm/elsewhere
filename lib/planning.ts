@@ -163,3 +163,21 @@ export function emptyTrip(): Trip {
     packed: [],
   };
 }
+
+/** A single source for calendar tiles, including equipment-only and note-only days.
+ * Preserve outfit order and deduplicate pieces reused across looks or activities. */
+export function daySnapshot(w: Workspace, trip: Trip, date: string) {
+  const activities = dayActivities(trip, date);
+  const { outfits, gear } = dayItems(w, trip, date);
+  const itemIds = [...new Set([...outfits.flatMap(o => o.items), ...gear.map(i => i.id)])];
+  const byId = new Map(w.items.map(item => [item.id, item]));
+  const pieces = itemIds.flatMap(id => { const item = byId.get(id); return item ? [item] : []; });
+  const details = trip.days[date];
+  return {
+    activities, outfits, gear, pieces,
+    title: details?.title || "",
+    stay: details?.stay || "",
+    notes: details?.notes || "",
+    hasContent: !!(activities.length || pieces.length || outfits.length || dayHasContent(details || { outfitId: "", stay: "", notes: "" })),
+  };
+}

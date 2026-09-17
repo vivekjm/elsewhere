@@ -19,6 +19,9 @@ import {
   type Extra,
 } from "@/lib/model";
 import { emptyTrip } from "@/lib/planning";
+import { Select, DatePicker, TimePicker, ColorPicker } from "./pickers";
+import { MoodPicker } from "./moods";
+import { Icon } from "./icons";
 import {
   Button,
   Modal as Dialog,
@@ -30,6 +33,7 @@ export type Modal = {
   kind: "trip" | "activity" | "item" | "outfit" | "day" | "extra";
   id?: string;
   date?: string;
+  section?: "details" | "outfits" | "gear";
 };
 export type FormDraft = {
   id?: string;
@@ -88,17 +92,15 @@ function Field({
     <div className="ew-field">
       <label htmlFor={id}>{label}</label>
       {React.Children.map(children, (child) => {
-        if (
-          !React.isValidElement(child) ||
-          !["input", "select", "textarea"].includes(String(child.type))
-        )
-          return child;
+        if (!React.isValidElement(child)) return child;
+        if (typeof child.type === "string" && !["input", "select", "textarea"].includes(child.type)) return child;
         return React.cloneElement(
           child as React.ReactElement<{
             id?: string;
             "aria-describedby"?: string;
+            "aria-label"?: string;
           }>,
-          { id, "aria-describedby": hint ? `${id}-hint` : undefined },
+          { id, "aria-label": label, "aria-describedby": hint ? `${id}-hint` : undefined },
         );
       })}
       {hint && <small id={`${id}-hint`}>{hint}</small>}
@@ -177,6 +179,7 @@ export function Editor({
                     },
       ) as FormDraft,
   );
+  const [section, setSection] = useState(modal.section || "details");
   const [form, setForm] = useState(initial),
     [shift, setShift] = useState(false),
     [error, setError] = useState(""),
@@ -293,9 +296,9 @@ export function Editor({
   );
   const outfit = (
     <Field label="Outfit for this activity">
-      <select
+      <Select
         value={form.outfitId || ""}
-        onChange={(e) => f("outfitId", e.target.value)}
+        onChange={(value) => f("outfitId", value)}
       >
         <option value="">No activity-specific outfit</option>
         {w.outfits.map((o) => (
@@ -303,7 +306,7 @@ export function Editor({
             {o.name}
           </option>
         ))}
-      </select>
+      </Select>
     </Field>
   );
   return (
@@ -311,13 +314,6 @@ export function Editor({
       title={title}
       onDismiss={dismiss}
       wide={["item", "outfit", "day", "activity"].includes(modal.kind)}
-      description={
-        modal.kind === "activity"
-          ? "A place, a plan, and the things you’ll need."
-          : modal.kind === "outfit"
-            ? "Pieces you love. A look you can use again."
-            : "Everything in its place, before you go."
-      }
     >
       <form onSubmit={submit}>
         <fieldset disabled={uploading} className="ew-editor-body">
@@ -344,23 +340,21 @@ export function Editor({
               </Field>
               <div className="ew-form-grid">
                 <Field label="Departure">
-                  <input
-                    type="date"
+                  <DatePicker
                     required
                     min="1900-01-01"
                     max="2200-12-31"
                     value={form.start || ""}
-                    onChange={(e) => f("start", e.target.value)}
+                    onChange={(value) => f("start", value)}
                   />
                 </Field>
                 <Field label="Return">
-                  <input
-                    type="date"
+                  <DatePicker
                     required
                     min={form.start}
                     max="2200-12-31"
                     value={form.end || ""}
-                    onChange={(e) => f("end", e.target.value)}
+                    onChange={(value) => f("end", value)}
                   />
                 </Field>
               </div>
@@ -391,14 +385,14 @@ export function Editor({
                   "0.01",
                 )}
                 <Field label="Currency">
-                  <select
+                  <Select
                     value={form.currency}
-                    onChange={(e) => f("currency", e.target.value)}
+                    onChange={(value) => f("currency", value)}
                   >
                     {CURRENCIES.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
                 {number(
                   "weightLimit",
@@ -412,16 +406,7 @@ export function Editor({
               <p className="ew-hint">
                 A zero budget or luggage target means you haven’t set one yet.
               </p>
-              <Field label="Cover mood">
-                <select
-                  value={form.theme || "mountains"}
-                  onChange={(e) => f("theme", e.target.value)}
-                >
-                  <option value="mountains">Quiet mountains</option>
-                  <option value="coast">By the coast</option>
-                  <option value="city">City wandering</option>
-                </select>
-              </Field>
+              <fieldset className="ew-mood-fieldset"><legend>Cover mood</legend><MoodPicker value={form.theme || "mountains"} onChange={value => f("theme", value)} /></fieldset>
               {notes("Trip notes")}
             </>
           )}
@@ -439,45 +424,42 @@ export function Editor({
               </Field>
               <div className="ew-form-grid">
                 <Field label="Date">
-                  <input
-                    type="date"
+                  <DatePicker
                     required
                     min={trip?.start}
                     max={trip?.end}
                     value={form.date || date}
-                    onChange={(e) => f("date", e.target.value)}
+                    onChange={(value) => f("date", value)}
                   />
                 </Field>
                 <Field label="Activity type">
-                  <select
+                  <Select
                     value={form.category || "Explore"}
-                    onChange={(e) => f("category", e.target.value)}
+                    onChange={(value) => f("category", value)}
                   >
                     {ACTIVITY_TYPES.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
                 <Field
                   label="Start time"
-                  hint="Leave empty for an all-day plan."
+                  hint="Optional · 24-hour time"
                 >
-                  <input
-                    type="time"
+                  <TimePicker
                     value={form.time || ""}
-                    onChange={(e) => {
-                      f("time", e.target.value);
-                      if (!e.target.value) f("endTime", "");
+                    onChange={(value) => {
+                      f("time", value);
+                      if (!value) f("endTime", "");
                     }}
                   />
                 </Field>
                 <Field label="End time (optional)">
-                  <input
-                    type="time"
+                  <TimePicker
                     disabled={!form.time}
                     min={form.time}
                     value={form.endTime || ""}
-                    onChange={(e) => f("endTime", e.target.value)}
+                    onChange={(value) => f("endTime", value)}
                   />
                 </Field>
               </div>
@@ -489,6 +471,7 @@ export function Editor({
                   placeholder="Venue, neighbourhood or meeting point"
                 />
               </Field>
+              <details className="ew-editor-more" open={modal.id ? true : undefined}><summary><Icon name="layers" size={16} />Outfit, essentials & details<Icon name="down" size={14} /></summary><div>
               <div className="ew-form-grid">
                 {number(
                   "cost",
@@ -516,39 +499,30 @@ export function Editor({
                 selected={form.gear || []}
                 onChange={(v) => f("gear", v)}
               />
+              </div></details>
             </>
           )}
           {modal.kind === "day" && (
             <>
-              <Field label="Day title">
-                <input
-                  autoFocus
-                  maxLength={200}
-                  value={form.title || ""}
-                  onChange={(e) => f("title", e.target.value)}
-                  placeholder="A slow morning, a new adventure"
-                />
-              </Field>
-              <Field label="Accommodation">
-                <input
-                  maxLength={200}
-                  value={form.stay || ""}
-                  onChange={(e) => f("stay", e.target.value)}
-                  placeholder="Where you’re staying tonight"
-                />
-              </Field>
-              {notes("Day notes")}
-              <OutfitPicker
-                w={w}
-                selected={form.outfitIds || []}
-                onChange={(v) => f("outfitIds", v)}
-              />
-              <ItemPicker
-                w={w}
-                label="Daily essentials"
-                selected={form.gear || []}
-                onChange={(v) => f("gear", v)}
-              />
+              <div className="ew-day-editor-tabs" role="tablist" aria-label="Day details sections">
+                {([ ["details", "Details", "note"], ["outfits", "Outfits", "hanger"], ["gear", "Essentials", "bag"] ] as const).map(([key, label, icon]) => <button type="button" role="tab" key={key} id={`ew-day-tab-${key}`} aria-selected={section === key} aria-controls={`ew-day-tabpanel-${key}`} tabIndex={section === key ? 0 : -1} onClick={() => setSection(key)} onKeyDown={e => {
+                  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+                  e.preventDefault();
+                  const keys = ["details", "outfits", "gear"] as const;
+                  const next = e.key === "Home" ? 0 : e.key === "End" ? 2 : (keys.indexOf(section) + (e.key === "ArrowRight" ? 1 : 2)) % 3;
+                  setSection(keys[next]);
+                  document.getElementById(`ew-day-tab-${keys[next]}`)?.focus();
+                }}><Icon name={icon} size={16} />{label}</button>)}
+              </div>
+              <div role="tabpanel" id={`ew-day-tabpanel-${section}`} aria-labelledby={`ew-day-tab-${section}`} className="ew-day-editor-panel ew-enter" key={section}>
+                {section === "details" && <>
+                  <Field label="Day title"><input autoFocus maxLength={200} value={form.title || ""} onChange={e => f("title", e.target.value)} placeholder="A slow morning, a new adventure" /></Field>
+                  <Field label="Accommodation"><input maxLength={200} value={form.stay || ""} onChange={e => f("stay", e.target.value)} placeholder="Where you’re staying tonight" /></Field>
+                  {notes("Day notes")}
+                </>}
+                {section === "outfits" && <OutfitPicker w={w} selected={form.outfitIds || []} onChange={v => f("outfitIds", v)} />}
+                {section === "gear" && <ItemPicker w={w} label="Daily essentials" selected={form.gear || []} onChange={v => f("gear", v)} />}
+              </div>
             </>
           )}
           {modal.kind === "item" && (
@@ -592,38 +566,37 @@ export function Editor({
                   />
                 </Field>
                 <Field label="Category">
-                  <select
+                  <Select
                     value={form.category}
-                    onChange={(e) => {
-                      f("category", e.target.value);
-                      f("shape", defaultShape(e.target.value));
+                    onChange={(value) => {
+                      f("category", value);
+                      f("shape", defaultShape(value));
                     }}
                   >
                     {CATEGORIES.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
                 <div className="ew-form-grid">
                   <Field label="Illustration">
-                    <select
+                    <Select
                       value={
                         form.shape || defaultShape(form.category || "Tops")
                       }
-                      onChange={(e) => f("shape", e.target.value)}
+                      onChange={(value) => f("shape", value)}
                     >
                       {SHAPES.map((c) => (
                         <option key={c} value={c}>
                           {c[0].toUpperCase() + c.slice(1)}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </Field>
                   <Field label="Colour">
-                    <input
-                      type="color"
+                    <ColorPicker
                       value={form.color || "#8b8b73"}
-                      onChange={(e) => f("color", e.target.value)}
+                      onChange={(value) => f("color", value)}
                     />
                   </Field>
                 </div>
@@ -655,23 +628,10 @@ export function Editor({
                 <Field label="Occasion">
                   <input
                     maxLength={100}
-                    list="ew-occasions"
                     value={form.occasion || ""}
                     onChange={(e) => f("occasion", e.target.value)}
                   />
-                  <datalist id="ew-occasions">
-                    {[
-                      "Everyday",
-                      "Exploring",
-                      "Travel",
-                      "Evening",
-                      "Hiking",
-                      "Work",
-                      "Formal",
-                    ].map((o) => (
-                      <option value={o} key={o} />
-                    ))}
-                  </datalist>
+                  <div className="ew-occasion-chips">{["Everyday", "Exploring", "Evening", "Hiking"].map(value => <button type="button" key={value} aria-pressed={form.occasion === value} onClick={() => f("occasion", value)}>{value}</button>)}</div>
                 </Field>
               </div>
               <ItemPicker
@@ -695,14 +655,14 @@ export function Editor({
                 />
               </Field>
               <Field label="Packing category">
-                <select
+                <Select
                   value={form.category || "Essentials"}
-                  onChange={(e) => f("category", e.target.value)}
+                  onChange={(value) => f("category", value)}
                 >
                   {EXTRA_CATEGORIES.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <div className="ew-form-grid">
                 {number("quantity", "Quantity", form.quantity ?? 1, 999, 1)}

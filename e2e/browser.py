@@ -11,6 +11,7 @@ from pathlib import Path
 import re
 import time
 import traceback
+from datetime import datetime
 
 from playwright.sync_api import expect, sync_playwright
 
@@ -69,6 +70,25 @@ def wait_record(page, expression):
     raise AssertionError('Expected data was not persisted before timeout')
 
 
+def choose(page, scope, label, option):
+    scope.get_by_label(label, exact=True).click()
+    page.get_by_role('option', name=option, exact=True).click()
+
+
+def choose_date(page, scope, label, date):
+    scope.get_by_label(label, exact=True).click()
+    picker = page.locator('.ew-picker-panel')
+    target = date[:7]
+    for _ in range(120):
+        shown = datetime.strptime(picker.locator('.ew-picker-period').inner_text().strip(), '%B %Y').strftime('%Y-%m')
+        if shown == target:
+            break
+        picker.get_by_role('button', name='Next month' if shown < target else 'Previous month', exact=True).click()
+    else:
+        raise AssertionError('Requested month was not reachable')
+    picker.locator(f'[data-picker-date="{date}"]').click()
+
+
 with sync_playwright() as pw:
     browser = pw.chromium.launch(headless=True)
     context, page = fresh(browser)
@@ -78,7 +98,9 @@ with sync_playwright() as pw:
         d = page.get_by_role('dialog')
         d.get_by_label('Day title', exact=True).fill('Markets and sunset')
         d.get_by_label('Accommodation', exact=True).fill('River guesthouse')
+        d.get_by_role('tab', name='Outfits', exact=True).click()
         d.locator('.ew-pick-look').filter(has_text='Dinner at sunset').locator('input').check()
+        d.get_by_role('tab', name='Essentials', exact=True).click()
         d.locator('.ew-pick-item').filter(has_text='Camera').locator('input').check()
         d.get_by_role('button', name='Save changes', exact=True).click()
         wait_record(page, lambda w: w['trips'][0]['days']['2026-09-21'].get('title') == 'Markets and sunset')
@@ -96,23 +118,26 @@ with sync_playwright() as pw:
         d.get_by_label('Start time', exact=False).fill('11:00')
         d.get_by_label('End time (optional)', exact=True).fill('12:30')
         d.get_by_label('Place', exact=True).fill('City museum')
+        d.locator('.ew-editor-more > summary').click()
         d.get_by_label('Estimated cost (EUR)', exact=True).fill('19.50')
         d.get_by_label('Reference link (optional)', exact=True).fill('https://example.com/reservation')
-        d.get_by_label('Outfit for this activity', exact=True).select_option('coast')
+        choose(page, d, 'Outfit for this activity', 'A breezy afternoon')
         d.get_by_role('button', name='Save changes', exact=True).click()
         wait_record(page, lambda w: any(a['title'] == 'Museum reservation' for a in w['trips'][0]['activities']))
+        page.get_by_role('button', name='View full day', exact=True).click()
         page.get_by_role('button', name='Edit Museum reservation', exact=True).click()
         d = page.get_by_role('dialog')
-        d.get_by_label('Date', exact=True).fill('2026-09-24')
+        choose_date(page, d, 'Date', '2026-09-24')
         d.get_by_role('button', name='Save changes', exact=True).click()
         data = wait_record(page, lambda w: any(a['title'] == 'Museum reservation' and a['date'] == '2026-09-24' for a in w['trips'][0]['activities']))
         a = next(a for a in data['workspace']['trips'][0]['activities'] if a['title'] == 'Museum reservation')
         assert a['cost'] == 19.5 and a['endTime'] == '12:30' and a['outfitId'] == 'coast'
-        expect(page.get_by_role('complementary', name='Selected day')).to_contain_text('Thursday 24 Sept')
+        expect(page.locator('.ew-day-dialog .ew-dialog-header')).to_contain_text('Thursday 24 September')
         page.get_by_role('button', name='Delete Museum reservation', exact=True).click()
         page.get_by_role('dialog').get_by_role('button', name='Delete', exact=True).click()
         page.get_by_role('button', name='Undo last deletion').click()
         wait_record(page, lambda w: any(a['title'] == 'Museum reservation' for a in w['trips'][0]['activities']))
+        page.keyboard.press('Escape')
     case('Activity creation, rescheduling and deletion undo use durable server writes', activity_and_undo)
 
     def photo_outfit_packing():
@@ -120,7 +145,7 @@ with sync_playwright() as pw:
         page.get_by_role('button', name='Add a piece', exact=True).click()
         d = page.get_by_role('dialog')
         d.get_by_label('Item name', exact=True).fill('Photo jacket')
-        d.get_by_label('Category', exact=True).select_option('Layers')
+        choose(page, d, 'Category', 'Layers')
         d.get_by_label('Weight (g)', exact=True).fill('430')
         d.locator('input[type=file]').set_input_files({'name': 'fixture.png', 'mimeType': 'image/png', 'buffer': PNG})
         expect(d.locator('.ew-item-preview img')).to_be_visible()
@@ -139,6 +164,7 @@ with sync_playwright() as pw:
         nav(page, 'Calendar')
         page.get_by_role('button', name='Edit day details', exact=True).click()
         d = page.get_by_role('dialog')
+        d.get_by_role('tab', name='Outfits', exact=True).click()
         d.locator('.ew-pick-look').filter(has_text='Mountain mornings').locator('input').check()
         d.get_by_role('button', name='Save changes', exact=True).click()
         nav(page, 'Packing list')
@@ -182,8 +208,8 @@ with sync_playwright() as pw:
         d = page.get_by_role('dialog')
         d.get_by_label('Trip name', exact=True).fill('A week in the hills')
         d.get_by_label('Destination', exact=True).fill('Gangtok & Lachung')
-        d.get_by_label('Departure', exact=True).fill('2026-11-01')
-        d.get_by_label('Return', exact=True).fill('2026-11-07')
+        choose_date(page, d, 'Departure', '2026-11-01')
+        choose_date(page, d, 'Return', '2026-11-07')
         d.get_by_role('button', name='Save changes', exact=True).click()
         wait_record(page, lambda w: len(w['trips']) == 2)
         page.reload(wait_until='networkidle')
@@ -228,8 +254,86 @@ with sync_playwright() as pw:
     case('Real optimistic-revision conflicts never overwrite another tab', revision_conflict)
     context.close()
 
+
+    context, page = fresh(browser)
+    def visual_moods():
+        for label, theme in [('Into the forest','forest'), ('Desert days','desert'), ('Snow & silence','snow'), ('Golden hour','sunset'), ('Under the stars','night'), ('Quiet mountains','mountains'), ('By the coast','coast'), ('City wandering','city')]:
+            page.get_by_role('button', name='Change cover mood').click()
+            expect(page.get_by_role('radio')).to_have_count(8)
+            page.get_by_role('radio', name=label, exact=True).click()
+            wait_record(page, lambda w: w['trips'][0]['theme'] == theme)
+        page.reload(wait_until='networkidle')
+        expect(page.locator('.ew-hero .ew-scene-city')).to_be_visible()
+        page.get_by_role('button', name='Pause animations').click()
+        assert page.locator('.ew-hero .ew-scene-windows').evaluate('e => getComputedStyle(e).animationPlayState') == 'paused'
+        page.reload(wait_until='networkidle')
+        expect(page.get_by_role('button', name='Resume animations')).to_be_visible()
+        page.emulate_media(reduced_motion='reduce')
+        assert page.locator('.ew-hero .ew-scene-windows').evaluate('e => getComputedStyle(e).animationName') == 'none'
+        page.emulate_media(reduced_motion='no-preference')
+    case('Eight moods persist; motion preferences survive reload and respect reduced motion', visual_moods)
+
+    def calendar_quick_add():
+        tile = page.locator('[data-date="2026-09-22"]')
+        tile.click()
+        preview = page.get_by_role('dialog')
+        expect(preview.get_by_role('heading', name='Tuesday 22 September', exact=True)).to_be_visible()
+        preview.get_by_role('button', name='Outfit', exact=True).click()
+        d = page.get_by_role('dialog')
+        expect(d.get_by_role('tab', name='Outfits', exact=True)).to_have_attribute('aria-selected', 'true')
+        d.locator('.ew-pick-look').filter(has_text='Dinner at sunset').locator('input').check()
+        d.get_by_role('tab', name='Essentials', exact=True).click()
+        d.locator('.ew-pick-item').filter(has_text='Camera').locator('input').check()
+        d.get_by_role('button', name='Save changes', exact=True).click()
+        wait_record(page, lambda w: 'camera' in w['trips'][0]['days'].get('2026-09-22', {}).get('gear', []))
+        expect(page.get_by_role('dialog').get_by_role('button', name='Edit outfit Dinner at sunset')).to_be_visible()
+        page.get_by_role('dialog').get_by_role('button', name='Next day', exact=True).click()
+        expect(page.get_by_role('dialog').get_by_role('heading', name='Wednesday 23 September', exact=True)).to_be_visible()
+        page.keyboard.press('Escape')
+        assert tile.locator('.ew-snapshot-piece').count() > 0
+        page.reload(wait_until='networkidle')
+        assert page.locator('[data-date="2026-09-22"] .ew-snapshot-piece').count() > 0
+    case('Calendar tap opens full day; focused outfit and essential adds update durable snapshots', calendar_quick_add)
+
+    def picker_keyboard():
+        page.get_by_role('button', name='Add a plan', exact=True).click()
+        d = page.get_by_role('dialog')
+        trigger = d.get_by_label('Activity type', exact=True)
+        trigger.focus(); page.keyboard.press('ArrowDown')
+        expect(page.get_by_role('listbox')).to_be_visible()
+        page.keyboard.press('Escape')
+        expect(trigger).to_be_focused(); expect(d).to_be_visible()
+        d.get_by_label('Date', exact=True).click()
+        picker = page.locator('.ew-picker-panel')
+        expect(picker.locator('[data-picker-date="2026-09-20"]')).to_be_disabled()
+        page.keyboard.press('ArrowRight'); page.keyboard.press('Enter')
+        expect(d.get_by_label('Date', exact=True)).to_contain_text('24 Sept 2026')
+        d.get_by_role('button', name='Choose start time').click()
+        picker = page.locator('.ew-picker-panel')
+        picker.get_by_role('listbox', name='Hour', exact=True).get_by_role('option', name='13', exact=True).click()
+        picker.get_by_role('button', name=':15', exact=True).click()
+        expect(d.get_by_label('Start time', exact=True)).to_have_value('13:15')
+        assert page.locator('select,input[type=date],input[type=time],input[type=color]').count() == 0
+        d.get_by_label('Activity', exact=True).fill('Custom picker check')
+        d.get_by_role('button', name='Save changes', exact=True).click()
+        wait_record(page, lambda w: any(a['title'] == 'Custom picker check' and a['time'] == '13:15' for a in w['trips'][0]['activities']))
+    case('Custom pickers support bounded dates, keyboard navigation, Escape and time selection', picker_keyboard)
+    context.close()
+
     for width in [320, 390, 600, 768, 900, 1024, 1280, 1440, 1920]:
         context, page = fresh(browser, width)
+        def preview_layout():
+            page.locator('[data-date="2026-09-21"]').click()
+            assert page.locator('.ew-day-dialog').bounding_box()['width'] <= width
+            if width in (390, 1440):
+                page.screenshot(path=str(OUT / f'day-preview-{width}.png'))
+            page.get_by_role('dialog').get_by_role('button', name='Plan', exact=True).click()
+            page.get_by_label('Date', exact=True).click()
+            bounds = page.locator('.ew-picker-panel').bounding_box()
+            assert bounds['x'] >= 0 and bounds['x'] + bounds['width'] <= width
+            assert bounds['y'] >= 0 and bounds['y'] + bounds['height'] <= 900
+            page.keyboard.press('Escape'); page.keyboard.press('Escape'); page.keyboard.press('Escape')
+        case(f'{width}px full preview and nested date picker stay within viewport', preview_layout)
         for name, key in [('Calendar', 'calendar'), ('Wardrobe', 'wardrobe'), ('Packing list', 'packing'), ('All trips', 'trips')]:
             if key != 'calendar':
                 nav(page, name)

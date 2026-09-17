@@ -1,0 +1,337 @@
+/* Visual planner: snapshots first, detail on demand. Keep motion decorative. */
+.ew { --ew-ease: cubic-bezier(.22,1,.36,1); --ew-fast: 180ms; }
+.ew button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.ew button:not(:disabled), .ew input, .ew textarea { transition: background-color var(--ew-fast) ease, border-color var(--ew-fast) ease, box-shadow var(--ew-fast) ease, color var(--ew-fast) ease, transform 220ms var(--ew-ease); }
+.ew button:focus-visible { outline: 2px solid #647b4f; outline-offset: 3px; }
+.ew button:disabled { cursor: not-allowed; }
+.ew .ew-button:active:not(:disabled), .ew .ew-icon-button:active:not(:disabled) { transform: scale(.97); }
+.ew .ew-enter { animation: ew-arrive 300ms var(--ew-ease) both; }
+.ew .ew-dialog[open] { animation: ew-dialog-in 280ms var(--ew-ease) both; }
+.ew .ew-dialog::backdrop { background: #24302155; backdrop-filter: blur(4px); animation: ew-fade-in 220ms ease both; }
+@keyframes ew-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ew-arrive { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes ew-dialog-in { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+/* One anchored custom surface, also usable within modal editors. */
+.ew .ew-picker-control { width: 100%; min-width: 0; position: relative; }
+.ew .ew-picker-trigger { width: 100%; min-height: 44px; display: flex; align-items: center; gap: 9px; padding: 10px 12px; border: 1px solid #dbe2d2; background: #fcfdf9; border-radius: 8px; text-align: left; font-size: 13px; line-height: 1.4; }
+.ew .ew-picker-trigger > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ew .ew-picker-trigger > svg { flex-shrink: 0; }
+.ew .ew-picker-trigger[aria-expanded=true] { border-color: #8b9f75; box-shadow: 0 0 0 3px #91a47816; }
+.ew .ew-picker-trigger[aria-expanded=true] > svg:last-child { transform: rotate(180deg); }
+.ew .ew-picker-trigger > svg:last-child { transition: transform 200ms var(--ew-ease); }
+.ew .ew-picker-panel { position: fixed; inset: auto; margin: 0; padding: 0; border: 1px solid #dce3d2; border-radius: 14px; background: #fffffd; color: var(--ew-ink); box-shadow: 0 12px 45px #25302326, 0 2px 6px #2530230a; overflow: auto; overscroll-behavior: contain; z-index: 1000; box-sizing: border-box; font: 13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+.ew .ew-picker-panel:popover-open { display: block; animation: ew-arrive 180ms var(--ew-ease) both; }
+.ew .ew-picker-panel::backdrop { background: transparent; }
+.ew .ew-picker-options { padding: 6px; max-height: 300px; overflow: auto; overscroll-behavior: contain; }
+.ew .ew-picker-options > button { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; border-radius: 7px; min-height: 44px; width: 100%; text-align: left; overflow-wrap: anywhere; }
+.ew .ew-picker-options > button:hover, .ew .ew-picker-options > button:focus-visible { background: #f1f4eb; }
+.ew .ew-picker-options > button[aria-selected=true] { background: #eaf0e2; color: #425834; font-weight: 600; }
+.ew .ew-picker-options > button[aria-selected=true] svg { flex-shrink: 0; }
+.ew .ew-picker-search { display: flex; gap: 9px; align-items: center; margin: 10px 10px 3px; padding: 0 10px; background: #f4f6ef; border-radius: 7px; }
+.ew .ew-picker-search input { min-width: 0; width: 100%; min-height: 42px; border: 0; background: transparent; padding: 8px 0; outline: none; font-size: 13px; }
+.ew .ew-picker-empty { padding: 20px; text-align: center; color: var(--ew-muted); }
+.ew .ew-picker-heading { display: flex; gap: 6px; align-items: center; justify-content: space-between; min-height: 44px; }
+.ew .ew-picker-heading > button { display: inline-flex; justify-content: center; align-items: center; gap: 8px; border-radius: 7px; min-width: 38px; min-height: 44px; }
+.ew .ew-picker-heading > button:hover { background: #f0f4e8; }
+.ew .ew-picker-heading .ew-picker-period { padding: 6px; font-weight: 600; font-size: 14px; }
+.ew .ew-picker-heading > span, .ew .ew-picker-heading > small { color: var(--ew-muted); font-size: 11px; }
+.ew .ew-date-picker { padding: 8px 10px 4px; }
+.ew .ew-picker-weekdays { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); text-align: center; margin: 10px 0 4px; font-size: 10px; color: var(--ew-muted); }
+.ew .ew-picker-dates > div { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); }
+.ew .ew-picker-dates button { width: 100%; min-height: 40px; border-radius: 8px; font-size: 12px; position: relative; }
+.ew .ew-picker-dates button:not(:disabled):hover, .ew .ew-picker-periods button:not(:disabled):hover { background: #edf2e6; }
+.ew .ew-picker-dates .is-muted { color: #919889; }
+.ew .ew-picker-dates .is-selected, .ew .ew-picker-periods .is-selected { background: #60764e !important; color: white; }
+.ew .ew-picker-dates button:disabled, .ew .ew-picker-periods button:disabled { opacity: .3; }
+.ew .ew-picker-dates button[aria-current=date]:after { content: ""; position: absolute; width: 3px; height: 3px; bottom: 5px; left: calc(50% - 1.5px); border-radius: 50%; background: currentColor; }
+.ew .ew-picker-periods { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px; padding: 10px 0; }
+.ew .ew-picker-periods button { border-radius: 8px; min-height: 48px; }
+.ew .ew-picker-bottom { display: flex; justify-content: space-between; border-top: 1px solid #e9ecdf; padding: 5px 0; margin-top: 7px; }
+.ew .ew-picker-bottom > button { min-height: 40px; padding: 6px 12px; border-radius: 7px; color: #536b40; font-weight: 600; }
+.ew .ew-picker-bottom > button:hover { background: #f0f4e9; }
+.ew .ew-time-control { position: relative; display: flex; width: 100%; }
+.ew .ew-time-control input { width: 100%; padding-right: 42px; }
+.ew .ew-time-control > button { position: absolute; right: 1px; top: 1px; width: 42px; height: calc(100% - 2px); display: grid; place-items: center; border-radius: 7px; }
+.ew .ew-time-control > button:hover { background: #edf2e6; }
+.ew .ew-time-picker { padding: 9px 12px 4px; }
+.ew .ew-time-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
+.ew .ew-time-columns > div > span { display: block; font-size: 10px; color: var(--ew-muted); margin-bottom: 5px; }
+.ew .ew-time-columns [role=listbox] { height: 176px; overflow-y: auto; border: 1px solid #e5e9de; border-radius: 9px; overscroll-behavior: contain; scrollbar-width: thin; }
+.ew .ew-time-columns button { display: block; width: 100%; min-height: 38px; font-size: 15px; font-variant-numeric: tabular-nums; border-radius: 6px; }
+.ew .ew-time-columns button:hover { background: #f2f5ec; }
+.ew .ew-time-columns button[aria-selected=true] { background: #e9efdf; color: #425936; font-weight: 650; }
+.ew .ew-time-quick { display: flex; gap: 5px; margin-top: 10px; }
+.ew .ew-time-quick > button { flex: 1; min-height: 38px; background: #f3f5ee; border-radius: 7px; }
+.ew .ew-color-picker { padding: 16px; }
+.ew .ew-color-swatch { width: 21px; height: 21px; border: 1px solid #0001; border-radius: 50%; flex-shrink: 0; }
+.ew .ew-swatches { display: grid; grid-template-columns: repeat(6,1fr); gap: 7px; margin: 16px 0; }
+.ew .ew-swatches > button { aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; border: 1px solid #0001; }
+.ew .ew-swatches > button[aria-pressed=true] { outline: 2px solid #60764e; outline-offset: 3px; }
+.ew .ew-swatches svg { color: white; filter: drop-shadow(0 1px 2px #000); }
+.ew .ew-hex-field { display: grid; grid-template-columns: 1fr 44px; gap: 5px; }
+.ew .ew-hex-field > span { grid-column: 1/-1; font-size: 11px; color: var(--ew-muted); }
+.ew .ew-hex-field input { min-width: 0; width: 100%; border: 1px solid #dbe2d2; border-radius: 7px; min-height: 40px; padding: 7px; font-size: 13px; }
+.ew .ew-hex-field button { border-radius: 7px; background: #edf2e6; }
+.ew .ew-trip-select > .ew-picker-control .ew-picker-trigger { font-size: 12px; background: #f5f7f0; }
+.ew .ew-mobile-trip .ew-picker-trigger { min-height: 38px; font-size: 11px; padding: 6px 9px; }
+/* Eight gentle, original travel scenes. */
+.ew .ew-scene { width: 100%; height: 100%; display: block; }
+.ew .ew-hero-landscape > .ew-scene { animation: ew-fade-in 500ms ease both; }
+.ew .ew-hero-scene-controls { position: absolute; top: 19px; right: 122px; z-index: 2; display: flex; align-items: center; gap: 6px; }
+.ew .ew-hero-mood > button, .ew .ew-motion-toggle { min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 7px; background: #ffffffe0; border: 1px solid #fff9; border-radius: 8px; color: #485a3e; padding: 7px 10px; font-size: 11px; }
+.ew .ew-motion-toggle { width: 36px; padding: 0; }
+.ew .ew-hero-mood > button:hover, .ew .ew-motion-toggle:hover { background: #fff; }
+.ew .ew-mood-popover { padding: 12px 14px 16px; }
+.ew .ew-mood-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.ew .ew-mood-grid > button { text-align: left; border-radius: 10px; min-width: 0; }
+.ew .ew-mood-art { position: relative; display: block; height: 67px; overflow: hidden; border-radius: 9px; border: 2px solid transparent; background: #ecf0e4; }
+.ew .ew-mood-art .ew-scene { width: 210%; max-width: none; margin-left: -110%; }
+.ew .ew-mood-grid > button > span:last-child { display: block; font-size: 11px; margin: 5px 3px 0; }
+.ew .ew-mood-grid > button[aria-checked=true] .ew-mood-art { border-color: #71885a; }
+.ew .ew-mood-art i { position: absolute; right: 5px; bottom: 5px; width: 22px; height: 22px; display: grid; place-items: center; background: #5f764b; color: white; border: 2px solid white; border-radius: 50%; }
+.ew .ew-mood-grid button:hover { transform: translateY(-2px); }
+.ew .ew-mood-fieldset { border: 0; padding: 0; margin: 0 0 20px; }
+.ew .ew-mood-fieldset legend { font-size: 12px; margin-bottom: 10px; }
+.ew .ew-mood-fieldset .ew-mood-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.ew .ew-mood-night .ew-hero-content, .ew .ew-mood-night .ew-hero-meta, .ew .ew-mood-night .ew-day-scene { color: #e7ede0; }
+.ew .ew-mood-night .ew-hero-content h2, .ew .ew-day-scene.ew-mood-night h3, .ew .ew-day-scene.ew-mood-night > div { color: #e8eedf; }
+.ew .ew-mood-night .ew-sample { color: #ced7c6; border-color: #8d9d8d; }
+.ew .ew-scene-animated .ew-scene-clouds { animation: ew-cloud-drift 18s ease-in-out infinite alternate; }
+.ew .ew-scene-animated .ew-scene-birds { animation: ew-bird-drift 14s ease-in-out infinite alternate; }
+.ew .ew-scene-animated .ew-scene-wave { animation: ew-tide 8s ease-in-out infinite alternate; }
+.ew .ew-scene-animated .ew-wave-back { animation-duration: 11s; animation-delay: -3s; }
+.ew .ew-scene-animated .ew-scene-boat { transform-box: fill-box; transform-origin: center; animation: ew-boat 5s ease-in-out infinite; }
+.ew .ew-scene-animated .ew-scene-tree { transform-box: fill-box; transform-origin: bottom center; animation: ew-sway 7s ease-in-out infinite alternate; }
+.ew .ew-scene-animated .ew-scene-mist { animation: ew-cloud-drift 20s ease-in-out infinite alternate; }
+.ew .ew-scene-animated .ew-scene-snow { animation: ew-snow 7s linear infinite; }
+.ew .ew-scene-animated .ew-scene-windows { animation: ew-glow 8s ease-in-out infinite alternate; }
+.ew .ew-scene-animated .ew-star { animation: ew-glow 4s ease-in-out infinite alternate; }
+.ew .ew-scene-animated .ew-star-1 { animation-delay: -1.3s; }
+.ew .ew-scene-animated .ew-star-2 { animation-delay: -2.7s; }
+@keyframes ew-cloud-drift { from { transform: translateX(-9px); } to { transform: translateX(12px); } }
+@keyframes ew-bird-drift { from { transform: translate(0,0); } to { transform: translate(24px,-6px); } }
+@keyframes ew-tide { from { transform: translate(-5px,0); } to { transform: translate(5px,4px); } }
+@keyframes ew-boat { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(3px) rotate(1deg); } }
+@keyframes ew-sway { from { transform: rotate(-.6deg); } to { transform: rotate(.6deg); } }
+@keyframes ew-glow { from { opacity: .35; } to { opacity: 1; } }
+@keyframes ew-snow { from { opacity: 0; transform: translate(0,-9px); } 25%,70% { opacity: .75; } to { opacity: 0; transform: translate(9px,18px); } }
+/* Calendar tiles have one visual, one plan and a quiet count row. */
+.ew .ew-visual-planner { grid-template-columns: minmax(0,1fr) 304px; gap: 24px; }
+.ew .ew-visual-calendar { border-radius: 14px; overflow: hidden; }
+.ew .ew-visual-calendar .ew-month-toolbar { padding: 19px 17px 12px; }
+.ew .ew-visual-calendar .ew-month-toolbar h2 { font: 24px/1.3 var(--ew-serif); }
+.ew .ew-visual-calendar .ew-calendar th { padding: 10px 8px; font-size: 10px; text-transform: none; }
+.ew .ew-visual-calendar .ew-calendar .ew-quiet-week td, .ew .ew-visual-calendar .ew-calendar .ew-quiet-week td > button { height: 51px; }
+.ew .ew-visual-calendar .ew-calendar .ew-trip-week td, .ew .ew-visual-calendar .ew-calendar .ew-trip-week td > button { height: 155px; }
+.ew .ew-visual-calendar .ew-calendar td > button { padding: 8px 6px 6px; gap: 3px; }
+.ew .ew-visual-calendar .ew-calendar td.ew-in-trip { background: #fbfcf7; }
+.ew .ew-visual-calendar .ew-calendar td.ew-selected-day { background: #edf2e4; box-shadow: inset 0 0 0 1.5px #8c9f73; }
+.ew .ew-visual-calendar .ew-calendar td.ew-in-trip:hover { background: #f0f4e8; }
+.ew .ew-visual-calendar .ew-date-number { width: 25px; height: 25px; margin: 0; font-size: 12px; }
+.ew .ew-cell-heading { display: flex; justify-content: space-between; align-items: center; min-height: 25px; }
+.ew .ew-date-flag { font-size: 7px; color: #6b8054; font-weight: 600; letter-spacing: .5px; }
+.ew .ew-snapshot { display: flex; flex-direction: column; gap: 7px; min-height: 0; min-width: 0; flex: 1; }
+.ew .ew-snapshot-pieces { display: flex; position: relative; align-items: center; justify-content: center; width: 100%; height: 55px; min-width: 0; border-radius: 7px; background: #f0f1e9; }
+.ew .ew-snapshot-piece { width: 34%; min-width: 0; height: 50px; display: block; }
+.ew .ew-snapshot-piece .ew-garment, .ew .ew-snapshot-piece img, .ew .ew-snapshot-piece svg { width: 100%; height: 100%; display: block; object-fit: contain; padding: 0; }
+.ew .ew-snapshot-overflow { position: absolute; right: -1px; bottom: -2px; display: grid; place-items: center; min-width: 19px; height: 19px; font: 600 9px/1 sans-serif; background: #fff; color: #60724d; border: 1px solid #e0e6d5; border-radius: 6px; }
+.ew .ew-snapshot-plan { min-width: 0; display: flex; gap: 4px; align-items: center; font-size: 9px; line-height: 1.3; color: #4f6343; }
+.ew .ew-snapshot-plan svg { flex-shrink: 0; }
+.ew .ew-snapshot-plan > span { white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.ew .ew-snapshot-meta { display: flex; gap: 5px; align-items: center; color: #738462; font-size: 9px; margin-top: auto; min-height: 14px; flex-wrap: wrap; }
+.ew .ew-snapshot-meta > span { display: flex; gap: 2px; align-items: center; }
+.ew .ew-snapshot-meta b { font-weight: 500; }
+.ew .ew-snapshot-add { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; height: 80px; color: #96a587; font-size: 9px; }
+.ew .ew-snapshot-add > span { opacity: 0; transition: opacity 160ms ease; }
+.ew .ew-calendar button:hover .ew-snapshot-add > span, .ew .ew-calendar button:focus-visible .ew-snapshot-add > span { opacity: 1; }
+.ew .ew-snapshot-title { font-size: 10px; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.ew .ew-visual-calendar .ew-calendar-footer { display: flex; gap: 13px; align-items: center; padding: 14px 17px; }
+.ew .ew-visual-calendar .ew-calendar-footer > span { display: inline-flex; gap: 5px; font-size: 10px; }
+.ew .ew-visual-calendar .ew-calendar-footer > small { font-size: 9px; margin-left: auto; }
+.ew .ew-month-empty { padding: 12px 16px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--ew-line); }
+.ew .ew-trip-note { padding: 15px 2px; font-size: 12px; color: var(--ew-muted); }
+.ew .ew-trip-note summary { cursor: pointer; display: flex; gap: 7px; align-items: center; min-height: 38px; }
+.ew .ew-trip-note p { padding: 8px 0; white-space: pre-wrap; }
+.ew .ew-visual-agenda { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.ew .ew-agenda-day { display: flex; flex-direction: column; gap: 13px; padding: 16px; min-width: 0; text-align: left; border: 1px solid var(--ew-line); background: #fff; border-radius: 13px; }
+.ew .ew-agenda-day[aria-pressed=true] { border-color: #8c9f73; background: #f7faef; }
+.ew .ew-agenda-day > span:first-child { display: flex; align-items: center; gap: 10px; }
+.ew .ew-agenda-day .ew-snapshot-pieces { height: 100px; }
+.ew .ew-agenda-day .ew-snapshot-piece { height: 86px; }
+.ew .ew-agenda-day .ew-snapshot-plan { font-size: 11px; }
+/* Compact day rail; the complete story lives in the preview. */
+.ew .ew-day-summary { padding: 15px 17px 18px; margin-top: 53px; border-radius: 14px; }
+.ew .ew-day-navigation { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 10px; color: #7a856e; }
+.ew .ew-day-navigation b { color: #435839; }
+.ew .ew-day-navigation .ew-icon-button { width: 32px; height: 32px; }
+.ew .ew-day-summary-heading { display: flex; align-items: flex-start; gap: 8px; justify-content: space-between; padding: 12px 0 17px; }
+.ew .ew-day-summary-heading h2 { font: 23px/1.3 var(--ew-serif); letter-spacing: -.4px; }
+.ew .ew-day-summary-heading p { margin-top: 6px; color: var(--ew-muted); font-size: 11px; }
+.ew .ew-day-quick-add { display: flex; gap: 6px; padding-bottom: 16px; }
+.ew .ew-day-quick-add > button { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; border: 1px solid #dfe6d5; background: #f8faf3; border-radius: 8px; flex: 1; font-size: 11px; }
+.ew .ew-day-quick-add > button:hover { background: #eaf0e0; border-color: #a9b995; }
+.ew .ew-day-summary-content h3 { font-size: 11px; font-weight: 600; display: flex; gap: 7px; align-items: center; margin-bottom: 10px; }
+.ew .ew-day-summary-content h3 > small { font-size: 9px; font-weight: 500; color: #819071; }
+.ew .ew-summary-plan { display: flex; align-items: center; gap: 9px; text-align: left; width: 100%; padding: 9px 0; }
+.ew .ew-summary-plan > span:nth-child(2) { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.ew .ew-summary-plan strong { font-size: 11px; font-weight: 550; line-height: 1.5; }
+.ew .ew-summary-plan small { color: #778766; font-size: 9px; }
+.ew .ew-summary-plan > span:nth-child(2) > span { font-size: 10px; color: #7b8372; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ew .ew-summary-plan .ew-activity-icon { width: 30px; height: 32px; min-width: 30px; display: grid; place-items: center; border-radius: 8px; background: #edf2e4; }
+.ew .ew-summary-plan:hover { transform: translateX(2px); }
+.ew .ew-summary-looks { margin: 17px 0; padding-top: 15px; border-top: 1px solid #edf0e6; }
+.ew .ew-preview-looks { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.ew .ew-preview-looks > button { display: flex; flex-direction: column; align-items: stretch; text-align: left; border-radius: 11px; overflow: hidden; padding-bottom: 10px; border: 1px solid #e9ecdf; background: #fafbf6; min-width: 0; }
+.ew .ew-preview-looks .ew-outfit-art { height: 122px; background: #f1f2e9; }
+.ew .ew-preview-looks > button > strong { padding: 9px 10px 0; font-size: 11px; font-weight: 550; line-height: 1.4; }
+.ew .ew-preview-looks > button > small { padding: 4px 10px 0; font-size: 9px; color: #78866b; }
+.ew .ew-preview-looks > button:hover { transform: translateY(-3px); box-shadow: 0 5px 18px #39492d0c; }
+.ew .ew-summary-more { font-size: 10px; color: #627a4d; padding: 9px 0; }
+.ew .ew-summary-gear { display: flex; gap: 9px; align-items: center; margin: 12px 0; }
+.ew .ew-summary-gear > button { width: 40px; height: 43px; border-radius: 8px; background: #f3f5ed; padding: 3px; }
+.ew .ew-summary-gear > span { font-size: 10px; color: var(--ew-muted); }
+.ew .ew-summary-footnote { display: flex; align-items: center; gap: 7px; width: 100%; text-align: left; font-size: 10px; color: #78846c; padding: 8px 0; }
+.ew .ew-summary-footnote > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ew .ew-open-day { width: 100%; margin-top: 17px; justify-content: space-between; }
+.ew .ew-empty-tile { width: 100%; display: flex; gap: 10px; align-items: center; text-align: left; padding: 15px 11px; border: 1px dashed #d9e2cc; border-radius: 10px; background: #fbfcf6; color: #7b8b69; font-size: 11px; }
+.ew .ew-empty-tile > span { flex: 1; }
+.ew .ew-empty-tile:hover { background: #f1f6e8; border-color: #9caf82; }
+.ew .ew-empty-tile-tall { min-height: 160px; flex-direction: column; text-align: center; justify-content: center; gap: 9px; }
+.ew .ew-empty-tile-tall > span { flex: 0; display: flex; gap: 5px; align-items: center; }
+.ew .ew-empty-tile-tall strong { color: #526547; font: 19px/1.3 var(--ew-serif); }
+/* Full day preview; editors open above it and return to the same day. */
+.ew .ew-day-dialog { width: min(940px,calc(100vw - 40px)); max-height: 92dvh; border-radius: 19px; }
+.ew .ew-day-dialog .ew-dialog-header { padding: 22px 28px 13px; }
+.ew .ew-day-dialog .ew-dialog-header h2 { font-size: 30px; }
+.ew .ew-day-preview-toolbar { display: flex; justify-content: space-between; gap: 15px; padding: 0 25px 10px; }
+.ew .ew-day-preview-toolbar .ew-day-navigation { min-width: 167px; }
+.ew .ew-day-scene { position: relative; height: 142px; margin: 0 27px 17px; border-radius: 11px; overflow: hidden; }
+.ew .ew-day-scene > div { position: absolute; left: 24px; top: 50%; transform: translateY(-50%); max-width: 60%; }
+.ew .ew-day-scene > div > span { font-size: 11px; color: inherit; opacity: .8; }
+.ew .ew-day-scene h3 { font: 26px/1.2 var(--ew-serif); letter-spacing: -.4px; margin-top: 7px; }
+.ew .ew-day-dialog > .ew-day-quick-add { padding: 0 27px 18px; gap: 10px; }
+.ew .ew-day-dialog > .ew-day-quick-add > button { font-size: 12px; min-height: 43px; }
+.ew .ew-day-preview-body { display: grid; grid-template-columns: 1.05fr 1fr; gap: 29px; padding: 0 27px 30px; }
+.ew .ew-day-preview-body > section { min-width: 0; }
+.ew .ew-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 11px; }
+.ew .ew-section-heading h3 { font-size: 13px; font-weight: 600; }
+.ew .ew-section-heading h3 > span { font-size: 10px; margin-left: 5px; color: #89957a; font-weight: 400; }
+.ew .ew-section-heading .ew-button { min-height: 34px; font-size: 11px; }
+.ew .ew-preview-wardrobe .ew-preview-looks { margin-bottom: 20px; }
+.ew .ew-preview-wardrobe .ew-outfit-art { height: 180px; }
+.ew .ew-preview-timeline .ew-activity { margin-bottom: 12px; }
+.ew .ew-preview-stay, .ew .ew-preview-note { display: flex; align-items: center; gap: 11px; width: 100%; padding: 15px 13px; background: #f6f7f0; border-radius: 10px; margin-top: 13px; text-align: left; }
+.ew .ew-preview-stay > span, .ew .ew-preview-note > span { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+.ew .ew-preview-stay small { font-size: 8px; letter-spacing: 1px; color: #869175; }
+.ew .ew-preview-stay strong, .ew .ew-preview-note strong { font-size: 11px; font-weight: 500; }
+.ew .ew-preview-note { align-items: flex-start; background: #faf7ee; }
+.ew .ew-preview-note > span > span { font-size: 11px; white-space: pre-wrap; overflow-wrap: anywhere; color: #82826d; }
+.ew .ew-preview-gear { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; }
+.ew .ew-preview-gear > button { display: flex; flex-direction: column; align-items: center; border: 1px solid #e9ecdf; border-radius: 9px; overflow: hidden; padding: 7px 5px; text-align: center; }
+.ew .ew-preview-gear .ew-piece { height: 70px; }
+.ew .ew-preview-gear span { font-size: 10px; padding: 6px 0 1px; line-height: 1.4; }
+/* Focused add patterns: essential fields first, optional details on demand. */
+.ew .ew-editor-more { margin: 4px 0 12px; border-top: 1px solid #e5e9dc; }
+.ew .ew-editor-more > summary { cursor: pointer; display: flex; align-items: center; gap: 9px; padding: 17px 0; font-size: 12px; color: #657754; list-style: none; }
+.ew .ew-editor-more > summary::-webkit-details-marker { display: none; }
+.ew .ew-editor-more > summary > svg:last-child { margin-left: auto; transition: transform 180ms ease; }
+.ew .ew-editor-more[open] > summary > svg:last-child { transform: rotate(180deg); }
+.ew .ew-day-editor-tabs { display: flex; gap: 5px; background: #f0f3e9; border-radius: 10px; padding: 5px; margin: 0 0 23px; }
+.ew .ew-day-editor-tabs > button { display: flex; align-items: center; justify-content: center; gap: 7px; flex: 1; min-height: 40px; border-radius: 7px; color: #6c7c5b; font-size: 12px; }
+.ew .ew-day-editor-tabs > button[aria-selected=true] { background: white; color: #425837; box-shadow: 0 2px 7px #3043220b; }
+.ew .ew-suggestion-chips { display: flex; gap: 7px; flex-wrap: wrap; margin: -7px 0 18px; }
+.ew .ew-suggestion-chips > button { padding: 6px 11px; min-height: 34px; font-size: 11px; border: 1px solid #e3e8d9; border-radius: 20px; }
+.ew .ew-suggestion-chips > button:hover { background: #f1f5e9; }
+@media (min-width: 1550px) { .ew .ew-visual-planner { grid-template-columns: minmax(0,1fr) 330px; } .ew .ew-visual-calendar .ew-calendar .ew-trip-week td, .ew .ew-visual-calendar .ew-calendar .ew-trip-week td > button { height: 175px; } .ew .ew-snapshot-pieces { height: 70px; } .ew .ew-snapshot-piece { height: 65px; } .ew .ew-snapshot-plan { font-size: 10px; } }
+@media (max-width: 1150px) { .ew .ew-visual-planner { grid-template-columns: minmax(0,1fr); gap: 21px; } .ew .ew-day-summary { margin-top: 0; } .ew .ew-day-summary-content { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 25px; } .ew .ew-summary-looks { margin: 0; padding: 0; border: 0; } .ew .ew-summary-gear { margin: 0; } .ew .ew-open-day { max-width: 100%; } .ew .ew-hero-scene-controls { top: 16px; } }
+@media (max-width: 680px) {
+  .ew .ew-hero-scene-controls { top: 13px; right: 57px; gap: 5px; }
+  .ew .ew-hero-mood > button { padding: 7px 8px; font-size: 10px; }
+  .ew .ew-hero-mood > button > svg:first-child { display: none; }
+  .ew .ew-hero-content { padding-top: 67px; }
+  .ew .ew-hero-label { flex-wrap: wrap; gap: 7px; }
+  .ew .ew-hero-content h2 { font-size: 32px; max-width: 100%; }
+  .ew .ew-hero-footer { padding: 13px 16px; }
+  .ew .ew-hero-caption { display: none; }
+  .ew .ew-visual-calendar .ew-month-toolbar { padding: 15px 10px 8px; }
+  .ew .ew-visual-calendar .ew-month-toolbar h2 { font-size: 22px; }
+  .ew .ew-visual-calendar .ew-month-toolbar .ew-button { font-size: 10px; padding: 5px; margin-right: 0; }
+  .ew .ew-visual-calendar .ew-month-toolbar .ew-icon-button { width: 30px; height: 36px; }
+  .ew .ew-visual-calendar .ew-calendar th { padding: 8px 5px; font-size: 9px; letter-spacing: 0; }
+  .ew .ew-visual-calendar .ew-calendar td > button { padding: 5px 3px; gap: 3px; }
+  .ew .ew-visual-calendar .ew-calendar .ew-quiet-week td, .ew .ew-visual-calendar .ew-calendar .ew-quiet-week td > button { height: 42px; }
+  .ew .ew-visual-calendar .ew-calendar .ew-trip-week td, .ew .ew-visual-calendar .ew-calendar .ew-trip-week td > button { height: 124px; }
+  .ew .ew-visual-calendar .ew-date-number { font-size: 11px; width: 23px; height: 23px; }
+  .ew .ew-date-flag { display: none; }
+  .ew .ew-snapshot { gap: 5px; }
+  .ew .ew-snapshot-pieces { height: 39px; border-radius: 5px; }
+  .ew .ew-snapshot-piece { height: 35px; width: 50%; }
+  .ew .ew-snapshot-piece:nth-child(3) { display: none; }
+  .ew .ew-snapshot-overflow { height: 16px; min-width: 16px; font-size: 8px; right: -2px; }
+  .ew .ew-snapshot-plan { font-size: 8px; gap: 2px; }
+  .ew .ew-snapshot-plan > svg { display: none; }
+  .ew .ew-snapshot-meta { gap: 3px; font-size: 8px; }
+  .ew .ew-snapshot-meta svg { width: 9px; height: 9px; }
+  .ew .ew-snapshot-add { height: 58px; }
+  .ew .ew-snapshot-add > span { display: none; }
+  .ew .ew-visual-calendar .ew-calendar-footer { padding: 12px 10px; gap: 12px; }
+  .ew .ew-visual-calendar .ew-calendar-footer > span { font-size: 9px; gap: 4px; }
+  .ew .ew-visual-calendar .ew-calendar-footer > small { display: none; }
+  .ew .ew-day-summary { padding: 14px; }
+  .ew .ew-day-summary-content { display: block; }
+  .ew .ew-summary-looks { margin: 18px 0; padding-top: 15px; border-top: 1px solid #edf0e6; }
+  .ew .ew-day-summary .ew-preview-looks .ew-outfit-art { height: 150px; }
+  .ew .ew-day-dialog { width: 100%; max-width: 100%; max-height: 94dvh; margin: auto 0 0; border-radius: 18px 18px 0 0; padding-bottom: env(safe-area-inset-bottom); }
+  .ew .ew-day-dialog .ew-dialog-header { padding: 19px 18px 10px; }
+  .ew .ew-day-dialog .ew-dialog-header h2 { font-size: 25px; }
+  .ew .ew-day-preview-toolbar { padding: 0 16px 8px; }
+  .ew .ew-day-scene { height: 123px; margin: 0 17px 14px; }
+  .ew .ew-day-scene > div { left: 17px; max-width: 68%; }
+  .ew .ew-day-scene h3 { font-size: 23px; }
+  .ew .ew-day-dialog > .ew-day-quick-add { padding: 0 17px 17px; gap: 6px; }
+  .ew .ew-day-dialog > .ew-day-quick-add > button { font-size: 11px; }
+  .ew .ew-day-preview-body { display: flex; flex-direction: column; gap: 24px; padding: 0 17px 24px; }
+  .ew .ew-preview-wardrobe .ew-outfit-art { height: 185px; }
+  .ew .ew-mood-fieldset .ew-mood-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .ew .ew-day-editor-tabs { gap: 2px; }
+  .ew .ew-day-editor-tabs > button { font-size: 11px; gap: 5px; }
+  .ew .ew-field input, .ew .ew-field textarea, .ew .ew-time-control input { font-size: 16px; }
+  .ew .ew-visual-agenda { gap: 9px; }
+  .ew .ew-agenda-day { padding: 11px; }
+}
+@media (max-width: 360px) { .ew .ew-visual-calendar .ew-month-toolbar h2 { font-size: 19px; } .ew .ew-hero-mood > button span { max-width: 94px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ew .ew-snapshot-meta { gap: 2px; } .ew .ew-snapshot-meta > span { gap: 1px; } .ew .ew-preview-wardrobe .ew-outfit-art { height: 150px; } }
+html[data-ew-motion=paused] .ew .ew-scene-animated * { animation-play-state: paused !important; }
+@media (prefers-reduced-motion: reduce) { .ew *, .ew *::before, .ew *::after, .ew .ew-dialog::backdrop { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+@media print { .ew .ew-hero-scene-controls, .ew .ew-picker-panel { display: none !important; } .ew * { animation: none !important; transition: none !important; } }
+/* Keep the SVG's own haze: the legacy white overlay washed out night scenes. */
+.ew .ew-hero-landscape::after { background: none; }
+.ew .ew-hero-landscape > .ew-scene { width: 100%; transform: none; }
+.ew .ew-day-summary .ew-day-gear { display: flex; gap: 8px; margin: 0 0 10px; }
+.ew .ew-day-summary .ew-day-gear > button { width: 52px; padding: 5px; margin: 0; }
+.ew .ew-day-summary .ew-day-gear .ew-piece { height: 40px; width: 40px; }
+.ew .ew-day-summary .ew-day-gear > button > span { display: none; }
+.ew .ew-summary-stay, .ew .ew-summary-note { display: flex; align-items: center; gap: 7px; min-height: 32px; width: 100%; text-align: left; font-size: 10px; color: #78846c; }
+.ew .ew-summary-stay > span, .ew .ew-summary-note > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.ew .ew-summary-stay svg, .ew .ew-summary-note svg { flex-shrink: 0; }
+.ew .ew-trip-notes { padding: 13px 2px; font-size: 12px; color: var(--ew-muted); }
+.ew .ew-trip-notes summary { display: flex; align-items: center; gap: 7px; cursor: pointer; min-height: 36px; }
+.ew .ew-trip-notes p { white-space: pre-wrap; padding: 8px 0; }
+.ew .ew-visual-agenda .ew-agenda-card { display: flex; flex-direction: column; position: relative; align-items: stretch; gap: 11px; padding: 15px; background: white; border: 1px solid var(--ew-line); border-radius: 12px; text-align: left; min-width: 0; }
+.ew .ew-visual-agenda .ew-agenda-card.is-selected { border-color: #94a77b; background: #f7faef; }
+.ew .ew-visual-agenda .ew-agenda-date { display: flex; align-items: baseline; gap: 12px; }
+.ew .ew-visual-agenda .ew-agenda-date small { font-size: 8px; letter-spacing: 1px; color: #81906e; }
+.ew .ew-visual-agenda .ew-agenda-date strong { font: 20px/1.3 var(--ew-serif); }
+.ew .ew-visual-agenda .ew-agenda-detail > strong { display: block; font-size: 11px; font-weight: 500; margin-bottom: 10px; }
+.ew .ew-visual-agenda .ew-snapshot-pieces { height: 90px; }
+.ew .ew-visual-agenda .ew-snapshot-piece { height: 82px; }
+.ew .ew-visual-agenda .ew-snapshot-plan { font-size: 11px; }
+.ew .ew-visual-agenda .ew-agenda-card > svg { position: absolute; right: 12px; top: 18px; }
+.ew .ew-snapshot-overflow-mobile { display: none; }
+@media (max-width:680px) { .ew .ew-hero-content { padding-top: 64px; } .ew .ew-visual-agenda .ew-agenda-date { flex-direction: column; gap: 4px; } .ew .ew-visual-agenda .ew-agenda-date strong { font-size: 18px; } .ew .ew-snapshot-overflow-desktop { display: none; } .ew .ew-snapshot-overflow-mobile { display: grid; } }
+
+html.ew-modal-open .ew .ew-hero .ew-scene-animated * { animation-play-state: paused !important; }
+
+/* Feedback stays inside the active modal without covering its save controls. */
+.ew-dialog-feedback:empty { display: none; }
+.ew-dialog-feedback > .ew-feedback { position: relative; inset: auto; width: auto; max-width: none; margin: 12px 20px; }
+.ew-dialog-feedback .ew-toast { max-width: 100%; }

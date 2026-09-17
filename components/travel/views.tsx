@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   CATEGORIES,
   uid,
@@ -7,16 +7,12 @@ import {
   tripDates,
   type Workspace,
   type Trip,
-  type Activity,
 } from "@/lib/model";
 import {
   dateLabel,
   dayActivities,
   dayItems,
   money,
-  monthDays,
-  shiftMonth,
-  overlaps,
   today,
 } from "@/lib/planning";
 import type { Modal as EditorModal } from "./editor";
@@ -29,7 +25,9 @@ import {
   Piece,
   Search,
 } from "./primitives";
-import { activityIcon } from "./icons";
+import { VisualCalendar, DaySnapshotArt } from "./calendar";
+import { DaySummary, DayPreview } from "./day-preview";
+import { HeroMood, MotionToggle } from "./moods";
 import { Landscape } from "./landscape";
 export type View =
   | "planner"
@@ -68,15 +66,16 @@ export function TripHero({
   trip,
   open,
   navigate,
-}: Pick<ScreenProps, "w" | "trip" | "open" | "navigate">) {
+  change,
+}: Pick<ScreenProps, "w" | "trip" | "open" | "navigate" | "change">) {
   if (!trip) return null;
   const dates = tripDates(trip),
     pack = packing(w, trip),
     planned = dates.filter((d) => dayItems(w, trip, d).outfits.length).length;
   return (
-    <section className="ew-hero" aria-label="Trip overview">
+    <section className={`ew-hero ew-mood-${trip.theme || "mountains"}`} aria-label="Trip overview">
       <div className="ew-hero-landscape">
-        <Landscape theme={trip.theme || "mountains"} />
+        <Landscape key={trip.theme} theme={trip.theme || "mountains"} />
       </div>
       <div className="ew-hero-content">
         <div className="ew-hero-label">
@@ -110,6 +109,7 @@ export function TripHero({
           </span>
         </div>
       </div>
+      <div className="ew-hero-scene-controls"><HeroMood value={trip.theme || "mountains"} onChange={mood => change(d => { const current = d.trips.find(t => t.id === trip.id); if (current) current.theme = mood; })} /><MotionToggle /></div>
       <button
         className="ew-hero-edit"
         onClick={() => open({ kind: "trip", id: trip.id })}
@@ -120,7 +120,7 @@ export function TripHero({
       </button>
       <div className="ew-hero-footer">
         <span className="ew-hero-caption">
-          LESS TO THINK ABOUT. MORE TO LOOK FORWARD TO.
+          A LITTLE PLANNING. A LOT OF LIVING.
         </span>
         <div>
           <span>
@@ -146,584 +146,35 @@ export function TripHero({
     </section>
   );
 }
-function ActivityCard({
-  a,
-  props,
-  conflict,
-}: {
-  a: Activity;
-  props: ScreenProps;
-  conflict?: boolean;
-}) {
-  const { w, trip, open, remove, change } = props;
-  return (
-    <article className={`ew-activity ${a.completed ? "ew-completed" : ""}`}>
-      <span
-        className={`ew-activity-icon ew-type-${a.category.replaceAll(/[^a-z]/gi, "").toLowerCase()}`}
-      >
-        <Icon name={activityIcon(a.category)} size={15} />
-      </span>
-      <div className="ew-activity-body">
-        <span className="ew-activity-time">
-          {a.time || "All day"}
-          {a.endTime ? ` – ${a.endTime}` : ""}
-          <i>·</i>
-          {a.category}
-        </span>
-        <button
-          className="ew-activity-title"
-          onClick={() => open({ kind: "activity", id: a.id, date: a.date })}
-        >
-          {a.title}
-        </button>
-        {a.place && (
-          <a
-            className="ew-place"
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.place)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon name="location" size={12} />
-            {a.place}
-            <Icon name="external" size={11} />
-          </a>
-        )}
-        {a.cost > 0 && (
-          <span className="ew-small">{money(a.cost, trip?.currency)}</span>
-        )}
-        {a.outfitId && (
-          <span className="ew-activity-outfit">
-            <Icon name="hanger" size={13} />
-            {w.outfits.find((o) => o.id === a.outfitId)?.name}
-          </span>
-        )}
-        {a.notes && <p className="ew-activity-notes">{a.notes}</p>}
-        {a.link && (
-          <a
-            className="ew-text-link"
-            href={a.link}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Reference <Icon name="external" size={12} />
-          </a>
-        )}
-        {conflict && (
-          <span className="ew-overlap">
-            <Icon name="warning" size={12} />
-            Overlaps another plan
-          </span>
-        )}
-        <div className="ew-activity-tools">
-          <label className="ew-check-line">
-            <input
-              type="checkbox"
-              checked={!!a.completed}
-              onChange={(e) =>
-                change((d) => {
-                  const activity = d.trips
-                    .find((t) => t.id === trip?.id)
-                    ?.activities.find((i) => i.id === a.id);
-                  if (activity) activity.completed = e.target.checked;
-                })
-              }
-            />
-            Done
-          </label>
-          <IconButton
-            icon="trash"
-            label={`Delete ${a.title}`}
-            onClick={() => remove("activity", a.id)}
-          />
-        </div>
-      </div>
-      <IconButton
-        icon="edit"
-        label={`Edit ${a.title}`}
-        onClick={() => open({ kind: "activity", id: a.id, date: a.date })}
-      />
-    </article>
-  );
-}
-function Calendar({ props }: { props: ScreenProps }) {
-  const { trip, w, day, month, selectDay, setMonth } = props,
-    ref = useRef<HTMLTableElement>(null);
-  if (!trip) return null;
-  const dates = monthDays(month),
-    firstEnabled = dates.find((d) => d >= trip.start && d <= trip.end);
-  const focused = dates.includes(day) ? day : firstEnabled;
-  function key(e: React.KeyboardEvent, date: string) {
-    const weekday = (new Date(date).getUTCDay() + 6) % 7;
-    const amount = (
-      {
-        ArrowLeft: -1,
-        ArrowRight: 1,
-        ArrowUp: -7,
-        ArrowDown: 7,
-        Home: -weekday,
-        End: 6 - weekday,
-      } as Record<string, number>
-    )[e.key];
-    if (amount === undefined || !trip) return;
-    e.preventDefault();
-    const target = new Date(Date.parse(date) + amount * 86400000)
-      .toISOString()
-      .slice(0, 10);
-    if (target < trip.start || target > trip.end) return;
-    selectDay(target);
-    requestAnimationFrame(() =>
-      ref.current
-        ?.querySelector<HTMLButtonElement>(`[data-date="${target}"]`)
-        ?.focus(),
-    );
-  }
-  return (
-    <div className="ew-calendar-card">
-      <div className="ew-month-toolbar">
-        <h2>{dateLabel(`${month}-01`, { month: "long", year: "numeric" })}</h2>
-        <div>
-          <Button
-            variant="quiet"
-            onClick={() => {
-              setMonth(today().slice(0, 7));
-              if (today() >= trip.start && today() <= trip.end)
-                selectDay(today());
-            }}
-          >
-            Today
-          </Button>
-          <IconButton
-            label="Previous month"
-            icon="left"
-            disabled={month <= "1900-01"}
-            onClick={() => setMonth(shiftMonth(month, -1))}
-          />
-          <IconButton
-            label="Next month"
-            icon="right"
-            disabled={month >= "2200-12"}
-            onClick={() => setMonth(shiftMonth(month, 1))}
-          />
-        </div>
-      </div>
-      <table
-        ref={ref}
-        className="ew-calendar"
-        aria-label={`${dateLabel(`${month}-01`, { month: "long", year: "numeric" })} trip calendar`}
-      >
-        <thead>
-          <tr>
-            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-              <th key={d} scope="col">
-                {d}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: 6 }, (_, week) => (
-            <tr key={week}>
-              {dates.slice(week * 7, week * 7 + 7).map((date) => {
-                const inTrip = date >= trip.start && date <= trip.end,
-                  events = dayActivities(trip, date),
-                  looks = dayItems(w, trip, date).outfits;
-                return (
-                  <td
-                    key={date}
-                    className={`${inTrip ? "ew-in-trip" : ""} ${day === date ? "ew-selected-day" : ""} ${!date.startsWith(month) ? "ew-other-month" : ""}`}
-                  >
-                    <button
-                      type="button"
-                      data-date={date}
-                      disabled={!inTrip}
-                      tabIndex={focused === date ? 0 : -1}
-                      aria-pressed={day === date}
-                      aria-current={date === today() ? "date" : undefined}
-                      aria-label={`${dateLabel(date, { weekday: "long", day: "numeric", month: "long" })}, ${events.length} activities, ${looks.length} outfits${inTrip ? "" : ", outside trip"}`}
-                      onClick={() => selectDay(date)}
-                      onKeyDown={(e) => key(e, date)}
-                    >
-                      <span className="ew-date-number">
-                        {Number(date.slice(-2))}
-                      </span>
-                      {date === trip.start && (
-                        <small className="ew-date-flag">LET’S GO</small>
-                      )}
-                      <span className="ew-cell-events">
-                        {events.slice(0, 2).map((a) => (
-                          <span
-                            key={a.id}
-                            className={`ew-event-chip ew-type-${a.category.replaceAll(/[^a-z]/gi, "").toLowerCase()}`}
-                          >
-                            <i />
-                            {a.title}
-                          </span>
-                        ))}
-                        {events.length > 2 && (
-                          <small>+{events.length - 2} more</small>
-                        )}
-                        {looks.length > 0 && (
-                          <span className="ew-outfit-chip">
-                            <Icon name="hanger" size={12} />
-                            <span>
-                              {looks[0].name}
-                              {looks.length > 1 ? ` +${looks.length - 1}` : ""}
-                            </span>
-                          </span>
-                        )}
-                      </span>
-                      <span className="ew-cell-dots" aria-hidden="true">
-                        {events.slice(0, 3).map((a) => (
-                          <i
-                            key={a.id}
-                            className={`ew-dot-${a.category.replaceAll(/[^a-z]/gi, "").toLowerCase()}`}
-                          />
-                        ))}
-                        {looks.length > 0 && <i className="ew-dot-look" />}
-                      </span>
-                    </button>
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="ew-calendar-footer">
-        <span>
-          <i className="ew-dot-explore" />
-          Explore
-        </span>
-        <span>
-          <i className="ew-dot-fooddrink" />
-          Food
-        </span>
-        <span>
-          <i className="ew-dot-travel" />
-          Travel
-        </span>
-        <span>
-          <i className="ew-dot-look" />
-          Outfit
-        </span>
-        <small>Destination-local plans</small>
-      </div>
-      {!firstEnabled && (
-        <div className="ew-month-empty">
-          No trip dates in this month.{" "}
-          <Button
-            variant="quiet"
-            onClick={() => {
-              selectDay(trip.start);
-            }}
-          >
-            Go to your trip <Icon name="arrow" size={12} />
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
 export function Planner({ props }: { props: ScreenProps }) {
-  const { w, trip, day, open, selectDay } = props,
-    [mode, setMode] = useState<"calendar" | "itinerary">("calendar");
-  if (!trip)
-    return (
-      <Empty
-        title="Your next chapter starts here."
-        action={
-          <Button
-            variant="primary"
-            icon="plus"
-            onClick={() => open({ kind: "trip" })}
-          >
-            Plan a trip
-          </Button>
-        }
-      >
-        Choose your dates. We’ll keep the plans, outfits and packing together.
-      </Empty>
-    );
-  const details = trip.days[day],
-    events = dayActivities(trip, day),
-    looks = dayItems(w, trip, day),
-    collisions = overlaps(events),
-    dates = tripDates(trip);
-  return (
-    <>
-      <TripHero {...props} />
-      <div className="ew-planner-layout">
-        <section className="ew-calendar-section">
-          <div className="ew-planner-toolbar">
-            <div className="ew-segmented" aria-label="Planner view">
-              <button
-                aria-pressed={mode === "calendar"}
-                onClick={() => setMode("calendar")}
-              >
-                <Icon name="calendar" size={15} />
-                Calendar
-              </button>
-              <button
-                aria-pressed={mode === "itinerary"}
-                onClick={() => setMode("itinerary")}
-              >
-                <Icon name="list" size={15} />
-                Itinerary
-              </button>
-            </div>
-            <span className="ew-italic">A plan, not a rulebook.</span>
-          </div>
-          {mode === "calendar" ? (
-            <Calendar props={props} />
-          ) : (
-            <div className="ew-itinerary">
-              {dates.map((date, i) => (
-                <section
-                  key={date}
-                  className={`ew-itinerary-day ${date === day ? "ew-active" : ""}`}
-                >
-                  <div className="ew-itinerary-date">
-                    <span>{dateLabel(date, { weekday: "short" })}</span>
-                    <b>{date.slice(-2)}</b>
-                    <small>{dateLabel(date, { month: "short" })}</small>
-                  </div>
-                  <div>
-                    <div className="ew-between">
-                      <button
-                        className="ew-itinerary-heading"
-                        onClick={() => selectDay(date)}
-                      >
-                        <small>DAY {i + 1}</small>
-                        <h3>
-                          {trip.days[date]?.title ||
-                            "Room for a little adventure"}
-                        </h3>
-                      </button>
-                      <IconButton
-                        label={`Add activity on ${date}`}
-                        icon="plus"
-                        onClick={() => open({ kind: "activity", date })}
-                      />
-                    </div>
-                    {dayActivities(trip, date).map((a) => (
-                      <button
-                        className="ew-itinerary-event"
-                        onClick={() =>
-                          open({ kind: "activity", id: a.id, date })
-                        }
-                        key={a.id}
-                      >
-                        <time>{a.time || "All day"}</time>
-                        <Icon name={activityIcon(a.category)} size={15} />
-                        <span>
-                          <strong>{a.title}</strong>
-                          <small>{a.place}</small>
-                        </span>
-                        <Icon name="right" size={13} />
-                      </button>
-                    ))}
-                    {!dayActivities(trip, date).length && (
-                      <p className="ew-muted">A little room for spontaneity.</p>
-                    )}
-                    {dayItems(w, trip, date).outfits.map((o) => (
-                      <span key={o.id} className="ew-itinerary-look">
-                        <Icon name="hanger" size={13} />
-                        {o.name}
-                      </span>
-                    ))}
-                    {trip.days[date]?.stay && (
-                      <p className="ew-small">
-                        <Icon name="stay" size={12} /> {trip.days[date].stay}
-                      </p>
-                    )}
-                  </div>
-                </section>
-              ))}
-            </div>
-          )}
-          <p className="ew-planner-tip">
-            <Icon name="leaf" size={17} />
-            Pick a day to connect the places you’ll go with the things you’ll
-            wear.
-          </p>
-          {trip.notes && (
-            <div className="ew-trip-notes">
-              <h3>
-                <Icon name="note" />
-                Trip notes
-              </h3>
-              <p>{trip.notes}</p>
-            </div>
-          )}
-        </section>
-        <aside className="ew-day-panel" aria-label="Selected day">
-          <div className="ew-between">
-            <div>
-              <p className="ew-eyebrow">
-                DAY {dates.indexOf(day) + 1} <span>/ {dates.length}</span>
-              </p>
-              <h2>
-                {dateLabel(day, {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "short",
-                })}
-              </h2>
-            </div>
-            <IconButton
-              icon="edit"
-              label="Edit day details"
-              onClick={() => open({ kind: "day", date: day })}
-            />
-          </div>
-          <button
-            className="ew-day-subtitle"
-            onClick={() => open({ kind: "day", date: day })}
-          >
-            {details?.title || "Give this day a little direction"}
-            <Icon name="edit" size={12} />
-          </button>
-          <div className="ew-day-section">
-            <div className="ew-section-heading">
-              <h3>
-                The plan <span>{events.length}</span>
-              </h3>
-              <Button
-                variant="quiet"
-                icon="plus"
-                onClick={() => open({ kind: "activity", date: day })}
-              >
-                Add
-              </Button>
-            </div>
-            {events.length ? (
-              events.map((a) => (
-                <ActivityCard
-                  key={a.id}
-                  a={a}
-                  props={props}
-                  conflict={collisions.has(a.id)}
-                />
-              ))
-            ) : (
-              <button
-                className="ew-day-empty"
-                onClick={() => open({ kind: "activity", date: day })}
-              >
-                <Icon name="plus" />
-                <span>What’s on the horizon?</span>
-                <small>Add a place, event or a little adventure.</small>
-              </button>
-            )}
-          </div>
-          <div className="ew-day-section ew-day-outfits">
-            <div className="ew-section-heading">
-              <h3>
-                What to wear <span>{looks.outfits.length}</span>
-              </h3>
-              <Button
-                variant="quiet"
-                onClick={() => open({ kind: "day", date: day })}
-              >
-                {looks.outfits.length ? "Change" : "Choose"}
-              </Button>
-            </div>
-            <div className="ew-day-look-grid">
-              {looks.outfits.map((o) => (
-                <div className="ew-day-look" key={o.id}>
-                  <button
-                    className="ew-day-look-art"
-                    onClick={() => open({ kind: "outfit", id: o.id })}
-                    aria-label={`Edit outfit ${o.name}`}
-                  >
-                    <span className="ew-look-occasion">
-                      {o.occasion || "Everyday"}
-                    </span>
-                    <OutfitArt w={w} outfit={o} />
-                  </button>
-                  <div className="ew-look-caption">
-                    <div>
-                      <strong>{o.name}</strong>
-                      <small>
-                        {o.items.length} pieces ·{" "}
-                        {o.items.reduce(
-                          (n, id) =>
-                            n + (w.items.find((i) => i.id === id)?.weight || 0),
-                          0,
-                        )}{" "}
-                        g
-                      </small>
-                    </div>
-                    <Icon name="hanger" size={16} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            {!looks.outfits.length && (
-              <button
-                className="ew-day-empty"
-                onClick={() => open({ kind: "day", date: day })}
-              >
-                <Icon name="hanger" size={23} />
-                <span>A look for this day</span>
-                <small>Choose outfits from your wardrobe.</small>
-              </button>
-            )}
-          </div>
-          <div className="ew-day-section">
-            <div className="ew-section-heading">
-              <h3>Don’t leave without</h3>
-              <Button
-                variant="quiet"
-                onClick={() => open({ kind: "day", date: day })}
-              >
-                Edit
-              </Button>
-            </div>
-            {looks.gear.length ? (
-              <div className="ew-day-gear">
-                {looks.gear.map((i) => (
-                  <button
-                    key={i.id}
-                    onClick={() => open({ kind: "item", id: i.id })}
-                  >
-                    <Piece item={i} />
-                    <span>{i.name}</span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="ew-muted">
-                Add a camera, rain layer or other daily essentials.
-              </p>
-            )}
-          </div>
-          <button
-            className="ew-stay-note"
-            onClick={() => open({ kind: "day", date: day })}
-          >
-            <Icon name="stay" />
-            <span>
-              <small>STAYING AT</small>
-              {details?.stay || "Add tonight’s accommodation"}
-            </span>
-            <Icon name="edit" size={12} />
-          </button>
-          <button
-            className="ew-day-note"
-            onClick={() => open({ kind: "day", date: day })}
-          >
-            <Icon name="note" size={16} />
-            <span>
-              <strong>A note for the day</strong>
-              {details?.notes ||
-                "A booking detail, a reminder, a little local tip…"}
-            </span>
-          </button>
-        </aside>
-      </div>
-    </>
-  );
+  const { w, trip, day, open, selectDay } = props;
+  const [mode, setMode] = useState<"calendar" | "itinerary">("calendar");
+  const [preview, setPreview] = useState(false);
+  if (!trip) return <Empty title="Your next chapter starts here." action={<Button variant="primary" icon="plus" onClick={() => open({ kind: "trip" })}>Plan a trip</Button>}>Choose your dates. The rest will find its place.</Empty>;
+  function showDay(date: string) { selectDay(date); setPreview(true); }
+  return <>
+    <TripHero {...props} />
+    <div className="ew-planner-layout ew-visual-planner">
+      <section className="ew-calendar-section">
+        <div className="ew-planner-toolbar">
+          <div className="ew-segmented" aria-label="Planner view">
+            <button aria-pressed={mode === "calendar"} onClick={() => setMode("calendar")}><Icon name="calendar" size={15} />Calendar</button>
+            <button aria-pressed={mode === "itinerary"} onClick={() => setMode("itinerary")}><Icon name="list" size={15} />Itinerary</button>
+          </div><span className="ew-italic">A plan, not a rulebook.</span>
+        </div>
+        {mode === "calendar" ? <VisualCalendar props={props} onPreview={showDay} /> : <div className="ew-visual-agenda">{tripDates(trip).map((date, index) => {
+          const events = dayActivities(trip, date);
+          return <button type="button" key={date} className={`ew-agenda-card ${day === date ? "is-selected" : ""}`} onClick={() => showDay(date)} aria-label={`Preview ${dateLabel(date, { weekday: "long", day: "numeric", month: "long" })}`}>
+            <span className="ew-agenda-date"><small>DAY {index + 1}</small><strong>{dateLabel(date, { weekday: "short", day: "numeric", month: "short" })}</strong></span>
+            <span className="ew-agenda-detail"><strong>{trip.days[date]?.title || events[0]?.title || "Room for a little adventure"}</strong><DaySnapshotArt w={w} trip={trip} date={date} roomy /></span><Icon name="right" size={16} />
+          </button>;
+        })}</div>}
+        {trip.notes && <details className="ew-trip-notes"><summary><Icon name="note" size={15} />Trip notes</summary><p>{trip.notes}</p></details>}
+      </section>
+      <DaySummary props={props} onExpand={() => setPreview(true)} />
+    </div>
+    {preview && <DayPreview props={props} onDismiss={() => setPreview(false)} />}
+  </>;
 }
 export function Wardrobe({
   props,
@@ -1216,7 +667,7 @@ export function Trips({ props }: { props: ScreenProps }) {
                 onClick={() => navigate("planner", t)}
                 aria-label={`Open ${t.name}`}
               >
-                <Landscape theme={t.theme || "mountains"} />
+                <Landscape theme={t.theme || "mountains"} animated={false} />
                 <span className="ew-pill">
                   {t.sample
                     ? "SAMPLE TRIP"
