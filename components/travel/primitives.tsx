@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import type { Item, Outfit, Workspace } from "@/lib/model";
 import { Garment } from "./garment";
+import { Select } from "./pickers";
 import { Icon, type IconName } from "./icons";
 export { Icon } from "./icons";
 export function Button({
@@ -64,17 +65,17 @@ export function Choice({
   label?: string;
 }) {
   return (
-    <select
+    <Select
       aria-label={label || placeholder}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={onChange}
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
           {o.label}
         </option>
       ))}
-    </select>
+    </Select>
   );
 }
 export function Piece({
@@ -146,6 +147,7 @@ export function Modal({
   children,
   onDismiss,
   wide = false,
+  className = "",
 }: {
   title: string;
   eyebrow?: string;
@@ -153,6 +155,7 @@ export function Modal({
   children: ReactNode;
   onDismiss: () => void;
   wide?: boolean;
+  className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null),
     heading = React.useId(),
@@ -170,7 +173,7 @@ export function Modal({
   return (
     <dialog
       ref={ref}
-      className={`ew-dialog ${wide ? "ew-dialog-wide" : ""}`}
+      className={`ew-dialog ${wide ? "ew-dialog-wide" : ""} ${className}`}
       aria-labelledby={heading}
       aria-describedby={description ? desc : undefined}
       onCancel={(e) => {
@@ -201,6 +204,7 @@ export function Modal({
         </div>
         <IconButton icon="close" label={`Close ${title}`} onClick={onDismiss} />
       </div>
+      <div className="ew-dialog-feedback" />
       {children}
     </dialog>
   );
@@ -295,9 +299,6 @@ export function OutfitPicker({
       <legend>
         Outfits for this day<small>{selected.length} selected</small>
       </legend>
-      <p className="ew-muted">
-        Pack once, wear again. Choose more than one look for a full day.
-      </p>
       <div className="ew-look-picker">
         {w.outfits.map((o) => (
           <label

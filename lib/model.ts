@@ -102,6 +102,8 @@ export const CURRENCIES = [
   "CAD",
   "AUD",
 ] as const;
+export const MOODS = ["mountains", "coast", "city", "forest", "desert", "snow", "sunset", "night"] as const;
+export type Mood = (typeof MOODS)[number];
 export type Trip = {
   id: string;
   name: string;
@@ -116,7 +118,7 @@ export type Trip = {
   days: Record<string, Day>;
   extras: Extra[];
   packed: string[];
-  theme?: "mountains" | "coast" | "city";
+  theme?: Mood;
   notes?: string;
   sample?: boolean;
 };
@@ -392,7 +394,7 @@ function parseTrip(value: unknown): Trip {
     packed: ids(v.packed, "packed items", 2000),
     theme: choice(
       v.theme ?? "mountains",
-      ["mountains", "coast", "city"] as const,
+      MOODS,
       "cover",
     ),
     notes: text(v.notes ?? "", "Trip notes", 5000),

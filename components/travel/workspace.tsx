@@ -25,6 +25,8 @@ import {
 } from "@/lib/backup";
 import { Editor, type Modal as EditorModal, type EditorResult } from "./editor";
 import { Button, Icon, IconButton, Modal } from "./primitives";
+import { Select } from "./pickers";
+import { FeedbackLayer } from "./feedback-layer";
 import type { IconName } from "./icons";
 import {
   Planner,
@@ -523,15 +525,15 @@ function WorkspaceApp() {
       ));
   const tripSelect = (mobile = false) =>
     w.trips.length > 0 && (
-      <label className={mobile ? "ew-mobile-trip" : "ew-trip-select"}>
+      <div className={mobile ? "ew-mobile-trip" : "ew-trip-select"}>
         <span className={mobile ? "ew-sr-only" : "ew-eyebrow"}>
           {mobile ? "Current trip on mobile" : "CURRENT TRIP"}
         </span>
-        <select
+        <Select
           aria-label={mobile ? "Current trip on mobile" : "Current trip"}
           value={trip?.id || ""}
-          onChange={(e) => {
-            const t = w.trips.find((t) => t.id === e.target.value);
+          onChange={(value) => {
+            const t = w.trips.find((t) => t.id === value);
             if (t) navigate(route.view, t);
           }}
         >
@@ -540,8 +542,8 @@ function WorkspaceApp() {
               {t.name}
             </option>
           ))}
-        </select>
-      </label>
+        </Select>
+      </div>
     );
   return (
     <div className="ew">
@@ -689,7 +691,7 @@ function WorkspaceApp() {
               )}
             </div>
           </div>
-          {route.view === "planner" && <Planner props={props} />}
+          {route.view === "planner" && <Planner key={trip?.id || "empty"} props={props} />}
           {(route.view === "wardrobe" || route.view === "outfits") && (
             <Wardrobe
               key={route.view}
@@ -990,7 +992,7 @@ function WorkspaceApp() {
           </footer>
         </Modal>
       )}
-      <div className="ew-feedback" aria-live="polite" aria-atomic="true">
+      <FeedbackLayer><div className="ew-feedback" aria-live="polite" aria-atomic="true">
         {toast && (
           <div className={`ew-toast ${toast.error ? "ew-toast-error" : ""}`}>
             <Icon name={toast.error ? "warning" : "check"} size={18} />
@@ -1023,7 +1025,7 @@ function WorkspaceApp() {
             Undo last deletion
           </button>
         )}
-      </div>
+      </div></FeedbackLayer>
     </div>
   );
 }
