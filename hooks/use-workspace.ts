@@ -20,15 +20,14 @@ export function useWorkspace(onLoaded: (w: Workspace) => void) {
     } finally { clearTimeout(timeout); aborters.current.delete(controller); }
   }, []);
   const load = useCallback(async () => {
-    if (flight.current) { setError('Wait for the current save before reloading.'); return; }
+    if (flight.current) return;
     const token = ++epoch.current;
     if (timer.current) clearTimeout(timer.current);
-    setLoadError(''); setState('loading');
     try {
       const data = await request(), next = workspaceSchema.parse(data.workspace);
       if (!alive.current || token !== epoch.current) return;
       latest.current = next; revision.current = data.revision!; generation.current = 0; saved.current = 0; blocked.current = false;
-      setW(next); setError(''); setState('saved'); setDirty(false); callback.current(next);
+      setW(next); setLoadError(''); setError(''); setState('saved'); setDirty(false); callback.current(next);
     } catch (e) {
       if (!alive.current || token !== epoch.current) return;
       const message = e instanceof Error ? e.message : 'Could not load the workspace.';
@@ -67,6 +66,16 @@ export function useWorkspace(onLoaded: (w: Workspace) => void) {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => { void flush(); }, 400);
   }, [flush]);
+  const reload = useCallback(async () => {
+    if (flight.current) { setError('Wait for the current save before reloading.'); return; }
+    setLoadError(''); setState('loading');
+    await load();
+  }, [load]);
+  const dispose = useCallback(() => {
+    alive.current = false; epoch.current++;
+    if (timer.current) clearTimeout(timer.current);
+    aborters.current.forEach(controller => controller.abort());
+  }, []);
   useEffect(() => {
     alive.current = true; void load();
     const beforeUnload = (e: BeforeUnloadEvent) => { if (generation.current !== saved.current) { e.preventDefault(); e.returnValue = ''; } };
@@ -74,10 +83,10 @@ export function useWorkspace(onLoaded: (w: Workspace) => void) {
     const visibility = () => { if (document.visibilityState === 'hidden') void flush(); };
     window.addEventListener('beforeunload', beforeUnload); window.addEventListener('online', online); document.addEventListener('visibilitychange', visibility);
     return () => {
-      alive.current = false; epoch.current++; if (timer.current) clearTimeout(timer.current); aborters.current.forEach(c => c.abort());
+      dispose();
       window.removeEventListener('beforeunload', beforeUnload); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', visibility);
     };
-  }, [load, flush]);
+  }, [load, flush, dispose]);
   const status = ({ loading: 'Loading workspace…', saved: 'All changes saved', pending: 'Unsaved changes', saving: 'Saving…', error: 'Save needs attention', conflict: 'Save conflict' } as const)[state];
-  return { w, state, status, error, loadError, latest, load, flush, change, dirty };
+  return { w, state, status, error, loadError, latest, load: reload, flush, change, dirty };
 }
