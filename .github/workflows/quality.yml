@@ -1,0 +1,42 @@
+name: Elsewhere quality
+on:
+  push:
+    branches: [main, 'fix/calendar-wardrobe-ui-completion']
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: elsewhere-quality-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Type check
+        run: npm run typecheck
+      - name: Domain regressions
+        run: node --experimental-strip-types --test tests/*.test.ts
+      - name: Build application
+        run: npm run build
+      - name: Collect temporary UI verification runtime
+        if: always()
+        run: |
+          if test -d node_modules/react; then
+            mkdir -p verification
+            tar -czf verification/ui-runtime.tgz node_modules/react node_modules/react-dom node_modules/scheduler node_modules/@types/react node_modules/@types/react-dom node_modules/csstype
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-verification-runtime
+          path: verification/
+          if-no-files-found: ignore
+          retention-days: 1
