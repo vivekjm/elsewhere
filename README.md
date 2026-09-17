@@ -1,61 +1,90 @@
 # Elsewhere
 
-Calendar-first trip planning: daily activities, wardrobe, reusable outfits, and connected packing. Built with React 19, TypeScript, Vinext and Cloudflare Workers through ChatGPT Sites.
+The trip, all together. Calendar-first travel planning that connects each day's places and activities to what you'll wear and what you'll pack.
 
-## Development
+Built with **React 19, TypeScript, Vinext and Cloudflare Workers**. The interface uses a warm paper/olive design, responsive desktop and mobile navigation, and local SVG outfit illustrations. Existing visitor-scoped D1 workspaces and private R2 photo storage are preserved.
 
-Use Node.js 22.13+ (Node 24 recommended).
+## Run locally
+
+Use **Node.js 22.13 or newer** and npm.
 
 ```sh
 npm ci
-npm run dev
+npm run build
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_friendly_morlun.sql
+npm run start -- --port 4173
+```
+
+Open `http://127.0.0.1:4173`. The migration command prepares local storage, not the hosted database. For hot-reloading development, use `npm run dev` after provisioning the local bindings. Keep the checked-in lockfile and framework/hosting scripts.
+
+## What works together
+
+**Trips and calendar.** Create, edit, duplicate and delete trips. Choose dates, destination, travellers, currency, estimated budget and luggage target. Calendar and itinerary views share the same selected day. Browser back/forward and URL hashes restore the view and selected trip. Keyboard arrows and Home/End navigate the calendar.
+
+**Each day.** Schedule timed or all-day activities with places, reference links, notes, estimated costs and optional end times. Attach an outfit and additional clothes/equipment to an activity. Assign several outfits and essentials to the whole day, along with a title, accommodation and notes. Overlapping timed activities receive a visible warning.
+
+**Wardrobe and outfits.** Search and filter clothing, choose a garment illustration and colour, or upload a JPEG, PNG or WebP photo. Record per-piece weights and notes. Combine pieces into reusable outfits with an occasion. Missing or inaccessible photos fall back to illustrations rather than breaking the layout.
+
+**Connected packing.** Daily and activity outfits plus equipment produce one deduplicated list of physical items. Reuse a jacket all week without packing seven jackets. Add manual essentials by category, quantity and per-piece weight, mark items packed, and see progress and the total known weight. Budgets and luggage targets are planning estimates, not live prices or airline allowances.
+
+**Recovery and exports.** Destructive changes require confirmation and expose undo until the next edit. Shortening a trip cannot silently remove activities or day notes, stays, looks or gear. Moving a trip can shift its entire itinerary. Download calendar events, a packing CSV, or a printable itinerary. Backups can include the actual photo bytes and be restored in another visitor workspace.
+
+## Data and privacy
+
+No account or ChatGPT login is required. A random **HttpOnly, SameSite visitor cookie** identifies the workspace. D1 stores that visitor's plans; R2 stores photos under that visitor's private namespace. Sharing the site's public URL does not share your plans.
+
+Clearing cookies or changing browsers creates a different workspace. **Export a photo-inclusive JSON backup first.** Restore checks the entire file and asks before replacing anything. Photos are uploaded into the receiving visitor's private namespace before the restored workspace is applied. Data-only backups retain private image references and do not transfer the photos.
+
+The hosted persisted schema remains `version: 1`, with backward-compatible optional fields. Existing workspaces keep their IDs and storage. Import also supports the earlier portable HTML and React `schemaVersion: 1` / `schemaVersion: 2` backups. New portable backup envelopes use `backupVersion: 2` and support up to 24 MB. Wardrobe photo uploads remain limited to 5 MB each.
+
+Autosaves serialize optimistic-revision writes. A failed save leaves edits in the current tab and exposes retry. A concurrent edit conflict blocks further writes rather than overwriting the newer server data; back up your edits before reloading the server version. This is **not an offline-synced account**: keep the tab open until a failed save is resolved. Accounts, shared editing, cross-device automatic sync and live weather are not included.
+
+The Lisbon itinerary is illustrative sample data, separately copied for each new visitor. It is not a booking or destination recommendation.
+
+## Project layout
+
+```text
+app/page.tsx                    React entry point
+app/globals.css                 Framework tokens and imports
+app/elsewhere.css               Scoped responsive design system
+components/travel/workspace.tsx Navigation, editor coordination and recovery
+components/travel/views.tsx     Calendar, itinerary, wardrobe, packing and trips
+components/travel/editor.tsx    Accessible editing dialogs
+components/travel/primitives.tsx Shared controls and outfit cards
+components/travel/garment.tsx   Local garment illustrations and photo fallback
+hooks/use-workspace.ts          Serialized loading and optimistic autosaves
+lib/model.ts                   Typed domain model and validation
+lib/planning.ts                Calendar, trip date changes and duplication
+lib/backup.ts                  Backup migration and private photo round-trips
+lib/exports.ts                 Calendar, CSV and download helpers
+app/api/                       Existing visitor-scoped workspace and photo APIs
+scripts/, db/, drizzle/         Existing hosting/build and storage setup
+```
+
+## Verification
+
+```sh
 npm run typecheck
-npm test
+npm run lint
+node --experimental-strip-types --test tests/*.test.ts
 npm run build
 ```
 
-The app has no ChatGPT login or account requirement. Each visitor receives a random, HttpOnly, SameSite cookie. D1 holds that visitor’s workspace; R2 holds their wardrobe photos. Clearing cookies or moving to a different browser creates a new workspace. Export a JSON backup before clearing browser data. JSON backups include image references; image access remains restricted to the uploading browser’s visitor cookie. They do not transfer photo bytes between browsers.
-
-The included Lisbon trip is sample data, copied independently for each visitor. No workspace is shared simply by sharing the public URL.
-
-## Structure
-
-- `app/page.tsx`: workspace navigation and trip workflows.
-- `components/travel`: reusable visual primitives and the accessible editor.
-- `hooks/use-workspace.ts`: durable loading, ordered autosaves, error recovery, conflict handling and unsaved-change protection.
-- `lib/model.ts`: typed schema, domain validation, packing derivation and deletion cleanup.
-- `lib/exports.ts`: JSON downloads, calendar and CSV exports.
-- `app/api/workspace`: visitor-scoped state with optimistic revision checks.
-- `app/api/images`: private image upload/retrieval with size and signature checks.
-- `db/schema.ts` and `drizzle/`: versioned D1 schema and migration.
-- `tests/`: domain regression tests and API smoke checks.
-
-## Local storage setup
-
-Build once to generate `dist/server/wrangler.json`, then apply the local migration:
+With a disposable local Worker running:
 
 ```sh
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_friendly_morlun.sql
+ELSEWHERE_TEST_URL=http://127.0.0.1:4173 node tests/api-smoke.mjs
+python -m pip install playwright==1.57.0
+python -m playwright install chromium
+ELSEWHERE_TEST_URL=http://127.0.0.1:4173 python e2e/browser.py
 ```
 
-Restart the development server if bindings changed. Hosted Sites provisioning applies production migrations and binds D1/R2 automatically.
+GitHub Actions performs the locked install, type check, lint, domain tests, Worker build, local database setup, API checks and real-browser acceptance tests. Browser tests include reload persistence, private photo upload/restore, failed-save retry, real revision conflicts, and layouts from 320 to 1920 CSS pixels. Screenshots and results are uploaded as the `elsewhere-verification` artifact.
 
-With the development server running:
-
-```sh
-node tests/api-smoke.mjs
-```
-
-The smoke check creates disposable local workspaces and verifies save isolation, simultaneous save conflicts, invalid payload rejection, origin protection, and private image ownership.
-
-## Behaviour
-
-Trip date changes cannot silently discard scheduled activities: reschedule them first. Reused clothes appear only once in automatic packing. Manual essentials carry quantity and per-piece weight. Day outfits and activity outfits can differ. Calendar exports use floating local wall times because trips do not currently have timezone settings.
-
-Autosaves serialize requests. Concurrent tabs receive a clear conflict instead of overwriting newer data. Export unsaved edits before reloading after a conflict. Restore validates the entire backup before replacing any state.
+See [the verification notes](docs/VERIFICATION.md) for the distinction between local component checks and real Worker tests.
 
 ## Deployment
 
-The Site identity and logical storage bindings live in `.openai/hosting.json`. Publish the Worker build and migrations through the Sites tools. Public access is managed in the Site access policy, separately from application storage. No authentication capability is enabled by this application.
+The existing Site identity and storage bindings remain in `.openai/hosting.json`. Publish the Worker and migrations through the configured Sites deployment flow. A GitHub code push is not, by itself, proof that the hosted Site has been republished.
 
-For wider release, add operational retention controls and platform traffic limits appropriate to expected anonymous usage. This guest testing version intentionally has no cross-device account recovery or shared trip collaboration.
+For a wider public release, add retention/cleanup controls and traffic limits appropriate to anonymous usage. Guest workspaces intentionally do not offer account recovery or shared-trip collaboration.

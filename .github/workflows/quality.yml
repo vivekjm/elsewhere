@@ -1,0 +1,65 @@
+name: Elsewhere quality
+on:
+  push:
+    branches: [main, 'fix/calendar-wardrobe-ui-completion']
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: elsewhere-quality-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install locked application dependencies
+        run: npm ci
+      - name: Type check
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Domain regressions
+        run: node --experimental-strip-types --test tests/*.test.ts
+      - name: Build the production Worker
+        run: npm run build
+      - name: Prepare disposable local storage
+        run: node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_friendly_morlun.sql
+      - name: Start the real application
+        run: |
+          mkdir -p test-results
+          npm run start -- --port 4173 > test-results/worker.log 2>&1 &
+          echo $! > test-results/worker.pid
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent http://127.0.0.1:4173/api/workspace > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat test-results/worker.log
+          exit 1
+      - name: API isolation, revision and image-ownership checks
+        env:
+          ELSEWHERE_TEST_URL: http://127.0.0.1:4173
+        run: node tests/api-smoke.mjs
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Real browser workflows and responsive checks
+        env:
+          ELSEWHERE_TEST_URL: http://127.0.0.1:4173
+        run: python e2e/browser.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: elsewhere-verification
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

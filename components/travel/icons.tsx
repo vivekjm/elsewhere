@@ -1,0 +1,84 @@
+import React from "react";
+const paths = {
+  calendar:
+    "M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2ZM8 14h1m6 0h1m-8 4h1m6 0h1",
+  hanger:
+    "M9 5a3 3 0 1 1 5 2c-1 1-2 1-2 3v1L3 17c-1 1 0 3 1 3h16c1 0 2-2 1-3l-9-6",
+  bag: "M8 6V3h8v3M5 6h14v15H5ZM8 10v7m8-7v7M8 21v1m8-1v1",
+  compass: "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-5-4-2 6-6 2 2-6Z",
+  plus: "M12 5v14M5 12h14",
+  close: "m6 6 12 12M18 6 6 18",
+  arrow: "M4 12h16m-6-6 6 6-6 6",
+  left: "m14 6-6 6 6 6",
+  right: "m10 6 6 6-6 6",
+  down: "m6 9 6 6 6-6",
+  check: "m5 12 4 4L19 6",
+  location:
+    "M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Zm-5 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z",
+  edit: "m14 4 6 6M3 21l6-1L21 8l-5-5L4 15Zm12-18 2-2 5 5-2 2",
+  trash: "M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7",
+  download: "M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5",
+  upload: "M12 16V4m-5 5 5-5 5 5M4 16v5h16v-5",
+  search: "M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-2 6 6 6",
+  layers: "m12 3 10 5-10 5L2 8Zm-10 9 10 5 10-5M2 16l10 5 10-5",
+  list: "M8 6h13M8 12h13M8 18h13M3 6h1m-1 6h1m-1 6h1",
+  settings:
+    "M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1Zm6 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z",
+  leaf: "M20 3C10 2 3 7 4 14c1 9 15 7 16-11ZM5 20l10-10",
+  people:
+    "M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM5 21v-3a7 7 0 0 1 14 0v3M18 4a3 3 0 0 1 0 6m3 5v5",
+  plane: "m2 14 8-3V3c0-3 4-3 4 0v8l8 3v3l-8-2v5l3 2H7l3-2v-5l-8 2Z",
+  food: "M4 3v7h6V3M7 3v19M18 3v19M18 3c-6 5-5 9 0 9",
+  stay: "M3 21V7h18v14M3 17h18M7 10h4v4H7Zm6 0h4v4h-4Z",
+  event: "m12 3 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z",
+  clock: "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-5v5l3 2",
+  external: "M14 3h7v7m0-7L10 14M10 3H3v18h18v-7",
+  copy: "M8 8h13v13H8ZM4 16H2V2h14v2",
+  shield: "m12 2 9 4v6c0 6-9 10-9 10S3 18 3 12V6Zm-4 9 3 3 5-5",
+  cloud: "M6 18a5 5 0 0 1-1-10 7 7 0 0 1 13-1 6 6 0 0 1 0 11M9 16l3 3 5-5",
+  warning: "m12 2 10 19H2ZM12 8v6m0 3h.01",
+  weight: "M9 7a3 3 0 1 1 6 0M5 7h14l3 14H2Z",
+  print: "M6 9V2h12v7M6 17H2V9h20v8h-4M6 14h12v8H6Zm12-2h1",
+  camera: "M3 7h4l2-3h6l2 3h4v13H3Zm13 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z",
+  undo: "M9 3 3 9l6 6M3 9h11c9 0 9 12 0 12h-2",
+  mountain: "m2 21 8-16 7 16M12 12l4-9 7 18M7 11l3 2 2-2",
+  note: "M5 2h14v20H5ZM8 7h8M8 12h8M8 17h5",
+} as const;
+export type IconName = keyof typeof paths;
+export function Icon({
+  name,
+  size = 18,
+  className = "",
+}: {
+  name: IconName;
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={`ew-icon ${className}`}
+    >
+      <path d={paths[name]} />
+    </svg>
+  );
+}
+export const activityIcon = (type: string): IconName =>
+  (
+    ({
+      Explore: "compass",
+      "Food & drink": "food",
+      Travel: "plane",
+      Stay: "stay",
+      Event: "event",
+      Other: "note",
+    }) as Record<string, IconName>
+  )[type] || "compass";
