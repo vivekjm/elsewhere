@@ -1,30 +1,105 @@
-import { database, guest, headers, sameOrigin, failure } from "@/lib/server";
+import {
+  bucket,
+  database,
+  guest,
+  headers,
+  sameOrigin,
+  failure,
+  workspaceOwner,
+} from "@/lib/server";
 import { seed, workspaceSchema } from "@/lib/model";
+
+async function claimVisitorPhotos(data: string, from: string, to: string) {
+  try {
+    const workspace = JSON.parse(data) as { items?: Array<{ image?: unknown }> },
+      ids = [
+        ...new Set(
+          (workspace.items || [])
+            .map((item) =>
+              typeof item.image === "string"
+                ? item.image.match(/^\/api\/images\/([a-f0-9-]{36})$/i)?.[1]
+                : undefined,
+            )
+            .filter((id): id is string => !!id),
+        ),
+      ];
+    if (!ids.length) return;
+    const storage = bucket();
+    for (const id of ids) {
+      const source = await storage.get(`${from}/${id}`);
+      if (!source) continue;
+      await storage.put(`${to}/${id}`, source.body, {
+        httpMetadata: source.httpMetadata,
+        customMetadata: source.customMetadata,
+      });
+    }
+  } catch {
+    // Workspace data can still be claimed if a legacy visitor photo is gone.
+  }
+}
+
 export async function GET(r: Request) {
   try {
+    const owner = await workspaceOwner(r);
+    if (!owner)
+      return Response.json(
+        { error: "Your session has expired. Please sign in again." },
+        { status: 401, headers: headers() },
+      );
     const existing = guest(r),
-      id = existing || crypto.randomUUID(),
       db = database();
     let row = await db
       .prepare("SELECT data, revision FROM workspaces WHERE id = ?")
-      .bind(id)
+      .bind(owner.id)
       .first<{ data: string; revision: number }>();
+    // The first signed-in load claims the visitor workspace from this browser.
+    // The copy keeps the existing trip data intact while future saves use the
+    // stable Supabase user ID across browsers and devices.
+    if (!row && owner.authenticated && existing && existing !== owner.id) {
+      const visitor = await db
+        .prepare("SELECT data, revision FROM workspaces WHERE id = ?")
+        .bind(existing)
+        .first<{ data: string; revision: number }>();
+      if (visitor) {
+        await claimVisitorPhotos(visitor.data, existing, owner.id);
+        await db
+          .prepare(
+            "INSERT OR IGNORE INTO workspaces (id,data,revision,updated_at) VALUES (?, ?, ?, ?)",
+          )
+          .bind(
+            owner.id,
+            visitor.data,
+            visitor.revision,
+            new Date().toISOString(),
+          )
+          .run();
+        row = await db
+          .prepare("SELECT data, revision FROM workspaces WHERE id = ?")
+          .bind(owner.id)
+          .first<{ data: string; revision: number }>();
+      }
+    }
     if (!row) {
       const data = seed();
       await db
         .prepare(
           "INSERT OR IGNORE INTO workspaces (id,data,revision,updated_at) VALUES (?, ?, 0, ?)",
         )
-        .bind(id, JSON.stringify(data), new Date().toISOString())
+        .bind(owner.id, JSON.stringify(data), new Date().toISOString())
         .run();
       row = await db
         .prepare("SELECT data,revision FROM workspaces WHERE id = ?")
-        .bind(id)
+        .bind(owner.id)
         .first<{ data: string; revision: number }>();
     }
     return Response.json(
       { workspace: JSON.parse(row!.data), revision: row!.revision },
-      { headers: headers(existing ? undefined : id, r) },
+      {
+        headers: headers(
+          owner.authenticated || existing ? undefined : owner.id,
+          r,
+        ),
+      },
     );
   } catch (e) {
     return failure(e);
@@ -33,8 +108,13 @@ export async function GET(r: Request) {
 export async function PUT(r: Request) {
   if (!sameOrigin(r))
     return Response.json({ error: "Request not allowed" }, { status: 403 });
-  const id = guest(r);
-  if (!id)
+  const owner = await workspaceOwner(r);
+  if (!owner)
+    return Response.json(
+      { error: "Your session has expired. Please sign in again." },
+      { status: 401 },
+    );
+  if (!owner.authenticated && !owner.visitorId)
     return Response.json(
       { error: "Please reload to open your workspace." },
       { status: 401 },
@@ -66,7 +146,7 @@ export async function PUT(r: Request) {
       .bind(
         JSON.stringify(parsed.data),
         new Date().toISOString(),
-        id,
+        owner.id,
         payload.revision,
       )
       .run();

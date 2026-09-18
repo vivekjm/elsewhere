@@ -19,6 +19,7 @@ const paths = {
   trash: "M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7",
   download: "M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5",
   upload: "M12 16V4m-5 5 5-5 5 5M4 16v5h16v-5",
+  logout: "M10 17l5-5-5-5m5 5H3m9-9V3h9v18h-9v-2",
   search: "M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-2 6 6 6",
   layers: "m12 3 10 5-10 5L2 8Zm-10 9 10 5 10-5M2 16l10 5 10-5",
   list: "M8 6h13M8 12h13M8 18h13M3 6h1m-1 6h1m-1 6h1",

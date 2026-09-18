@@ -9,7 +9,10 @@ export type SaveState =
   | "error"
   | "conflict";
 /** Serialised optimistic writes. A failed or conflicting PUT never discards local edits. */
-export function useWorkspace(onLoaded: (w: Workspace) => void) {
+export function useWorkspace(
+  onLoaded: (w: Workspace) => void,
+  accessToken?: string | null,
+) {
   const [w, setW] = useState<Workspace | null>(null),
     [state, setState] = useState<SaveState>("loading"),
     [error, setError] = useState(""),
@@ -25,7 +28,11 @@ export function useWorkspace(onLoaded: (w: Workspace) => void) {
     epoch = useRef(0);
   const flight = useRef<Promise<void> | null>(null),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null),
-    aborters = useRef(new Set<AbortController>());
+    aborters = useRef(new Set<AbortController>()),
+    accessTokenRef = useRef(accessToken || "");
+  useEffect(() => {
+    accessTokenRef.current = accessToken || "";
+  }, [accessToken]);
   useEffect(() => {
     callback.current = onLoaded;
   }, [onLoaded]);
@@ -34,10 +41,15 @@ export function useWorkspace(onLoaded: (w: Workspace) => void) {
     aborters.current.add(controller);
     const timeout = setTimeout(() => controller.abort(), 20000);
     try {
+      const requestHeaders: Record<string, string> = body
+        ? { "Content-Type": "application/json" }
+        : {};
+      if (accessTokenRef.current)
+        requestHeaders.Authorization = `Bearer ${accessTokenRef.current}`;
       const r = await fetch("/api/workspace", {
         method,
         credentials: "same-origin",
-        headers: body ? { "Content-Type": "application/json" } : undefined,
+        headers: requestHeaders,
         body,
         signal: controller.signal,
       });

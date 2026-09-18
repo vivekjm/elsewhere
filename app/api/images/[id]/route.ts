@@ -1,14 +1,18 @@
-import { bucket, guest, failure } from "@/lib/server";
+import { bucket, failure, workspaceOwner } from "@/lib/server";
 export async function GET(
   r: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const owner = guest(r),
+  const resolved = await workspaceOwner(r),
     { id } = await params;
-  if (!owner || !/^([a-f0-9-]{36})$/.test(id))
+  if (
+    !resolved ||
+    (!resolved.authenticated && !resolved.visitorId) ||
+    !/^([a-f0-9-]{36})$/.test(id)
+  )
     return new Response(null, { status: 404 });
   try {
-    const object = await bucket().get(`${owner}/${id}`);
+    const object = await bucket().get(`${resolved.id}/${id}`);
     if (!object) return new Response(null, { status: 404 });
     return new Response(object.body, {
       headers: {

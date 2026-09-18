@@ -119,6 +119,7 @@ export function Editor({
   w,
   trip,
   day,
+  accessToken,
   onClose,
   onSave,
 }: {
@@ -126,6 +127,7 @@ export function Editor({
   w: Workspace;
   trip?: Trip;
   day: string;
+  accessToken?: string | null;
   onClose: () => void;
   onSave: (result: EditorResult) => void;
 }) {
@@ -233,6 +235,9 @@ export function Editor({
       const r = await fetch("/api/images", {
         method: "POST",
         credentials: "same-origin",
+        headers: accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : undefined,
         body: data,
       });
       const body = (await r.json().catch(() => ({}))) as {

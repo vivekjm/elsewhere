@@ -38,6 +38,13 @@ import {
   type ScreenProps,
 } from "./views";
 import { NAV as nav } from "./screen";
+import {
+  AuthProvider,
+  useAuth,
+  type AuthProfile,
+} from "@/components/auth/auth-context";
+import { AuthLoading, AuthScreen } from "@/components/auth/auth-screen";
+import { OnboardingFlow } from "@/components/auth/onboarding";
 type Route = { view: View; tripId: string; day: string; month: string };
 function readRoute(w: Workspace): Route {
   const [path, query] = window.location.hash.slice(1).split("?"),
@@ -102,12 +109,22 @@ class Boundary extends React.Component<
     );
   }
 }
-function WorkspaceApp() {
+function WorkspaceApp({
+  accessToken,
+  profile,
+  accountEmail,
+  onSignOut,
+}: {
+  accessToken?: string | null;
+  profile?: AuthProfile | null;
+  accountEmail?: string;
+  onSignOut?: () => Promise<void>;
+}) {
   const [route, setRoute] = useState<Route>(() => {
     const day = today();
     return { view: "planner", tripId: "", day, month: day.slice(0, 7) };
   });
-  const store = useWorkspace((w) => setRoute(readRoute(w)));
+  const store = useWorkspace((w) => setRoute(readRoute(w)), accessToken);
   const [editor, setEditor] = useState<
       (EditorModal & { tripId?: string }) | null
     >(null),
@@ -466,7 +483,16 @@ function WorkspaceApp() {
       </main>
     );
   const rows = trip ? packing(w, trip) : [],
-    activeNav = route.view === "outfits" ? "wardrobe" : route.view;
+    activeNav = route.view === "outfits" ? "wardrobe" : route.view,
+    firstName = profile?.display_name.trim().split(/\s+/)[0] || "there",
+    pageTitle =
+      route.view === "planner" && profile
+        ? `Good to have you back, ${firstName}.`
+        : VIEW_LABELS[route.view],
+    pageDescription =
+      route.view === "planner" && profile
+        ? `${profile.travel_style} · planning from ${profile.home_base}`
+        : "A LITTLE SPACE FOR THE JOURNEY";
   const props: ScreenProps = {
     w,
     trip,
@@ -647,8 +673,8 @@ function WorkspaceApp() {
           )}
           <div className="ew-page-header">
             <div>
-              <p className="ew-eyebrow">A LITTLE SPACE FOR THE JOURNEY</p>
-              <h1>{VIEW_LABELS[route.view]}</h1>
+              <p className="ew-eyebrow">{pageDescription}</p>
+              <h1>{pageTitle}</h1>
             </div>
             <div className="ew-header-actions">
               {["planner", "packing"].includes(route.view) && trip && (
@@ -706,19 +732,44 @@ function WorkspaceApp() {
           {route.view === "trips" && <Trips props={props} />}
           {route.view === "settings" && (
             <div className="ew-settings-grid">
+              {profile && (
+                <section className="ew-settings-card ew-account-card">
+                  <div className="ew-settings-icon">
+                    <Icon name="compass" size={27} />
+                  </div>
+                  <p className="ew-eyebrow">YOUR ELSEWHERE</p>
+                  <h2>{profile.display_name}, this is your space.</h2>
+                  <p>
+                    Signed in as <strong>{accountEmail || "your account"}</strong>.
+                    Your preferences are saved securely and your trips follow
+                    you to any browser.
+                  </p>
+                  <div className="ew-account-preferences">
+                    <span><b>Home base</b>{profile.home_base}</span>
+                    <span><b>Travel rhythm</b>{profile.travel_style}</span>
+                    <span><b>Packing</b>{profile.packing_style}</span>
+                  </div>
+                  {onSignOut && (
+                    <Button icon="logout" onClick={() => void onSignOut()}>
+                      Sign out
+                    </Button>
+                  )}
+                </section>
+              )}
               <section className="ew-settings-card">
                 <div className="ew-settings-icon">
                   <Icon name="shield" size={27} />
                 </div>
-                <h2>Private to your workspace.</h2>
+                <h2>{profile ? "Private to your account." : "Private to your workspace."}</h2>
                 <p>
-                  Your trips are saved on the server for this browser’s visitor
-                  cookie. Sharing the site link does not share your plans.
+                  {profile
+                    ? "Your trips and uploaded photos are tied to your account. Sharing the site link does not share your plans."
+                    : "Your trips are saved on the server for this browser’s visitor cookie. Sharing the site link does not share your plans."}
                 </p>
                 <p>
-                  This is not a signed-in account. Clearing cookies or changing
-                  browsers creates a different workspace. A photo-inclusive
-                  backup lets you bring your plans and images with you.
+                  {profile
+                    ? "You can still download a photo-inclusive backup before a big change or keep a copy for yourself."
+                    : "This is not a signed-in account. Clearing cookies or changing browsers creates a different workspace. A photo-inclusive backup lets you bring your plans and images with you."}
                 </p>
                 <span className={`ew-save-status ew-status-${store.state}`}>
                   <i />
@@ -857,6 +908,7 @@ function WorkspaceApp() {
           w={w}
           trip={w.trips.find((t) => t.id === editor.tripId)}
           day={editor.date || route.day}
+          accessToken={accessToken}
           onClose={() => setEditor(null)}
           onSave={saveEditor}
         />
@@ -1033,10 +1085,35 @@ function WorkspaceApp() {
     </div>
   );
 }
+function AppEntry() {
+  const auth = useAuth();
+  if (auth.phase === "loading") return <AuthLoading />;
+  if (auth.recovery) return <AuthScreen key="recover" />;
+  if (!auth.user && !auth.guestMode)
+    return <AuthScreen key={auth.recovery ? "recover" : "auth"} />;
+  if (auth.guestMode)
+    return <WorkspaceApp key="visitor" />;
+  const user = auth.user;
+  if (!user) return <AuthScreen key={auth.recovery ? "recover" : "auth"} />;
+  if (auth.profileLoading) return <AuthLoading message="Getting your plans together." />;
+  if (!auth.profile) return <OnboardingFlow />;
+  return (
+    <WorkspaceApp
+      key={user.id}
+      accessToken={auth.session?.access_token}
+      profile={auth.profile}
+      accountEmail={user.email}
+      onSignOut={auth.signOut}
+    />
+  );
+}
+
 export default function Elsewhere() {
   return (
     <Boundary>
-      <WorkspaceApp />
+      <AuthProvider>
+        <AppEntry />
+      </AuthProvider>
     </Boundary>
   );
 }

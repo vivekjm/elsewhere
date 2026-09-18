@@ -2,7 +2,7 @@
 
 The trip, all together. Calendar-first travel planning that connects each day's places and activities to what you'll wear and what you'll pack.
 
-Built with **React 19, TypeScript, Vinext and Cloudflare Workers**. The interface uses a warm paper/olive design, responsive desktop and mobile navigation, and local SVG outfit illustrations. Existing visitor-scoped D1 workspaces and private R2 photo storage are preserved.
+Built with **React 19, TypeScript, Vinext, Cloudflare Workers and Supabase Auth**. The interface uses a warm paper/olive design, responsive desktop and mobile navigation, and local SVG outfit illustrations. Visitor-scoped D1 workspaces and private R2 photo storage are preserved for people who want to explore without an account.
 
 ## Run locally
 
@@ -37,15 +37,17 @@ Each calendar day carries a snapshot of what is already planned: up to two timed
 
 ## Data and privacy
 
-No account or ChatGPT login is required. A random **HttpOnly, SameSite visitor cookie** identifies the workspace. D1 stores that visitor's plans; R2 stores photos under that visitor's private namespace. Sharing the site's public URL does not share your plans.
+Visitor mode does not require a ChatGPT login. A random **HttpOnly, SameSite visitor cookie** identifies the workspace. D1 stores that visitor's plans; R2 stores photos under that visitor's private namespace. Sharing the site's public URL does not share your plans.
 
 Clearing cookies or changing browsers creates a different workspace. **Export a photo-inclusive JSON backup first.** Restore checks the entire file and asks before replacing anything. Photos are uploaded into the receiving visitor's private namespace before the restored workspace is applied. Data-only backups retain private image references and do not transfer the photos.
 
 The hosted persisted schema remains `version: 1`, with backward-compatible optional fields. Existing workspaces keep their IDs and storage. Import also supports the earlier portable HTML and React `schemaVersion: 1` / `schemaVersion: 2` backups. New portable backup envelopes use `backupVersion: 2` and support up to 24 MB. Wardrobe photo uploads remain limited to 5 MB each.
 
-Autosaves serialize optimistic-revision writes. A failed save leaves edits in the current tab and exposes retry. A concurrent edit conflict blocks further writes rather than overwriting the newer server data; back up your edits before reloading the server version. This is **not an offline-synced account**: keep the tab open until a failed save is resolved. Accounts, shared editing, cross-device automatic sync and live weather are not included.
+Autosaves serialize optimistic-revision writes. A failed save leaves edits in the current tab and exposes retry. A concurrent edit conflict blocks further writes rather than overwriting the newer server data; back up your edits before reloading the server version. This is **not an offline-synced account**: keep the tab open until a failed save is resolved. Shared editing and live weather are not included.
 
-The Lisbon itinerary is illustrative sample data, separately copied for each new visitor. It is not a booking or destination recommendation.
+**Accounts and onboarding.** Supabase email/password sign-in, sign-up, password reset, persistent sessions and sign-out are available from the public app. A new account completes a short onboarding that saves a display name, home base, travel rhythm, interests, packing preference and weight units in the RLS-protected `profiles` table. The planner uses those preferences in its welcome and account settings copy. The first signed-in load claims the current visitor workspace so an existing plan is not lost.
+
+The Lisbon itinerary is illustrative sample data, separately copied for each new visitor or account. It is not a booking or destination recommendation.
 
 ## Project layout
 
@@ -63,13 +65,16 @@ components/travel/pickers.tsx   Date, time, list and colour pickers plus popover
 components/travel/primitives.tsx Shared controls and outfit cards
 components/travel/landscape.tsx Animated mood scenes (one function per mood)
 components/travel/garment.tsx   Local garment illustrations and photo fallback
+components/auth/                Supabase session, account screens and onboarding
 hooks/use-workspace.ts          Serialized loading and optimistic autosaves
 lib/model.ts                    Typed domain model and validation
+lib/supabase.ts                 Browser Supabase client configuration
 lib/planning.ts                 Calendar, trip date changes and duplication
 lib/time.ts                     Date and time parsing for the custom pickers
 lib/backup.ts                   Backup migration and private photo round-trips
 lib/exports.ts                  Calendar, CSV and download helpers
 app/api/                        Existing visitor-scoped workspace and photo APIs
+supabase/migrations/             RLS-protected onboarding profile schema
 scripts/, db/, drizzle/         Existing hosting/build and storage setup
 ```
 
@@ -113,6 +118,6 @@ See [the verification notes](docs/VERIFICATION.md) for the distinction between l
 
 ## Deployment
 
-The existing Site identity and storage bindings remain in `.openai/hosting.json`. Publish the Worker and migrations through the configured Sites deployment flow. A GitHub code push is not, by itself, proof that the hosted Site has been republished.
+The existing Site identity and storage bindings remain in `.openai/hosting.json`. Set the production Site runtime variables `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`, apply `supabase/migrations/20260918_profiles.sql` to the selected Supabase project, and add the Site origin to Supabase Auth redirect URLs before publishing. Publish the Worker and migrations through the configured Sites deployment flow. A GitHub code push is not, by itself, proof that the hosted Site has been republished.
 
-For a wider public release, add retention/cleanup controls and traffic limits appropriate to anonymous usage. Guest workspaces intentionally do not offer account recovery or shared-trip collaboration.
+For a wider public release, add retention/cleanup controls and traffic limits appropriate to anonymous usage. Guest workspaces intentionally do not offer account recovery or shared-trip collaboration; signed-in accounts provide recovery and cross-device workspace access.

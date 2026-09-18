@@ -1,8 +1,16 @@
-import { bucket, guest, sameOrigin, failure, headers } from "@/lib/server";
+import {
+  bucket,
+  sameOrigin,
+  failure,
+  headers,
+  workspaceOwner,
+} from "@/lib/server";
 export async function POST(r: Request) {
   if (!sameOrigin(r)) return new Response(null, { status: 403 });
-  const owner = guest(r);
-  if (!owner) return new Response(null, { status: 401 });
+  const resolved = await workspaceOwner(r);
+  if (!resolved || (!resolved.authenticated && !resolved.visitorId))
+    return new Response(null, { status: 401 });
+  const owner = resolved.id;
   try {
     if (Number(r.headers.get("content-length")) > 5 * 1024 * 1024 + 10000)
       return Response.json(

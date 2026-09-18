@@ -1,10 +1,46 @@
-import React, { useId, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { defaultShape, type Item } from "@/lib/model";
+import { useAuthToken } from "@/components/auth/auth-context";
 
 export function Garment({ item }: { item: Item }) {
   const key = useId().replaceAll(":", ""),
     color = item.color || "#8b8b73";
-  const [failedImage, setFailedImage] = useState("");
+  const accessToken = useAuthToken(),
+    [failedImage, setFailedImage] = useState(""),
+    [privateImage, setPrivateImage] = useState(""),
+    [privateImageSource, setPrivateImageSource] = useState("");
+  useEffect(() => {
+    if (!item.image || !accessToken || !item.image.startsWith("/api/images/")) {
+      return;
+    }
+    const controller = new AbortController();
+    let objectUrl = "";
+    void fetch(item.image, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Image unavailable");
+        return response.blob();
+      })
+      .then((blob) => {
+        objectUrl = URL.createObjectURL(blob);
+        setPrivateImage(objectUrl);
+        setPrivateImageSource(item.image);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setFailedImage(item.image);
+      });
+    return () => {
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [accessToken, item.image]);
+  const imageSource = accessToken
+    ? privateImageSource === item.image
+      ? privateImage
+      : ""
+    : item.image;
   const shapes = {
     dress: (
       <>
@@ -209,14 +245,14 @@ export function Garment({ item }: { item: Item }) {
       </>
     ),
   };
-  if (item.image && item.image !== failedImage)
+  if (imageSource && item.image !== failedImage)
     return (
-      // Private images need the visitor cookie, which the optimization proxy cannot forward.
+      // Private images are fetched with the signed-in session before rendering.
       // eslint-disable-next-line @next/next/no-img-element
       <img
         onError={() => setFailedImage(item.image)}
         className="garment-image"
-        src={item.image}
+        src={imageSource}
         alt={item.name}
         loading="lazy"
         decoding="async"
