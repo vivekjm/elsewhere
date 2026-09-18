@@ -64,10 +64,60 @@
 }
 @keyframes ew-drift-x {
   from {
-    transform: translateX(-3%);
+    transform: translateX(-7%);
   }
   to {
-    transform: translateX(3%);
+    transform: translateX(7%);
+  }
+}
+/* Weather layers for the covers. */
+@keyframes ew-cloud-cross {
+  from {
+    transform: translateX(-520px);
+  }
+  to {
+    transform: translateX(1600px);
+  }
+}
+@keyframes ew-rays {
+  0%,
+  100% {
+    transform: rotate(-5deg) scale(0.97);
+  }
+  50% {
+    transform: rotate(6deg) scale(1.04);
+  }
+}
+@keyframes ew-rain {
+  0% {
+    transform: translateY(-140px);
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  86% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(240px);
+    opacity: 0;
+  }
+}
+@keyframes ew-wind {
+  0% {
+    transform: translateX(-300px);
+    opacity: 0;
+  }
+  22% {
+    opacity: 0.9;
+  }
+  78% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(620px);
+    opacity: 0;
   }
 }
 @keyframes ew-drift-far {
@@ -282,17 +332,33 @@
 .landscape[data-motion="on"] .ew-foam,
 .landscape[data-motion="on"] .ew-frond,
 .landscape[data-motion="on"] .ew-tree,
-.landscape[data-motion="on"] .ew-light-shafts {
+.landscape[data-motion="on"] .ew-light-shafts,
+.landscape[data-motion="on"] .ew-cloud-cross,
+.landscape[data-motion="on"] .ew-rays,
+.landscape[data-motion="on"] .ew-rain-drop,
+.landscape[data-motion="on"] .ew-wind-streak {
   will-change: transform, opacity;
 }
 .landscape[data-motion="on"] .ew-sky-drift {
   transform-origin: 50% 50%;
 }
+.landscape[data-motion="on"] .ew-cloud-cross {
+  animation: ew-cloud-cross 88s linear infinite;
+}
+.landscape[data-motion="on"] .ew-rays {
+  animation: ew-rays 21s ease-in-out infinite;
+}
+.landscape[data-motion="on"] .ew-rain-drop {
+  animation: ew-rain 1.6s linear infinite;
+}
+.landscape[data-motion="on"] .ew-wind-streak {
+  animation: ew-wind 8s ease-in-out infinite;
+}
 .landscape[data-motion="on"] .ew-drift-a {
-  animation: ew-drift-x 44s ease-in-out infinite alternate;
+  animation: ew-drift-x 26s ease-in-out infinite alternate;
 }
 .landscape[data-motion="on"] .ew-drift-b {
-  animation: ew-drift-x 62s ease-in-out infinite alternate-reverse;
+  animation: ew-drift-x 38s ease-in-out infinite alternate-reverse;
 }
 .landscape[data-motion="on"] .ew-twinkle {
   animation: ew-twinkle 4.6s ease-in-out infinite;
@@ -1539,7 +1605,7 @@
   }
 }
 /* Between the compact and roomy layouts the calendar needs every pixel. */
-@media (max-width: 1500px) and (min-width: 901px) {
+@media (max-width: 1500px) and (min-width: 1361px) {
   .ew-sidebar {
     width: 205px;
     padding-inline: 19px;
@@ -1551,6 +1617,54 @@
   .ew-planner-layout {
     grid-template-columns: minmax(0, 1fr) 312px;
     gap: 20px;
+  }
+}
+/* Narrower than that, a side-by-side day panel squeezes day cells until the
+   plan inside them cannot be read. The panel moves under the calendar. */
+@media (max-width: 1360px) and (min-width: 901px) {
+  .ew-sidebar {
+    width: 205px;
+    padding-inline: 19px;
+  }
+  .ew-main {
+    margin-left: 205px;
+    padding: 28px 24px;
+  }
+  .ew-planner-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ew-day-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 25px;
+    padding: 24px;
+  }
+  .ew-day-panel > .ew-between,
+  .ew-day-panel > .ew-day-subtitle {
+    grid-column: 1/-1;
+  }
+  .ew-day-panel .ew-day-section {
+    grid-column: 1;
+  }
+  .ew-day-panel .ew-day-outfits {
+    grid-column: 2;
+    grid-row: 3/6;
+    border: 0;
+    padding-top: 0;
+  }
+  .ew-day-panel > .ew-stay-note,
+  .ew-day-panel > .ew-day-note {
+    grid-column: 1/-1;
+  }
+  .ew-planner-toolbar > .ew-italic {
+    display: block;
+  }
+  .ew-date-flag {
+    display: block;
+  }
+  .ew-calendar td,
+  .ew-calendar td > button {
+    height: 136px;
   }
 }
 @media (max-width: 640px) {

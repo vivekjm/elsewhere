@@ -283,6 +283,40 @@ with sync_playwright() as pw:
             expect(d).not_to_be_visible()
         case(f'{width}px editor fits and protects unsaved input', editor)
         context.close()
+
+    for width in (1024, 1440):
+        context, page = fresh(browser, width)
+
+        def cover_and_day_cells():
+            box = page.evaluate(
+                """() => {
+                  const svg = document.querySelector('.ew-hero-landscape .landscape');
+                  const hero = document.querySelector('.ew-hero').getBoundingClientRect();
+                  const drawn = svg.querySelector('path').getBoundingClientRect();
+                  const cell = document.querySelector('td.ew-in-trip');
+                  const add = cell.querySelector('.ew-cell-add').getBoundingClientRect();
+                  const chip = cell.querySelector('.ew-event-chip em');
+                  const cellBox = cell.getBoundingClientRect();
+                  return {
+                    scale: svg.getAttribute('preserveAspectRatio'),
+                    slice: svg.preserveAspectRatio.baseVal.meetOrSlice,
+                    coversHeader: drawn.width >= hero.width - 1,
+                    addHeight: add.height,
+                    cellHeight: cellBox.height,
+                    chipSpills: chip
+                      ? chip.getBoundingClientRect().right > cellBox.right + 1
+                      : false,
+                  };
+                }"""
+            )
+            assert box['scale'].endswith('slice'), box
+            assert box['slice'] == 2, box
+            assert box['coversHeader'], box
+            assert box['addHeight'] <= 32 and box['addHeight'] * 2 < box['cellHeight'], box
+            assert not box['chipSpills'], box
+
+        case(f'{width}px trip cover fills the header and day cells stay readable', cover_and_day_cells)
+        context.close()
     browser.close()
 
 RESULTS.append({'name': 'No browser JavaScript errors', 'passed': not ERRORS, 'errors': ERRORS})

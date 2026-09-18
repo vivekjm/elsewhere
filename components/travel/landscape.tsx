@@ -36,11 +36,19 @@ function Frame({
   focusY?: number;
   children: React.ReactNode;
 }) {
+  const [vx, vy, vw, vh] = viewBox.split(" ").map(Number);
+  // `xMidY150 slice` is not a valid value, so browsers fell back to `meet`
+  // and letterboxed the scene. Keep the attribute valid and move the crop
+  // window instead, damped so no scene loses its horizon.
+  const shift =
+    focusY === undefined
+      ? 0
+      : Math.max(-vh * 0.14, Math.min(vh * 0.14, (focusY - vh / 2) * 0.5));
   return (
     <svg
       className={`landscape ${className || ""}`}
-      viewBox={viewBox}
-      preserveAspectRatio={`xMidY${focusY ?? 50} slice`}
+      viewBox={`${vx} ${(vy + shift).toFixed(1)} ${vw} ${vh}`}
+      preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
       data-mood={mood}
       data-motion={motion ? "on" : "off"}
@@ -76,6 +84,11 @@ const Clouds = ({
     <g className="ew-drift-b" opacity=".7">
       <path d="M420 132c10-15 36-16 46-3 15-8 36 2 34 16H404c-3-8 4-13 16-13Z" />
       <path d="M960 118c11-16 39-17 49-3 16-9 39 2 37 17H944c-3-9 5-14 16-14Z" />
+    </g>
+    {/* One bank crosses the whole cover so the scene never looks frozen. */}
+    <g className="ew-cloud-cross" opacity=".8">
+      <path d="M-40 84c22-34 82-38 104-7 34-19 82 3 78 37H-96c-7-19 9-31 56-30Z" />
+      <path d="M150 104c15-23 56-26 71-5 23-13 56 2 53 25H112c-5-13 6-21 38-20Z" />
     </g>
   </g>
 );
@@ -157,6 +170,135 @@ const Birds = ({ delay = 0, x = 300, y = 70 }: { delay?: number; x?: number; y?:
     <path d={`M${x + 26} ${y + 12}q8-6 16 0`} />
   </g>
 );
+/** Deterministic scatter so weather is varied but never re-randomised per render. */
+const scatter = (count: number, seed: number, spanX: number, spanY: number) =>
+  Array.from({ length: count }, (_, i) => {
+    const a = Math.sin((i + 1) * seed) * 10000,
+      b = Math.sin((i + 1) * seed * 1.77) * 10000;
+    return {
+      x: (a - Math.floor(a)) * spanX,
+      y: (b - Math.floor(b)) * spanY,
+    };
+  });
+/** Sunlight: rays that breathe and rotate around the sun. */
+const SunRays = ({
+  cx,
+  cy,
+  r,
+  rays = 12,
+  opacity = 0.34,
+  length = 58,
+}: {
+  cx: number;
+  cy: number;
+  r: number;
+  rays?: number;
+  opacity?: number;
+  length?: number;
+}) => (
+  <g
+    className="ew-rays"
+    opacity={opacity}
+    style={{ transformBox: "view-box", transformOrigin: `${cx}px ${cy}px` }}
+  >
+    {Array.from({ length: rays }, (_, i) => {
+      const a = (i * Math.PI * 2) / rays,
+        x1 = cx + Math.cos(a) * (r + 9),
+        y1 = cy + Math.sin(a) * (r + 9),
+        x2 = cx + Math.cos(a) * (r + 9 + length),
+        y2 = cy + Math.sin(a) * (r + 9 + length);
+      return (
+        <path
+          key={i}
+          stroke="#fdf5e0"
+          strokeWidth="4"
+          strokeLinecap="round"
+          d={`M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}`}
+        />
+      );
+    })}
+  </g>
+);
+/** Rain: short diagonal streaks falling through the whole scene. */
+const Rain = ({
+  id,
+  count = 26,
+  opacity = 0.42,
+  slant = 13,
+}: {
+  id: string;
+  count?: number;
+  opacity?: number;
+  slant?: number;
+}) => (
+  <g
+    className="ew-rain"
+    stroke="#e2eef3"
+    strokeWidth="2"
+    strokeLinecap="round"
+    opacity={opacity}
+  >
+    {scatter(count, 2.399, 1160, 320).map(({ x, y }, i) => (
+      <path
+        key={`${id}-rain-${i}`}
+        className="ew-rain-drop"
+        style={{ animationDelay: `${((i % 10) * 0.2).toFixed(2)}s` }}
+        d={`M${(x + 20).toFixed(0)} ${y.toFixed(0)}l-${slant} 30`}
+      />
+    ))}
+  </g>
+);
+/** Snow: flakes that drift down and sideways. */
+const Snowfall = ({
+  id,
+  count = 18,
+  opacity = 0.9,
+}: {
+  id: string;
+  count?: number;
+  opacity?: number;
+}) => (
+  <g className="ew-snowfall" fill="#ffffff" opacity={opacity}>
+    {scatter(count, 1.618, 1160, 300).map(({ x, y }, i) => (
+      <circle
+        key={`${id}-snow-${i}`}
+        cx={x.toFixed(0)}
+        cy={y.toFixed(0)}
+        r={i % 3 === 0 ? 2.4 : 1.6}
+        className="ew-flake"
+        style={{ animationDelay: `${(i % 8) * 0.9}s` }}
+      />
+    ))}
+  </g>
+);
+/** Wind: long streaks that sweep across the horizon. */
+const Wind = ({
+  id,
+  count = 4,
+  opacity = 0.5,
+}: {
+  id: string;
+  count?: number;
+  opacity?: number;
+}) => (
+  <g
+    className="ew-wind"
+    stroke="#ffffff"
+    strokeWidth="2.6"
+    strokeLinecap="round"
+    fill="none"
+    opacity={opacity}
+  >
+    {scatter(count, 3.137, 760, 150).map(({ x, y }, i) => (
+      <path
+        key={`${id}-wind-${i}`}
+        className="ew-wind-streak"
+        style={{ animationDelay: `${(i * 2.1).toFixed(1)}s` }}
+        d={`M${(x + 60).toFixed(0)} ${(y + 120).toFixed(0)}q80-18 170 2`}
+      />
+    ))}
+  </g>
+);
 function MountainScene({ id, motion, className, mood }: SceneProps) {
   return (
     <Frame
@@ -168,6 +310,7 @@ function MountainScene({ id, motion, className, mood }: SceneProps) {
     >
       <Sky id={id} from="#dfe5df" to="#f3eee1" />
       <Sun cx={914} cy={78} r={34} fill="#f8f3e2" glow="#f6e7c4" />
+      <SunRays cx={914} cy={78} r={34} />
       <Clouds opacity={0.68} />
       <Birds x={340} y={78} />
       <g className="ew-range ew-range-far">
@@ -197,6 +340,7 @@ function MountainScene({ id, motion, className, mood }: SceneProps) {
         </g>
       </g>
       <Mist id={id} y={220} height={140} opacity={0.65} />
+      <Snowfall id={id} count={20} opacity={0.85} />
       <g className="ew-lake">
         <path fill="#b9cdc6" d="M0 300h1200v60H0Z" opacity=".55" />
         <g stroke="#eef3ec" strokeWidth="3" strokeLinecap="round" opacity=".65">
@@ -219,8 +363,10 @@ function CoastScene({ id, motion, className, mood }: SceneProps) {
     >
       <Sky id={id} from="#d6e2dc" to="#f2f1e3" />
       <Sun cx={773} cy={70} r={32} fill="#f6edcf" glow="#f4dfae" />
+      <SunRays cx={773} cy={70} r={32} opacity={0.3} />
       <Clouds opacity={0.6} />
       <Birds x={250} y={62} delay={1.4} />
+      <Wind id={id} count={4} opacity={0.42} />
       <g className="ew-sea">
         <path fill="#8fb0a4" d="M0 150Q300 134 600 152t400-2v150H0Z" />
         <path
@@ -280,6 +426,7 @@ function CityScene({ id, motion, className, mood }: SceneProps) {
     >
       <Sky id={id} from="#e9e3d7" to="#f7f0e2" />
       <Sun cx={786} cy={74} r={36} fill="#f7edda" glow="#f3dcb4" />
+      <SunRays cx={786} cy={74} r={36} opacity={0.26} />
       <Clouds opacity={0.5} />
       <g fill="#c4b8a5">
         <path d="M420 300V98h73v202M504 300V144h92v156M607 300V60h102v240M722 300V118h66v182M802 300V78h91v222M907 300V145h93v155" />
@@ -341,6 +488,7 @@ function CityScene({ id, motion, className, mood }: SceneProps) {
         </g>
       </g>
       <path d="M0 268q242-20 487 0t513 0v32H0Z" fill="#788571" />
+      <Rain id={id} count={20} opacity={0.3} slant={11} />
     </Frame>
   );
 }
@@ -355,6 +503,7 @@ function ForestScene({ id, motion, className, mood }: SceneProps) {
     >
       <Sky id={id} from="#cfe0d3" to="#f0efe0" />
       <Sun cx={250} cy={72} r={30} fill="#f7f0d8" glow="#e7ecc9" />
+      <SunRays cx={250} cy={72} r={30} opacity={0.3} />
       <g className="ew-light-shafts">
         <path fill="#fdfbef" opacity=".28" d="M250 90 130 360h150Z" />
         <path
@@ -419,6 +568,7 @@ function ForestScene({ id, motion, className, mood }: SceneProps) {
         })}
       </g>
       <Mist id={id} y={230} height={130} opacity={0.5} />
+      <Rain id={id} count={30} opacity={0.4} slant={9} />
     </Frame>
   );
 }
@@ -433,6 +583,7 @@ function LakeScene({ id, motion, className, mood }: SceneProps) {
     >
       <Sky id={id} from="#dbe4e6" to="#f5f1e6" />
       <Sun cx={980} cy={70} r={30} fill="#f8f2dd" glow="#f1e2c0" />
+      <SunRays cx={980} cy={70} r={30} opacity={0.28} />
       <Clouds opacity={0.55} />
       <g className="ew-range ew-range-far">
         <path
@@ -462,6 +613,7 @@ function LakeScene({ id, motion, className, mood }: SceneProps) {
         <path stroke="#5c4a33" strokeWidth="3" d="M596 300v22" />
       </g>
       <Mist id={id} y={238} height={110} opacity={0.55} />
+      <Wind id={id} count={3} opacity={0.34} />
     </Frame>
   );
 }
@@ -476,6 +628,7 @@ function DesertScene({ id, motion, className, mood }: SceneProps) {
     >
       <Sky id={id} from="#f0d9b5" to="#f8efe0" />
       <Sun cx={880} cy={86} r={44} fill="#f6d79a" glow="#f0c377" />
+      <SunRays cx={880} cy={86} r={44} opacity={0.4} length={74} />
       <g className="ew-heat" aria-hidden="true">
         <path
           fill="none"
@@ -532,6 +685,7 @@ function IslandScene({ id, motion, className, mood }: SceneProps) {
     >
       <Sky id={id} from="#cfe6e6" to="#f6f1e2" />
       <Sun cx={210} cy={72} r={30} fill="#f9f1cf" glow="#f6e2a4" />
+      <SunRays cx={210} cy={72} r={30} opacity={0.42} length={66} />
       <Clouds opacity={0.6} />
       <g className="ew-palms">
         <path fill="#7c6a4b" d="M310 300q-10-70 14-116l16 4q-22 46-10 112Z" />
@@ -627,33 +781,7 @@ function AuroraScene({ id, motion, className, mood }: SceneProps) {
         <path fill="#5d7186" d="m120 360 190-116 170 84 150-96 180 118 160-88 190 106v42H120Z" />
         <path fill="#495c70" d="M0 344q300-40 600 0t600-6v22H0Z" />
       </g>
-      <g className="ew-snowfall" fill="#ffffff">
-        {[
-          [90, 40],
-          [200, 120],
-          [320, 70],
-          [430, 150],
-          [540, 60],
-          [660, 130],
-          [780, 90],
-          [890, 160],
-          [1010, 70],
-          [1120, 130],
-          [150, 200],
-          [500, 220],
-          [950, 210],
-        ].map(([x, y], i) => (
-          <circle
-            key={`${x}-${y}`}
-            cx={x}
-            cy={y}
-            r={i % 3 === 0 ? 2.4 : 1.6}
-            opacity=".85"
-            className="ew-flake"
-            style={{ animationDelay: `${(i % 8) * 0.9}s` }}
-          />
-        ))}
-      </g>
+      <Snowfall id={id} count={22} opacity={0.85} />
     </Frame>
   );
 }
