@@ -128,6 +128,11 @@ function WorkspaceApp({
   const [editor, setEditor] = useState<
       (EditorModal & { tripId?: string }) | null
     >(null),
+    [duplicateDraft, setDuplicateDraft] = useState<{
+      source: Trip;
+      name: string;
+    } | null>(null),
+    [duplicateError, setDuplicateError] = useState(""),
     [exportOpen, setExportOpen] = useState(false),
     [confirm, setConfirm] = useState<{
       title: string;
@@ -304,6 +309,32 @@ function WorkspaceApp({
     } catch (e) {
       notify(
         e instanceof Error ? e.message : "Could not apply this change.",
+        true,
+      );
+    }
+  }
+  function submitDuplicate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!duplicateDraft) return;
+    const name = duplicateDraft.name.trim();
+    if (!name) {
+      setDuplicateError("Enter a name for the copied trip.");
+      return;
+    }
+    try {
+      const copy = duplicateTrip(duplicateDraft.source);
+      copy.name = name;
+      store.change((d) => {
+        d.trips.push(copy);
+      });
+      setDuplicateDraft(null);
+      setDuplicateError("");
+      setUndo(null);
+      navigate("planner", copy);
+      notify("Trip duplicated. Packing and completion checks have been reset.");
+    } catch (e) {
+      notify(
+        e instanceof Error ? e.message : "Could not duplicate trip.",
         true,
       );
     }
@@ -525,22 +556,11 @@ function WorkspaceApp({
     change: mutate,
     remove,
     duplicate: (t) => {
-      try {
-        const copy = duplicateTrip(t);
-        store.change((d) => {
-          d.trips.push(copy);
-        });
-        navigate("planner", copy);
-        setUndo(null);
-        notify(
-          "Trip duplicated. Packing and completion checks have been reset.",
-        );
-      } catch (e) {
-        notify(
-          e instanceof Error ? e.message : "Could not duplicate trip.",
-          true,
-        );
-      }
+      setDuplicateError("");
+      setDuplicateDraft({
+        source: t,
+        name: `${t.name.slice(0, 190)} (copy)`,
+      });
     },
     exportTrip: () => setExportOpen(true),
   };
@@ -941,6 +961,56 @@ function WorkspaceApp({
           onClose={() => setEditor(null)}
           onSave={saveEditor}
         />
+      )}
+      {duplicateDraft && (
+        <Modal
+          title="Name your copied trip"
+          description="Choose a name before adding this itinerary to your trips."
+          onDismiss={() => {
+            setDuplicateDraft(null);
+            setDuplicateError("");
+          }}
+        >
+          <form onSubmit={submitDuplicate}>
+            <div className="ew-editor-body">
+              <div className="ew-field">
+                <label htmlFor="duplicate-trip-name">Trip name</label>
+                <input
+                  id="duplicate-trip-name"
+                  autoFocus
+                  required
+                  maxLength={200}
+                  value={duplicateDraft.name}
+                  onChange={(e) => {
+                    setDuplicateError("");
+                    setDuplicateDraft((current) =>
+                      current ? { ...current, name: e.target.value } : current,
+                    );
+                  }}
+                  placeholder="A little time in the mountains"
+                />
+                {duplicateError && (
+                  <p className="ew-inline-error" role="alert">
+                    {duplicateError}
+                  </p>
+                )}
+              </div>
+            </div>
+            <footer className="ew-dialog-footer">
+              <Button
+                onClick={() => {
+                  setDuplicateDraft(null);
+                  setDuplicateError("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" icon="copy" type="submit">
+                Duplicate trip
+              </Button>
+            </footer>
+          </form>
+        </Modal>
       )}
       {exportOpen && trip && (
         <Modal
