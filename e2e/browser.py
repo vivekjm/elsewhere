@@ -58,6 +58,33 @@ def stored(page):
     return page.evaluate("fetch('/api/workspace').then(r=>r.json())")
 
 
+def set_date(field, value):
+    """Type an ISO date into a custom date picker and commit it."""
+    field.fill(value)
+    field.press('Enter')
+    expect(field).to_have_value(re.compile(r'\d{1,2} \w{3} \d{4}'))
+
+
+def pick_date(page, value):
+    """Choose a date straight from the open calendar popover."""
+    page.locator(f'.ew-day-cell[data-date="{value}"]').click()
+    page.wait_for_selector('.ew-calendar-popover', state='detached')
+
+
+def set_time(field, value):
+    """Type 24-hour time into a custom time picker and commit it."""
+    field.fill(value)
+    field.press('Enter')
+    expect(field).to_have_value(re.compile(r'^\d{2}:\d{2}$'))
+
+
+def choose(page, label, option):
+    """Choose from a custom listbox picker: trigger button, then option."""
+    page.get_by_role('button', name=label, exact=True).click()
+    page.get_by_role('option', name=option, exact=True).click()
+    page.wait_for_selector('.ew-select-panel', state='detached')
+
+
 def wait_record(page, expression):
     deadline = time.monotonic() + 12
     while time.monotonic() < deadline:
@@ -93,21 +120,25 @@ with sync_playwright() as pw:
         page.get_by_role('button', name='Add a plan', exact=True).click()
         d = page.get_by_role('dialog')
         d.get_by_label('Activity', exact=True).fill('Museum reservation')
-        d.get_by_label('Start time', exact=False).fill('11:00')
-        d.get_by_label('End time (optional)', exact=True).fill('12:30')
+        set_time(d.get_by_role('combobox', name='Start time', exact=True), '11:00')
+        set_time(d.get_by_role('combobox', name='End time (optional)', exact=True), '12:30')
         d.get_by_label('Place', exact=True).fill('City museum')
         d.get_by_label('Estimated cost (EUR)', exact=True).fill('19.50')
         d.get_by_label('Reference link (optional)', exact=True).fill('https://example.com/reservation')
-        d.get_by_label('Outfit for this activity', exact=True).select_option('coast')
+        choose(page, 'Outfit for this activity', 'A breezy afternoon')
         d.get_by_role('button', name='Save changes', exact=True).click()
         wait_record(page, lambda w: any(a['title'] == 'Museum reservation' for a in w['trips'][0]['activities']))
         page.get_by_role('button', name='Edit Museum reservation', exact=True).click()
         d = page.get_by_role('dialog')
-        d.get_by_label('Date', exact=True).fill('2026-09-24')
+        date_field = d.get_by_label('Date', exact=True)
+        date_field.click()
+        pick_date(page, '2026-09-24')
+        expect(date_field).to_have_value('24 Sep 2026')
         d.get_by_role('button', name='Save changes', exact=True).click()
         data = wait_record(page, lambda w: any(a['title'] == 'Museum reservation' and a['date'] == '2026-09-24' for a in w['trips'][0]['activities']))
         a = next(a for a in data['workspace']['trips'][0]['activities'] if a['title'] == 'Museum reservation')
         assert a['cost'] == 19.5 and a['endTime'] == '12:30' and a['outfitId'] == 'coast'
+        assert a['category'] == 'Explore'
         expect(page.get_by_role('complementary', name='Selected day')).to_contain_text('Thursday 24 Sept')
         page.get_by_role('button', name='Delete Museum reservation', exact=True).click()
         page.get_by_role('dialog').get_by_role('button', name='Delete', exact=True).click()
@@ -120,7 +151,7 @@ with sync_playwright() as pw:
         page.get_by_role('button', name='Add a piece', exact=True).click()
         d = page.get_by_role('dialog')
         d.get_by_label('Item name', exact=True).fill('Photo jacket')
-        d.get_by_label('Category', exact=True).select_option('Layers')
+        choose(page, 'Category', 'Layers')
         d.get_by_label('Weight (g)', exact=True).fill('430')
         d.locator('input[type=file]').set_input_files({'name': 'fixture.png', 'mimeType': 'image/png', 'buffer': PNG})
         expect(d.locator('.ew-item-preview img')).to_be_visible()
@@ -182,8 +213,8 @@ with sync_playwright() as pw:
         d = page.get_by_role('dialog')
         d.get_by_label('Trip name', exact=True).fill('A week in the hills')
         d.get_by_label('Destination', exact=True).fill('Gangtok & Lachung')
-        d.get_by_label('Departure', exact=True).fill('2026-11-01')
-        d.get_by_label('Return', exact=True).fill('2026-11-07')
+        set_date(d.get_by_label('Departure', exact=True), '2026-11-01')
+        set_date(d.get_by_label('Return', exact=True), '2026-11-07')
         d.get_by_role('button', name='Save changes', exact=True).click()
         wait_record(page, lambda w: len(w['trips']) == 2)
         page.reload(wait_until='networkidle')

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   CATEGORIES,
   uid,
@@ -14,12 +14,9 @@ import {
   dayActivities,
   dayItems,
   money,
-  monthDays,
-  shiftMonth,
   overlaps,
   today,
 } from "@/lib/planning";
-import type { Modal as EditorModal } from "./editor";
 import {
   Button,
   Empty,
@@ -29,40 +26,30 @@ import {
   Piece,
   Search,
 } from "./primitives";
-import { activityIcon } from "./icons";
-import { Landscape } from "./landscape";
-export type View =
-  | "planner"
-  | "wardrobe"
-  | "outfits"
-  | "packing"
-  | "trips"
-  | "settings";
-export type ScreenProps = {
-  w: Workspace;
-  trip?: Trip;
-  day: string;
-  month: string;
-  open: (modal: EditorModal) => void;
-  selectDay: (day: string) => void;
-  setMonth: (month: string) => void;
-  navigate: (view: View, trip?: Trip) => void;
-  change: (fn: (w: Workspace) => void) => void;
-  remove: (
-    kind: "trip" | "activity" | "item" | "outfit" | "extra",
-    id: string,
-  ) => void;
-  duplicate: (trip: Trip) => void;
-  exportTrip: () => void;
-};
-export const VIEW_LABELS: Record<View, string> = {
-  planner: "Your trip, all together.",
-  wardrobe: "A well-travelled wardrobe.",
-  outfits: "Good days. Great outfits.",
-  packing: "A little lighter. A lot readier.",
-  trips: "Somewhere worth going.",
-  settings: "Your plans, in good hands.",
-};
+import { activityIcon, type IconName } from "./icons";
+import { moodOf, Landscape } from "./landscape";
+import { Calendar } from "./calendar";
+import {
+  VIEW_LABELS,
+  type View,
+  type ScreenProps,
+} from "./screen";
+export { VIEW_LABELS };
+export type { View, ScreenProps };
+/** One-tap starting points so an empty day never feels like a blank form. */
+const QUICK_PLANS: {
+  title: string;
+  category: Activity["category"];
+  time: string;
+  icon: IconName;
+}[] = [
+  { title: "Coffee", category: "Food & drink", time: "09:30", icon: "food" },
+  { title: "Museum", category: "Explore", time: "11:00", icon: "event" },
+  { title: "Lunch", category: "Food & drink", time: "13:00", icon: "food" },
+  { title: "Walk", category: "Explore", time: "16:30", icon: "compass" },
+  { title: "Dinner", category: "Food & drink", time: "19:30", icon: "food" },
+  { title: "Travel day", category: "Travel", time: "08:00", icon: "plane" },
+];
 export function TripHero({
   w,
   trip,
@@ -76,7 +63,7 @@ export function TripHero({
   return (
     <section className="ew-hero" aria-label="Trip overview">
       <div className="ew-hero-landscape">
-        <Landscape theme={trip.theme || "mountains"} />
+        <Landscape theme={moodOf(trip.theme)} />
       </div>
       <div className="ew-hero-content">
         <div className="ew-hero-label">
@@ -245,185 +232,6 @@ function ActivityCard({
     </article>
   );
 }
-function Calendar({ props }: { props: ScreenProps }) {
-  const { trip, w, day, month, selectDay, setMonth } = props,
-    ref = useRef<HTMLTableElement>(null);
-  if (!trip) return null;
-  const dates = monthDays(month),
-    firstEnabled = dates.find((d) => d >= trip.start && d <= trip.end);
-  const focused = dates.includes(day) ? day : firstEnabled;
-  function key(e: React.KeyboardEvent, date: string) {
-    const weekday = (new Date(date).getUTCDay() + 6) % 7;
-    const amount = (
-      {
-        ArrowLeft: -1,
-        ArrowRight: 1,
-        ArrowUp: -7,
-        ArrowDown: 7,
-        Home: -weekday,
-        End: 6 - weekday,
-      } as Record<string, number>
-    )[e.key];
-    if (amount === undefined || !trip) return;
-    e.preventDefault();
-    const target = new Date(Date.parse(date) + amount * 86400000)
-      .toISOString()
-      .slice(0, 10);
-    if (target < trip.start || target > trip.end) return;
-    selectDay(target);
-    requestAnimationFrame(() =>
-      ref.current
-        ?.querySelector<HTMLButtonElement>(`[data-date="${target}"]`)
-        ?.focus(),
-    );
-  }
-  return (
-    <div className="ew-calendar-card">
-      <div className="ew-month-toolbar">
-        <h2>{dateLabel(`${month}-01`, { month: "long", year: "numeric" })}</h2>
-        <div>
-          <Button
-            variant="quiet"
-            onClick={() => {
-              setMonth(today().slice(0, 7));
-              if (today() >= trip.start && today() <= trip.end)
-                selectDay(today());
-            }}
-          >
-            Today
-          </Button>
-          <IconButton
-            label="Previous month"
-            icon="left"
-            disabled={month <= "1900-01"}
-            onClick={() => setMonth(shiftMonth(month, -1))}
-          />
-          <IconButton
-            label="Next month"
-            icon="right"
-            disabled={month >= "2200-12"}
-            onClick={() => setMonth(shiftMonth(month, 1))}
-          />
-        </div>
-      </div>
-      <table
-        ref={ref}
-        className="ew-calendar"
-        aria-label={`${dateLabel(`${month}-01`, { month: "long", year: "numeric" })} trip calendar`}
-      >
-        <thead>
-          <tr>
-            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-              <th key={d} scope="col">
-                {d}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: 6 }, (_, week) => (
-            <tr key={week}>
-              {dates.slice(week * 7, week * 7 + 7).map((date) => {
-                const inTrip = date >= trip.start && date <= trip.end,
-                  events = dayActivities(trip, date),
-                  looks = dayItems(w, trip, date).outfits;
-                return (
-                  <td
-                    key={date}
-                    className={`${inTrip ? "ew-in-trip" : ""} ${day === date ? "ew-selected-day" : ""} ${!date.startsWith(month) ? "ew-other-month" : ""}`}
-                  >
-                    <button
-                      type="button"
-                      data-date={date}
-                      disabled={!inTrip}
-                      tabIndex={focused === date ? 0 : -1}
-                      aria-pressed={day === date}
-                      aria-current={date === today() ? "date" : undefined}
-                      aria-label={`${dateLabel(date, { weekday: "long", day: "numeric", month: "long" })}, ${events.length} activities, ${looks.length} outfits${inTrip ? "" : ", outside trip"}`}
-                      onClick={() => selectDay(date)}
-                      onKeyDown={(e) => key(e, date)}
-                    >
-                      <span className="ew-date-number">
-                        {Number(date.slice(-2))}
-                      </span>
-                      {date === trip.start && (
-                        <small className="ew-date-flag">LET’S GO</small>
-                      )}
-                      <span className="ew-cell-events">
-                        {events.slice(0, 2).map((a) => (
-                          <span
-                            key={a.id}
-                            className={`ew-event-chip ew-type-${a.category.replaceAll(/[^a-z]/gi, "").toLowerCase()}`}
-                          >
-                            <i />
-                            {a.title}
-                          </span>
-                        ))}
-                        {events.length > 2 && (
-                          <small>+{events.length - 2} more</small>
-                        )}
-                        {looks.length > 0 && (
-                          <span className="ew-outfit-chip">
-                            <Icon name="hanger" size={12} />
-                            <span>
-                              {looks[0].name}
-                              {looks.length > 1 ? ` +${looks.length - 1}` : ""}
-                            </span>
-                          </span>
-                        )}
-                      </span>
-                      <span className="ew-cell-dots" aria-hidden="true">
-                        {events.slice(0, 3).map((a) => (
-                          <i
-                            key={a.id}
-                            className={`ew-dot-${a.category.replaceAll(/[^a-z]/gi, "").toLowerCase()}`}
-                          />
-                        ))}
-                        {looks.length > 0 && <i className="ew-dot-look" />}
-                      </span>
-                    </button>
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="ew-calendar-footer">
-        <span>
-          <i className="ew-dot-explore" />
-          Explore
-        </span>
-        <span>
-          <i className="ew-dot-fooddrink" />
-          Food
-        </span>
-        <span>
-          <i className="ew-dot-travel" />
-          Travel
-        </span>
-        <span>
-          <i className="ew-dot-look" />
-          Outfit
-        </span>
-        <small>Destination-local plans</small>
-      </div>
-      {!firstEnabled && (
-        <div className="ew-month-empty">
-          No trip dates in this month.{" "}
-          <Button
-            variant="quiet"
-            onClick={() => {
-              selectDay(trip.start);
-            }}
-          >
-            Go to your trip <Icon name="arrow" size={12} />
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
 export function Planner({ props }: { props: ScreenProps }) {
   const { w, trip, day, open, selectDay } = props,
     [mode, setMode] = useState<"calendar" | "itinerary">("calendar");
@@ -456,6 +264,11 @@ export function Planner({ props }: { props: ScreenProps }) {
         <section className="ew-calendar-section">
           <div className="ew-planner-toolbar">
             <div className="ew-segmented" aria-label="Planner view">
+              <span
+                className="ew-segmented-glider"
+                style={{ transform: `translateX(${mode === "calendar" ? 0 : 100}%)` }}
+                aria-hidden="true"
+              />
               <button
                 aria-pressed={mode === "calendar"}
                 onClick={() => setMode("calendar")}
@@ -577,10 +390,10 @@ export function Planner({ props }: { props: ScreenProps }) {
             />
           </div>
           <button
-            className="ew-day-subtitle"
+            className={`ew-day-subtitle ${details?.title ? "" : "ew-placeholder"}`}
             onClick={() => open({ kind: "day", date: day })}
           >
-            {details?.title || "Give this day a little direction"}
+            {details?.title || "Name this day"}
             <Icon name="edit" size={12} />
           </button>
           <div className="ew-day-section">
@@ -606,14 +419,37 @@ export function Planner({ props }: { props: ScreenProps }) {
                 />
               ))
             ) : (
-              <button
-                className="ew-day-empty"
-                onClick={() => open({ kind: "activity", date: day })}
-              >
-                <Icon name="plus" />
-                <span>What’s on the horizon?</span>
-                <small>Add a place, event or a little adventure.</small>
-              </button>
+              <>
+                <button
+                  className="ew-day-empty"
+                  onClick={() => open({ kind: "activity", date: day })}
+                >
+                  <Icon name="plus" />
+                  <span>Nothing planned yet</span>
+                </button>
+                <div className="ew-quick-add" aria-label="Quick plan ideas">
+                  {QUICK_PLANS.map((q) => (
+                    <button
+                      key={q.title}
+                      onClick={() =>
+                        open({
+                          kind: "activity",
+                          date: day,
+                          draft: {
+                            date: day,
+                            title: q.title,
+                            category: q.category,
+                            time: q.time,
+                          },
+                        })
+                      }
+                    >
+                      <Icon name={q.icon} size={13} />
+                      {q.title}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
           </div>
           <div className="ew-day-section ew-day-outfits">
@@ -975,6 +811,7 @@ export function Packing({ props }: { props: ScreenProps }) {
         <div
           className="ew-progress-ring"
           style={{ "--progress": `${progress}%` } as React.CSSProperties}
+          aria-hidden="true"
         >
           <div>
             <strong>
@@ -1216,7 +1053,7 @@ export function Trips({ props }: { props: ScreenProps }) {
                 onClick={() => navigate("planner", t)}
                 aria-label={`Open ${t.name}`}
               >
-                <Landscape theme={t.theme || "mountains"} />
+                <Landscape theme={moodOf(t.theme)} />
                 <span className="ew-pill">
                   {t.sample
                     ? "SAMPLE TRIP"

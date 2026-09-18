@@ -25,7 +25,7 @@ import {
 } from "@/lib/backup";
 import { Editor, type Modal as EditorModal, type EditorResult } from "./editor";
 import { Button, Icon, IconButton, Modal } from "./primitives";
-import type { IconName } from "./icons";
+import { Select } from "./pickers";
 import {
   Planner,
   Wardrobe,
@@ -36,13 +36,7 @@ import {
   type View,
   type ScreenProps,
 } from "./views";
-const nav: { view: View; label: string; icon: IconName }[] = [
-  { view: "planner", label: "Calendar", icon: "calendar" },
-  { view: "wardrobe", label: "Wardrobe", icon: "hanger" },
-  { view: "outfits", label: "Outfits", icon: "layers" },
-  { view: "packing", label: "Packing list", icon: "bag" },
-  { view: "trips", label: "All trips", icon: "compass" },
-];
+import { NAV as nav } from "./screen";
 type Route = { view: View; tripId: string; day: string; month: string };
 function readRoute(w: Workspace): Route {
   const [path, query] = window.location.hash.slice(1).split("?"),
@@ -523,25 +517,23 @@ function WorkspaceApp() {
       ));
   const tripSelect = (mobile = false) =>
     w.trips.length > 0 && (
-      <label className={mobile ? "ew-mobile-trip" : "ew-trip-select"}>
-        <span className={mobile ? "ew-sr-only" : "ew-eyebrow"}>
-          {mobile ? "Current trip on mobile" : "CURRENT TRIP"}
-        </span>
-        <select
-          aria-label={mobile ? "Current trip on mobile" : "Current trip"}
+      <div className={mobile ? "ew-mobile-trip" : "ew-trip-select"}>
+        {!mobile && <span className="ew-eyebrow">CURRENT TRIP</span>}
+        <Select
+          label={mobile ? "Current trip on mobile" : "Current trip"}
           value={trip?.id || ""}
-          onChange={(e) => {
-            const t = w.trips.find((t) => t.id === e.target.value);
+          search={w.trips.length > 5}
+          onChange={(id) => {
+            const t = w.trips.find((t) => t.id === id);
             if (t) navigate(route.view, t);
           }}
-        >
-          {w.trips.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-      </label>
+          options={w.trips.map((t) => ({
+            value: t.id,
+            label: t.name,
+            icon: "compass" as const,
+          }))}
+        />
+      </div>
     );
   return (
     <div className="ew">
@@ -689,6 +681,7 @@ function WorkspaceApp() {
               )}
             </div>
           </div>
+          <div className="ew-view" key={route.view}>
           {route.view === "planner" && <Planner props={props} />}
           {(route.view === "wardrobe" || route.view === "outfits") && (
             <Wardrobe
@@ -803,6 +796,7 @@ function WorkspaceApp() {
               </section>
             </div>
           )}
+          </div>
           {trip && route.view === "planner" && (
             <section
               className={`ew-budget-bar ${trip.budget > 0 && trip.activities.reduce((n, a) => n + a.cost, 0) > trip.budget ? "ew-over-budget" : ""}`}

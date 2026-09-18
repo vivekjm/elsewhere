@@ -46,3 +46,10 @@ next-env.d.ts
 /work/
 
 *.tsbuildinfo
+
+# local verification artifacts
+/test-results/
+__pycache__/
+
+# local browser automation artifacts
+/.playwright-cli/

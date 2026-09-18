@@ -26,6 +26,19 @@ export const EXTRA_CATEGORIES = [
   "Health & care",
   "Other",
 ] as const;
+/** Cover moods for a trip. Values stay stable so saved trips keep their art. */
+export const TRIP_MOODS = [
+  "mountains",
+  "coast",
+  "city",
+  "forest",
+  "lake",
+  "desert",
+  "island",
+  "aurora",
+] as const;
+export const isMood = (value: unknown): value is (typeof TRIP_MOODS)[number] =>
+  typeof value === "string" && (TRIP_MOODS as readonly string[]).includes(value);
 export const SHAPES = [
   "tee",
   "shirt",
@@ -116,7 +129,7 @@ export type Trip = {
   days: Record<string, Day>;
   extras: Extra[];
   packed: string[];
-  theme?: "mountains" | "coast" | "city";
+  theme?: (typeof TRIP_MOODS)[number];
   notes?: string;
   sample?: boolean;
 };
@@ -390,11 +403,8 @@ function parseTrip(value: unknown): Trip {
     days: result,
     extras,
     packed: ids(v.packed, "packed items", 2000),
-    theme: choice(
-      v.theme ?? "mountains",
-      ["mountains", "coast", "city"] as const,
-      "cover",
-    ),
+    // Cover mood: an unknown value falls back rather than rejecting a whole trip.
+    theme: isMood(v.theme) ? v.theme : "mountains",
     notes: text(v.notes ?? "", "Trip notes", 5000),
     sample: boolean(v.sample ?? false, "sample status"),
   };
