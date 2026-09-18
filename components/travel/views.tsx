@@ -1037,11 +1037,6 @@ export function Trips({ props }: { props: ScreenProps }) {
   const { w, open, navigate, remove, duplicate } = props;
   return (
     <>
-      <p className="ew-trips-intro">
-        A weekend away, a long-awaited adventure, or just a change of scene.
-        <br />
-        Keep the whole journey in one thoughtful place.
-      </p>
       <div className="ew-trips-grid">
         {w.trips.map((t) => {
           const rows = packing(w, t),
