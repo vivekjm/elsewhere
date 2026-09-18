@@ -566,6 +566,9 @@
 .ew-outfit-chip {
   font-weight: 500;
 }
+.ew-outfit-count {
+  display: none;
+}
 /* Let the snapshot use the full column: the button keeps padding for the date. */
 .ew-cell-snapshot {
   display: flex;
@@ -588,6 +591,55 @@
 }
 .ew-gear-chip {
   display: none;
+}
+/* Keep the month grid scannable on tablet widths. The selected-day panel
+   carries the full detail, so the cell only needs a compact time/title row
+   and a short look summary. */
+@media (max-width: 1280px) and (min-width: 601px) {
+  .ew-cell-snapshot {
+    gap: 3px;
+    margin-inline: -2px;
+  }
+  .ew-event-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 4px 3px 7px;
+    font-size: 8px;
+    line-height: 1.15;
+  }
+  .ew-event-chip b {
+    flex: 0 0 auto;
+    font-size: 7px;
+    letter-spacing: 0.35px;
+    line-height: 1;
+  }
+  .ew-event-chip em {
+    display: block;
+    max-height: none;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 8.5px;
+    line-height: 1.15;
+  }
+  .ew-outfit-chip {
+    margin-top: 1px;
+    font-size: 7.5px;
+    line-height: 1.2;
+  }
+  .ew-outfit-name {
+    display: none;
+  }
+  .ew-outfit-count {
+    display: inline;
+  }
+  .ew-outfit-chip .ew-icon {
+    width: 10px;
+    height: 10px;
+    flex: none;
+  }
 }
 .ew-cell-add {
   position: absolute;

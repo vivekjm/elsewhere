@@ -47,9 +47,12 @@ function CellSnapshot({
       {looks.length > 0 && (
         <span className="ew-outfit-chip" title={looks.map((o) => o.name).join(", ")}>
           <Icon name="hanger" size={12} />
-          <span>
+          <span className="ew-outfit-name">
             {looks[0].name}
             {looks.length > 1 ? ` +${looks.length - 1}` : ""}
+          </span>
+          <span className="ew-outfit-count">
+            {looks.length} {looks.length === 1 ? "look" : "looks"}
           </span>
         </span>
       )}
