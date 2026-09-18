@@ -29,6 +29,7 @@ import { Select } from "./pickers";
 import {
   Planner,
   Wardrobe,
+  Essentials,
   Packing,
   Trips,
   PrintPlan,
@@ -42,9 +43,15 @@ function readRoute(w: Workspace): Route {
   const [path, query] = window.location.hash.slice(1).split("?"),
     params = new URLSearchParams(query);
   const view = (
-    ["planner", "wardrobe", "outfits", "packing", "trips", "settings"].includes(
-      path,
-    )
+    [
+      "planner",
+      "wardrobe",
+      "outfits",
+      "essentials",
+      "packing",
+      "trips",
+      "settings",
+    ].includes(path)
       ? path
       : "planner"
   ) as View;
@@ -660,11 +667,13 @@ function WorkspaceApp() {
                           ? "item"
                           : route.view === "outfits"
                             ? "outfit"
-                            : route.view === "packing" && trip
+                            : route.view === "essentials" && trip
                               ? "extra"
-                              : route.view === "planner" && trip
-                                ? "activity"
-                                : "trip",
+                              : route.view === "packing" && trip
+                                ? "extra"
+                                : route.view === "planner" && trip
+                                  ? "activity"
+                                  : "trip",
                     })
                   }
                 >
@@ -672,11 +681,13 @@ function WorkspaceApp() {
                     ? "Add a piece"
                     : route.view === "outfits"
                       ? "Create outfit"
-                      : route.view === "packing" && trip
+                      : route.view === "essentials" && trip
                         ? "Add an essential"
-                        : route.view === "planner" && trip
-                          ? "Add a plan"
-                          : "New trip"}
+                        : route.view === "packing" && trip
+                          ? "Add an essential"
+                          : route.view === "planner" && trip
+                            ? "Add a plan"
+                            : "New trip"}
                 </Button>
               )}
             </div>
@@ -690,6 +701,7 @@ function WorkspaceApp() {
               outfitsOnly={route.view === "outfits"}
             />
           )}
+          {route.view === "essentials" && <Essentials props={props} />}
           {route.view === "packing" && <Packing props={props} />}
           {route.view === "trips" && <Trips props={props} />}
           {route.view === "settings" && (

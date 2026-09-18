@@ -1,13 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import {
-  CATEGORIES,
+  CLOTHING_CATEGORIES,
   uid,
   packing,
   tripDates,
   type Workspace,
   type Trip,
   type Activity,
+  type Extra,
 } from "@/lib/model";
 import {
   dateLabel,
@@ -50,6 +51,22 @@ const QUICK_PLANS: {
   { title: "Dinner", category: "Food & drink", time: "19:30", icon: "food" },
   { title: "Travel day", category: "Travel", time: "08:00", icon: "plane" },
 ];
+const ESSENTIAL_SUGGESTIONS = [
+  ["Passport & travel documents", "Documents", 80],
+  ["Phone charger", "Electronics", 120],
+  ["Toiletry kit", "Toiletries", 300],
+  ["Reusable water bottle", "Essentials", 150],
+] as const;
+const ESSENTIAL_ICONS: Record<string, IconName> = {
+  Documents: "note",
+  Electronics: "camera",
+  Toiletries: "bag",
+  "Health & care": "shield",
+  Essentials: "bag",
+  Other: "layers",
+};
+const essentialIcon = (category: string): IconName =>
+  ESSENTIAL_ICONS[category] || "bag";
 export function TripHero({
   w,
   trip,
@@ -571,8 +588,14 @@ export function Wardrobe({
   const { w, open, remove, navigate } = props,
     [query, setQuery] = useState(""),
     [category, setCategory] = useState("All");
+  const clothing = w.items.filter((i) =>
+    CLOTHING_CATEGORIES.includes(
+      i.category as (typeof CLOTHING_CATEGORIES)[number],
+    ),
+  );
   const items = w.items.filter(
     (i) =>
+      clothing.includes(i) &&
       (category === "All" || category === i.category) &&
       `${i.name} ${i.category} ${i.notes || ""}`
         .toLowerCase()
@@ -604,7 +627,7 @@ export function Wardrobe({
             aria-pressed={!outfitsOnly}
             onClick={() => navigate("wardrobe")}
           >
-            Items <span>{w.items.length}</span>
+            Items <span>{clothing.length}</span>
           </button>
           <button
             aria-pressed={outfitsOnly}
@@ -621,7 +644,7 @@ export function Wardrobe({
       </div>
       {!outfitsOnly && (
         <div className="ew-chips" aria-label="Filter wardrobe by category">
-          {["All", ...CATEGORIES].map((c) => (
+          {["All", ...CLOTHING_CATEGORIES].map((c) => (
             <button
               key={c}
               aria-pressed={category === c}
@@ -737,8 +760,172 @@ export function Wardrobe({
         )}
       <p className="ew-collection-note">
         <Icon name="shield" size={15} />
-        Your wardrobe and uploaded photos are private to this visitor workspace.
+        Clothing stays here. Documents, electronics, toiletries, and other trip essentials live in Essentials.
       </p>
+    </>
+  );
+}
+export function Essentials({ props }: { props: ScreenProps }) {
+  const { trip, open, change, remove } = props,
+    [query, setQuery] = useState(""),
+    [filter, setFilter] = useState("All");
+  if (!trip)
+    return (
+      <Empty
+        icon="shield"
+        title="Keep the little things together."
+        action={
+          <Button variant="primary" onClick={() => open({ kind: "trip" })}>
+            Plan a trip
+          </Button>
+        }
+      >
+        Create a trip first, then add documents, electronics, toiletries, and
+        other essentials to its checklist.
+      </Empty>
+    );
+  const rows = trip.extras,
+    done = rows.filter((e) => e.packed).length,
+    visible = rows.filter(
+      (e) =>
+        (filter === "All" || (filter === "To pack" ? !e.packed : e.packed)) &&
+        `${e.name} ${e.category || "Essentials"}`
+          .toLowerCase()
+          .includes(query.toLowerCase()),
+    ),
+    categories = [...new Set(visible.map((e) => e.category || "Essentials"))];
+  const addSuggestion = (name: string, category: string, weight: number) =>
+    change((d) => {
+      const t = d.trips.find((item) => item.id === trip.id);
+      if (!t || t.extras.some((e) => e.name.toLowerCase() === name.toLowerCase()))
+        return;
+      t.extras.push({
+        id: uid(),
+        name,
+        category: category as Extra["category"],
+        weight,
+        quantity: 1,
+        packed: false,
+      });
+    });
+  const toggle = (id: string, packed: boolean) =>
+    change((d) => {
+      const extra = d.trips.find((item) => item.id === trip.id)?.extras.find((e) => e.id === id);
+      if (extra) extra.packed = packed;
+    });
+  return (
+    <>
+      <section className="ew-essentials-overview">
+        <div>
+          <p className="ew-eyebrow">THE LITTLE THINGS</p>
+          <h2>Everything beyond your outfits.</h2>
+          <p>
+            Keep passports, electronics, toiletries, and other trip essentials
+            together in one place.
+          </p>
+          <progress value={done} max={rows.length || 1} aria-label="Essentials packed" />
+        </div>
+        <div className="ew-essentials-count">
+          <strong>{done}</strong>
+          <span>of {rows.length} ready</span>
+        </div>
+      </section>
+      <div className="ew-essentials-layout">
+        <section>
+          <div className="ew-packing-toolbar">
+            <div className="ew-segmented">
+              {["All", "To pack", "Packed"].map((value) => (
+                <button
+                  key={value}
+                  aria-pressed={filter === value}
+                  onClick={() => setFilter(value)}
+                >
+                  {value}
+                  <span>
+                    {value === "All"
+                      ? rows.length
+                      : value === "Packed"
+                        ? done
+                        : rows.length - done}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <Search value={query} onChange={setQuery} label="Find an essential" />
+          </div>
+          {categories.map((category) => (
+            <section className="ew-packing-group" key={category}>
+              <div className="ew-packing-group-header">
+                <h3>{category}</h3>
+                <span>
+                  {rows.filter((e) => (e.category || "Essentials") === category && e.packed).length}/
+                  {rows.filter((e) => (e.category || "Essentials") === category).length} packed
+                </span>
+              </div>
+              {visible
+                .filter((e) => (e.category || "Essentials") === category)
+                .map((e) => (
+                  <div className={`ew-packing-row ew-essential-row ${e.packed ? "ew-is-packed" : ""}`} key={e.id}>
+                    <input
+                      type="checkbox"
+                      checked={e.packed}
+                      aria-label={`Pack ${e.name}`}
+                      onChange={(event) => toggle(e.id, event.target.checked)}
+                    />
+                    <span className="ew-pack-thumb ew-pack-icon">
+                      <Icon name={essentialIcon(category)} size={20} />
+                    </span>
+                    <div className="ew-pack-name">
+                      <strong>{e.name}</strong>
+                      <small>{e.quantity} {e.quantity === 1 ? "item" : "items"} · Added to your essentials</small>
+                    </div>
+                    <span className="ew-pack-weight">{e.weight * e.quantity} g</span>
+                    <IconButton icon="edit" label={`Edit ${e.name}`} onClick={() => open({ kind: "extra", id: e.id })} />
+                    <IconButton icon="trash" label={`Delete ${e.name}`} onClick={() => remove("extra", e.id)} />
+                  </div>
+                ))}
+            </section>
+          ))}
+          {!visible.length && (
+            <Empty
+              icon="shield"
+              title={rows.length ? "Nothing here just now." : "Your essentials list is ready."}
+              action={
+                <Button
+                  onClick={() => {
+                    if (rows.length) {
+                      setFilter("All");
+                      setQuery("");
+                    } else {
+                      open({ kind: "extra" });
+                    }
+                  }}
+                >
+                  {rows.length ? "Clear filters" : "Add an essential"}
+                </Button>
+              }
+            >
+              {rows.length ? "Try another filter or search." : "Add passports, chargers, toiletries, or anything else you need."}
+            </Empty>
+          )}
+        </section>
+        <aside>
+          <section className="ew-essentials-card">
+            <p className="ew-eyebrow">START WITH THE BASICS</p>
+            <h3>Easy to forget.<br />Good to remember.</h3>
+            <p>Add a common essential with one tap, then adjust it anytime.</p>
+            {ESSENTIAL_SUGGESTIONS.map(([name, category, weight]) => {
+              const added = rows.some((e) => e.name.toLowerCase() === name.toLowerCase());
+              return (
+                <button key={name} disabled={added} onClick={() => addSuggestion(name, category, weight)}>
+                  {name}
+                  <Icon name={added ? "check" : "plus"} size={16} />
+                </button>
+              );
+            })}
+          </section>
+        </aside>
+      </div>
     </>
   );
 }

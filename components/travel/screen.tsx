@@ -4,6 +4,7 @@ export type View =
   | "planner"
   | "wardrobe"
   | "outfits"
+  | "essentials"
   | "packing"
   | "trips"
   | "settings";
@@ -28,14 +29,16 @@ export const VIEW_LABELS: Record<View, string> = {
   planner: "Your trip, all together.",
   wardrobe: "A well-travelled wardrobe.",
   outfits: "Good days. Great outfits.",
+  essentials: "The little things that matter.",
   packing: "A little lighter. A lot readier.",
   trips: "Somewhere worth going.",
   settings: "Your plans, in good hands.",
 };
-export const NAV: { view: View; label: string; icon: "calendar" | "hanger" | "layers" | "bag" | "compass" }[] = [
+export const NAV: { view: View; label: string; icon: "calendar" | "hanger" | "layers" | "bag" | "shield" | "compass" }[] = [
   { view: "planner", label: "Calendar", icon: "calendar" },
   { view: "wardrobe", label: "Wardrobe", icon: "hanger" },
   { view: "outfits", label: "Outfits", icon: "layers" },
+  { view: "essentials", label: "Essentials", icon: "shield" },
   { view: "packing", label: "Packing list", icon: "bag" },
   { view: "trips", label: "All trips", icon: "compass" },
 ];

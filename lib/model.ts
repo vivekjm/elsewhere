@@ -10,6 +10,13 @@ export const CATEGORIES = [
   "Accessories",
   "Gear",
 ] as const;
+/** Categories shown in the clothing wardrobe and outfit builder. */
+export const CLOTHING_CATEGORIES = [
+  "Tops",
+  "Bottoms",
+  "Layers",
+  "Shoes",
+] as const;
 export const ACTIVITY_TYPES = [
   "Explore",
   "Food & drink",

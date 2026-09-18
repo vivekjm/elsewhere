@@ -6,6 +6,7 @@ import React, {
   type ButtonHTMLAttributes,
 } from "react";
 import type { Item, Outfit, Workspace } from "@/lib/model";
+import { CLOTHING_CATEGORIES } from "@/lib/model";
 import { Garment } from "./garment";
 import { Icon, type IconName } from "./icons";
 export { Icon } from "./icons";
@@ -234,14 +235,20 @@ export function ItemPicker({
   selected,
   onChange,
   label = "Choose wardrobe pieces",
+  clothingOnly = false,
 }: {
   w: Workspace;
   selected: string[];
   onChange: (ids: string[]) => void;
   label?: string;
+  clothingOnly?: boolean;
 }) {
   const [query, setQuery] = React.useState("");
   const items = w.items.filter((i) =>
+    (!clothingOnly ||
+      CLOTHING_CATEGORIES.includes(
+        i.category as (typeof CLOTHING_CATEGORIES)[number],
+      )) &&
     `${i.name} ${i.category}`.toLowerCase().includes(query.toLowerCase()),
   );
   return (
@@ -274,7 +281,9 @@ export function ItemPicker({
       {!items.length && (
         <p className="ew-muted">
           {w.items.length
-            ? "No pieces match your search."
+            ? clothingOnly
+              ? "No clothing pieces match your search."
+              : "No pieces match your search."
             : "Add clothes or equipment in Wardrobe first."}
         </p>
       )}

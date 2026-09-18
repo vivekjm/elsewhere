@@ -2,7 +2,7 @@
 import React, { useState, type ReactNode } from "react";
 import {
   ACTIVITY_TYPES,
-  CATEGORIES,
+  CLOTHING_CATEGORIES,
   CURRENCIES,
   EXTRA_CATEGORIES,
   SHAPES,
@@ -629,7 +629,23 @@ export function Editor({
                       f("category", value);
                       f("shape", defaultShape(value));
                     }}
-                    options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+                    options={[
+                      ...(form.category &&
+                      !CLOTHING_CATEGORIES.includes(
+                        form.category as (typeof CLOTHING_CATEGORIES)[number],
+                      )
+                        ? [
+                            {
+                              value: form.category,
+                              label: `${form.category} (legacy)`,
+                            },
+                          ]
+                        : []),
+                      ...CLOTHING_CATEGORIES.map((c) => ({
+                        value: c,
+                        label: c,
+                      })),
+                    ]}
                   />
                 </Field>
                 <div className="ew-form-grid">
@@ -706,6 +722,7 @@ export function Editor({
                 w={w}
                 selected={form.items || []}
                 onChange={(v) => f("items", v)}
+                clothingOnly
               />
               {notes("Outfit notes")}
             </>

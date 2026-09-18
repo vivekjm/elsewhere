@@ -1854,7 +1854,67 @@
   color: #587841 !important;
   padding: 8px 10px 0 0 !important;
 }
-/* Packing */
+/* Essentials and packing */
+.ew-essentials-overview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 27px 30px;
+  border: 1px solid #dfe7d5;
+  border-radius: 12px;
+  background: #eff4e7;
+  margin-bottom: 22px;
+}
+.ew-essentials-overview > div:first-child {
+  min-width: 0;
+  flex: 1;
+}
+.ew-essentials-overview .ew-eyebrow {
+  margin-bottom: 9px;
+  font-size: 8px;
+}
+.ew-essentials-overview h2 {
+  font: 29px/1.3 var(--ew-serif);
+  letter-spacing: -0.7px;
+  margin-bottom: 9px;
+}
+.ew-essentials-overview p:not(.ew-eyebrow) {
+  font-size: 12px;
+  color: #5d754b;
+  margin-bottom: 14px;
+}
+.ew-essentials-count {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  border-left: 1px solid #d6e2c6;
+  padding-left: 25px;
+  color: #557440;
+  white-space: nowrap;
+}
+.ew-essentials-count strong {
+  font: 32px/1 var(--ew-serif);
+}
+.ew-essentials-count span {
+  font-size: 11px;
+}
+.ew-essentials-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 265px;
+  gap: 27px;
+  align-items: start;
+}
+.ew-essentials-layout > section {
+  min-width: 0;
+}
+.ew-essential-row .ew-pack-thumb {
+  color: #607b4e;
+}
+.ew-essential-row.ew-is-packed .ew-pack-name strong {
+  text-decoration: line-through;
+  color: #7d8a72;
+}
 .ew-packing-overview {
   display: flex;
   align-items: center;
@@ -3027,6 +3087,9 @@ html.ew-modal-open {
   .ew-packing-layout {
     grid-template-columns: 1fr;
   }
+  .ew-essentials-layout {
+    grid-template-columns: 1fr;
+  }
   .ew-packing-side {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -3120,9 +3183,10 @@ html.ew-modal-open {
     align-items: center;
     justify-content: center;
     gap: 5px;
-    min-width: 70px;
+    min-width: 0;
+    flex: 1;
     min-height: 49px;
-    padding: 5px 13px;
+    padding: 5px 4px;
     border-radius: 8px;
     color: #627954;
     font-size: 9px;
@@ -3184,6 +3248,21 @@ html.ew-modal-open {
   }
   .ew-main {
     padding: 23px 16px 110px;
+  }
+  .ew-essentials-overview {
+    flex-wrap: wrap;
+    padding: 20px 15px;
+    gap: 14px;
+  }
+  .ew-essentials-overview h2 {
+    font-size: 25px;
+    line-height: 1.2;
+  }
+  .ew-essentials-count {
+    border-left: 0;
+    border-top: 1px solid #d6e2c6;
+    padding: 14px 0 0;
+    width: 100%;
   }
   .ew-page-header {
     display: block;
