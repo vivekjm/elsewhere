@@ -1515,8 +1515,50 @@
   background: #fcfdfa;
 }
 .ew-preview-actions .ew-button {
+  display: flex;
+  align-items: center;
   flex: 1;
   justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 10px 15px;
+  color: #293126;
+  font: 550 12px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.ew-preview-actions .ew-button > .ew-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+.ew-preview-actions .ew-button.ew-primary {
+  background: #293126;
+  color: #fff;
+  border-color: #293126;
+}
+.ew-preview-actions .ew-button.ew-primary:hover:not(:disabled) {
+  background: #47533e;
+  box-shadow: 0 3px 10px #29312616;
+}
+.ew-preview-actions .ew-button.ew-secondary {
+  background: #fff;
+  border-color: #e1e6d9;
+}
+.ew-preview-actions .ew-button.ew-secondary:hover:not(:disabled) {
+  background: #f3f5ee;
+  border-color: #bccab0;
+}
+.ew-preview-actions .ew-button:focus-visible {
+  outline: 2px solid #607a49;
+  outline-offset: 3px;
 }
 /* ---------- Day panel polish ---------- */
 .ew-day-subtitle.ew-placeholder {
