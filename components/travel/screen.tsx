@@ -32,7 +32,7 @@ export const VIEW_LABELS: Record<View, string> = {
   essentials: "The little things that matter.",
   packing: "A little lighter. A lot readier.",
   trips: "Somewhere worth going.",
-  settings: "Your plans, in good hands.",
+  settings: "Settings for your journey.",
 };
 export const NAV: { view: View; label: string; icon: "calendar" | "hanger" | "layers" | "bag" | "shield" | "compass" }[] = [
   { view: "planner", label: "Calendar", icon: "calendar" },

@@ -2414,10 +2414,35 @@
   gap: 10px;
   margin: 21px 0 16px;
 }
+.ew-settings-buttons > .ew-button {
+  flex: 1 1 170px;
+}
 .ew-settings-brand {
   display: block;
   margin-top: 23px;
   color: #688752;
+}
+.ew-settings-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+.ew-settings-stats span {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 13px;
+  border-radius: 8px;
+  background: #f4f7ef;
+  color: #617257;
+  font-size: 11px;
+}
+.ew-settings-stats b {
+  color: #455d38;
+  font: 21px/1 var(--ew-serif);
+  font-weight: 400;
 }
 .ew-check-line {
   display: flex;
@@ -4760,6 +4785,14 @@ html.ew-modal-open {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+.ew-reduced-motion *,
+.ew-reduced-motion *:before,
+.ew-reduced-motion *:after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 @media print {
   body {

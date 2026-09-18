@@ -142,6 +142,14 @@ function WorkspaceApp({
     } | null>(null),
     [busy, setBusy] = useState(false),
     [includePhotos, setIncludePhotos] = useState(true),
+    [reducedMotion, setReducedMotion] = useState(() => {
+      if (typeof window === "undefined") return false;
+      try {
+        return window.localStorage.getItem("elsewhere-reduced-motion") === "true";
+      } catch {
+        return false;
+      }
+    }),
     [online, setOnline] = useState(
       () => typeof navigator === "undefined" || navigator.onLine,
     ),
@@ -167,6 +175,18 @@ function WorkspaceApp({
       window.removeEventListener("offline", update);
     };
   }, []);
+  useEffect(() => {
+    document.documentElement.classList.toggle("ew-reduced-motion", reducedMotion);
+    try {
+      window.localStorage.setItem(
+        "elsewhere-reduced-motion",
+        String(reducedMotion),
+      );
+    } catch {
+      // Local preference storage can be unavailable in private browsing.
+    }
+    return () => document.documentElement.classList.remove("ew-reduced-motion");
+  }, [reducedMotion]);
   useEffect(() => {
     const restoreRoute = () => {
       if (store.latest.current) setRoute(readRoute(store.latest.current));
@@ -741,8 +761,7 @@ function WorkspaceApp({
                   <h2>{profile.display_name}, this is your space.</h2>
                   <p>
                     Signed in as <strong>{accountEmail || "your account"}</strong>.
-                    Your preferences are saved securely and your trips follow
-                    you to any browser.
+                    Your trips and preferences follow you to any browser.
                   </p>
                   <div className="ew-account-preferences">
                     <span><b>Home base</b>{profile.home_base}</span>
@@ -758,40 +777,41 @@ function WorkspaceApp({
               )}
               <section className="ew-settings-card">
                 <div className="ew-settings-icon">
-                  <Icon name="shield" size={27} />
+                  <Icon name="cloud" size={27} />
                 </div>
-                <h2>{profile ? "Private to your account." : "Private to your workspace."}</h2>
+                <p className="ew-eyebrow">WORKSPACE</p>
+                <h2>Save &amp; sync</h2>
                 <p>
-                  {profile
-                    ? "Your trips and uploaded photos are tied to your account. Sharing the site link does not share your plans."
-                    : "Your trips are saved on the server for this browser’s visitor cookie. Sharing the site link does not share your plans."}
-                </p>
-                <p>
-                  {profile
-                    ? "You can still download a photo-inclusive backup before a big change or keep a copy for yourself."
-                    : "This is not a signed-in account. Clearing cookies or changing browsers creates a different workspace. A photo-inclusive backup lets you bring your plans and images with you."}
+                  Keep your latest plans on the server and reload them whenever
+                  you need to.
                 </p>
                 <span className={`ew-save-status ew-status-${store.state}`}>
                   <i />
-                  {store.status}
+                  {online ? store.status : "Offline · edits stay in this tab"}
                 </span>
-                <Button
-                  icon="cloud"
-                  onClick={() => void store.flush()}
-                  disabled={!store.dirty}
-                >
-                  Save now
-                </Button>
+                <div className="ew-settings-buttons">
+                  <Button
+                    variant="primary"
+                    icon="cloud"
+                    onClick={() => void store.flush()}
+                    disabled={!store.dirty || !online}
+                  >
+                    Save now
+                  </Button>
+                  <Button icon="cloud" onClick={retryReload}>
+                    Reload server version
+                  </Button>
+                </div>
               </section>
               <section className="ew-settings-card">
                 <div className="ew-settings-icon">
                   <Icon name="download" size={27} />
                 </div>
-                <h2>Take a little peace of mind.</h2>
+                <p className="ew-eyebrow">DATA</p>
+                <h2>Backups &amp; data</h2>
                 <p>
-                  Keep a copy before clearing browser data or making a big
-                  change. Backups can restore this hosted app or the earlier
-                  portable Elsewhere app files.
+                  Export a copy of your plans, wardrobe and packing list, or
+                  restore one you already have.
                 </p>
                 <label className="ew-check-line">
                   <input
@@ -827,35 +847,44 @@ function WorkspaceApp({
                   onChange={(e) => void restore(e.target.files?.[0])}
                 />
                 <p className="ew-hint">
-                  Up to 24 MB. Restores replace the current workspace only after
-                  validation and confirmation.
+                  Backups up to 24 MB. Restores replace this workspace after
+                  confirmation.
                 </p>
               </section>
               <section className="ew-settings-card">
-                <h2>A working rhythm.</h2>
+                <div className="ew-settings-icon">
+                  <Icon name="settings" size={27} />
+                </div>
+                <p className="ew-eyebrow">APPEARANCE</p>
+                <h2>Motion</h2>
                 <p>
-                  Save states are explicit. A failed save keeps your edits in
-                  this tab; retry when you reconnect. Concurrent tabs never
-                  silently overwrite each other.
+                  Keep the gentle transitions, or reduce movement throughout
+                  the app.
                 </p>
-                <Button icon="cloud" onClick={retryReload}>
-                  Reload server version
-                </Button>
+                <label className="ew-check-line">
+                  <input
+                    type="checkbox"
+                    checked={reducedMotion}
+                    onChange={(e) => setReducedMotion(e.target.checked)}
+                  />
+                  Reduce motion
+                </label>
               </section>
               <section className="ew-settings-card">
-                <h2>The essentials, without the noise.</h2>
-                <p>
-                  {w.trips.length} trips · {w.items.length} wardrobe pieces ·{" "}
-                  {w.outfits.length} reusable outfits.
-                </p>
-                <p>
-                  Calendar, daily plans, wardrobe and packing work together.
-                  Accounts, shared editing and live weather are not included in
-                  this visitor workspace.
-                </p>
-                <span className="ew-wordmark ew-settings-brand">
-                  elsewhere.
-                </span>
+                <div className="ew-settings-icon">
+                  <Icon name="compass" size={27} />
+                </div>
+                <p className="ew-eyebrow">OVERVIEW</p>
+                <h2>Your workspace</h2>
+                <div className="ew-settings-stats">
+                  <span><b>{w.trips.length}</b> trips</span>
+                  <span><b>{w.items.length}</b> wardrobe pieces</span>
+                  <span><b>{w.outfits.length}</b> outfits</span>
+                  <span>
+                    <b>{w.trips.reduce((total, item) => total + item.activities.length, 0)}</b>{" "}
+                    plans
+                  </span>
+                </div>
               </section>
             </div>
           )}
