@@ -405,7 +405,7 @@ function WorkspaceApp({
     });
     setUndo(null);
     setEditor(null);
-    notify("Changes added. Your workspace is saving.");
+    notify("Changes added.");
     if (kind === "trip")
       navigate(
         "planner",
@@ -495,7 +495,7 @@ function WorkspaceApp({
           store.change((d) => Object.assign(d, next));
           setUndo(null);
           navigate("trips");
-          notify("Backup restored. The server save is in progress.");
+          notify("Backup restored.");
         },
       });
     } catch (e) {
@@ -660,13 +660,6 @@ function WorkspaceApp({
             <Icon name="settings" />
             Settings & backups
           </button>
-          <span
-            className={`ew-save-status ew-status-${store.state}`}
-            role="status"
-          >
-            <i />
-            {online ? store.status : "Offline · edits stay in this tab"}
-          </span>
         </aside>
         <header className="ew-mobile-header">
           <a
@@ -808,34 +801,6 @@ function WorkspaceApp({
               )}
               <section className="ew-settings-card">
                 <div className="ew-settings-icon">
-                  <Icon name="cloud" size={27} />
-                </div>
-                <p className="ew-eyebrow">WORKSPACE</p>
-                <h2>Save &amp; sync</h2>
-                <p>
-                  Keep your latest plans on the server and reload them whenever
-                  you need to.
-                </p>
-                <span className={`ew-save-status ew-status-${store.state}`}>
-                  <i />
-                  {online ? store.status : "Offline · edits stay in this tab"}
-                </span>
-                <div className="ew-settings-buttons">
-                  <Button
-                    variant="primary"
-                    icon="cloud"
-                    onClick={() => void store.flush()}
-                    disabled={!store.dirty || !online}
-                  >
-                    Save now
-                  </Button>
-                  <Button icon="cloud" onClick={retryReload}>
-                    Reload server version
-                  </Button>
-                </div>
-              </section>
-              <section className="ew-settings-card">
-                <div className="ew-settings-icon">
                   <Icon name="download" size={27} />
                 </div>
                 <p className="ew-eyebrow">DATA</p>
@@ -950,10 +915,6 @@ function WorkspaceApp({
           )}
           <footer className="ew-page-footer">
             <span>THE TRIP, ALL TOGETHER.</span>
-            <span className={`ew-save-status ew-status-${store.state}`}>
-              <i />
-              {store.status}
-            </span>
           </footer>
         </main>
         <nav className="ew-mobile-nav" aria-label="Mobile navigation">
