@@ -193,17 +193,13 @@ export function Editor({
     })),
     [shift, setShift] = useState(false),
     [error, setError] = useState(""),
-    [uploading, setUploading] = useState(false),
-    [discard, setDiscard] = useState(false);
+    [uploading, setUploading] = useState(false);
   const f = (key: string, value: unknown) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setError("");
   };
-  const dirty = JSON.stringify(initial) !== JSON.stringify(form) || shift;
   const dismiss = () => {
-    if (uploading) return;
-    if (dirty) setDiscard(true);
-    else onClose();
+    if (!uploading) onClose();
   };
   const names = {
     trip: "trip",
@@ -780,17 +776,6 @@ export function Editor({
             <p role="alert" className="ew-inline-error">
               {error}
             </p>
-          )}
-          {discard && (
-            <div className="ew-inline-error" role="alert">
-              <p>Discard your unsaved form changes?</p>
-              <div className="ew-actions">
-                <Button variant="danger" onClick={onClose}>
-                  Discard changes
-                </Button>
-                <Button onClick={() => setDiscard(false)}>Keep editing</Button>
-              </div>
-            </div>
           )}
         </fieldset>
         <footer className="ew-dialog-footer">
