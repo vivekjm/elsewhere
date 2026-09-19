@@ -686,7 +686,7 @@ function WorkspaceApp({
               <h1>{pageTitle}</h1>
             </div>
             <div className="ew-header-actions">
-              {route.view !== "settings" && (
+              {!(["settings", "planner"] as View[]).includes(route.view) && (
                 <Button
                   variant="primary"
                   icon="plus"
@@ -701,9 +701,7 @@ function WorkspaceApp({
                               ? "extra"
                               : route.view === "packing" && trip
                                 ? "extra"
-                                : route.view === "planner" && trip
-                                  ? "activity"
-                                  : "trip",
+                                : "trip",
                     })
                   }
                 >
@@ -715,9 +713,7 @@ function WorkspaceApp({
                         ? "Add an essential"
                         : route.view === "packing" && trip
                           ? "Add an essential"
-                          : route.view === "planner" && trip
-                            ? "Add a plan"
-                            : "New trip"}
+                          : "New trip"}
                 </Button>
               )}
             </div>
