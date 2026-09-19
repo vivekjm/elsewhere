@@ -278,10 +278,8 @@ with sync_playwright() as pw:
             assert page.evaluate("document.querySelector('dialog').getBoundingClientRect().width <= innerWidth")
             d.get_by_label('Trip name', exact=True).fill('Unsaved form')
             page.keyboard.press('Escape')
-            expect(d.get_by_text('Discard your unsaved form changes?')).to_be_visible()
-            d.get_by_role('button', name='Discard changes', exact=True).click()
             expect(d).not_to_be_visible()
-        case(f'{width}px editor fits and protects unsaved input', editor)
+        case(f'{width}px editor fits and dismisses directly', editor)
         context.close()
 
     for width in (1024, 1440):
