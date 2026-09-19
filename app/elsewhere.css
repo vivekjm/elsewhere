@@ -464,13 +464,16 @@
 }
 /* A place for the journey */
 .ew-hero {
+  margin-bottom: 26px;
+}
+.ew-hero-visual {
   position: relative;
   isolation: isolate;
   border: 1px solid #e1e6d7;
   border-radius: 13px;
   overflow: hidden;
-  margin-bottom: 26px;
   background: #edf0e6;
+  min-height: 205px;
 }
 .ew-hero-landscape {
   position: absolute;
@@ -535,16 +538,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 15px;
-  padding: 13px 25px;
-  /* A scrim, not a band: the cover art runs to the bottom edge of the header. */
-  background: linear-gradient(
-    to top,
-    #fdfbf5f5 0%,
-    #fdfbf5c9 58%,
-    #fdfbf52e 100%
-  );
-  border-top: 0;
-  backdrop-filter: blur(3px);
+  padding: 11px 18px;
+  margin-top: 9px;
+  background: #fffdf8;
+  border: 1px solid #e1e6d7;
+  border-radius: 10px;
 }
 .ew-hero-caption {
   font-size: 7px;
@@ -3313,7 +3311,10 @@ html.ew-modal-open {
   }
   .ew-hero {
     margin-bottom: 22px;
+  }
+  .ew-hero-visual {
     border-radius: 11px;
+    min-height: 220px;
   }
   .ew-hero-content {
     padding: 20px 18px 23px;

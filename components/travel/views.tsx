@@ -79,46 +79,48 @@ export function TripHero({
     planned = dates.filter((d) => dayItems(w, trip, d).outfits.length).length;
   return (
     <section className="ew-hero" aria-label="Trip overview">
-      <div className="ew-hero-landscape">
-        <Landscape theme={moodOf(trip.theme)} />
-      </div>
-      <div className="ew-hero-content">
-        <div className="ew-hero-label">
-          <span className="ew-pill">
-            <Icon name="compass" size={12} />
-            THE NEXT ADVENTURE
-          </span>
+      <div className="ew-hero-visual">
+        <div className="ew-hero-landscape">
+          <Landscape theme={moodOf(trip.theme)} />
         </div>
-        <h2>{trip.name}</h2>
-        <div className="ew-hero-meta">
-          <span>
-            <Icon name="location" size={15} />
-            {trip.destination}
-          </span>
-          <span>
-            <Icon name="calendar" size={15} />
-            {dateLabel(trip.start)} –{" "}
-            {dateLabel(trip.end, {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
-          </span>
-          <span>
-            <Icon name="people" size={15} />
-            {trip.travellers}{" "}
-            {trip.travellers === 1 ? "traveller" : "travellers"}
-          </span>
+        <div className="ew-hero-content">
+          <div className="ew-hero-label">
+            <span className="ew-pill">
+              <Icon name="compass" size={12} />
+              THE NEXT ADVENTURE
+            </span>
+          </div>
+          <h2>{trip.name}</h2>
+          <div className="ew-hero-meta">
+            <span>
+              <Icon name="location" size={15} />
+              {trip.destination}
+            </span>
+            <span>
+              <Icon name="calendar" size={15} />
+              {dateLabel(trip.start)} –{" "}
+              {dateLabel(trip.end, {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
+            <span>
+              <Icon name="people" size={15} />
+              {trip.travellers}{" "}
+              {trip.travellers === 1 ? "traveller" : "travellers"}
+            </span>
+          </div>
         </div>
+        <button
+          className="ew-hero-edit"
+          onClick={() => open({ kind: "trip", id: trip.id })}
+          aria-label="Edit trip"
+        >
+          <Icon name="edit" size={14} />
+          <span>Edit trip</span>
+        </button>
       </div>
-      <button
-        className="ew-hero-edit"
-        onClick={() => open({ kind: "trip", id: trip.id })}
-        aria-label="Edit trip"
-      >
-        <Icon name="edit" size={14} />
-        <span>Edit trip</span>
-      </button>
       <div className="ew-hero-footer">
         <span className="ew-hero-caption">
           LESS TO THINK ABOUT. MORE TO LOOK FORWARD TO.
