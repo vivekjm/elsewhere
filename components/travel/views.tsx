@@ -300,7 +300,7 @@ export function Planner({ props }: { props: ScreenProps }) {
                 Itinerary
               </button>
             </div>
-            <span className="ew-italic">A plan, not a rulebook.</span>
+            <span className="ew-planner-range">{dates.length} days · {trip.activities.length} plans</span>
           </div>
           {mode === "calendar" ? (
             <Calendar props={props} />
@@ -370,11 +370,6 @@ export function Planner({ props }: { props: ScreenProps }) {
               ))}
             </div>
           )}
-          <p className="ew-planner-tip">
-            <Icon name="leaf" size={17} />
-            Pick a day to connect the places you’ll go with the things you’ll
-            wear.
-          </p>
           {trip.notes && (
             <div className="ew-trip-notes">
               <h3>
@@ -386,7 +381,8 @@ export function Planner({ props }: { props: ScreenProps }) {
           )}
         </section>
         <aside className="ew-day-panel" aria-label="Selected day">
-          <div className="ew-between">
+          <div className="ew-between ew-day-heading">
+            <div className="ew-day-date-badge" aria-hidden="true"><strong>{Number(day.slice(-2))}</strong><span>{dateLabel(day, { month: "short" })}</span></div>
             <div>
               <p className="ew-eyebrow">
                 DAY {dates.indexOf(day) + 1} <span>/ {dates.length}</span>
@@ -412,7 +408,7 @@ export function Planner({ props }: { props: ScreenProps }) {
             {details?.title || "Name this day"}
             <Icon name="edit" size={12} />
           </button>
-          <div className="ew-day-section">
+          <div className="ew-day-section ew-day-plans">
             <div className="ew-section-heading">
               <h3>
                 The plan <span>{events.length}</span>
@@ -441,7 +437,7 @@ export function Planner({ props }: { props: ScreenProps }) {
                   onClick={() => open({ kind: "activity", date: day })}
                 >
                   <Icon name="plus" />
-                  <span>Nothing planned yet</span>
+                  <span>Add your first plan</span><small>Choose a time, place or activity.</small>
                 </button>
                 <div className="ew-quick-add" aria-label="Quick plan ideas">
                   {QUICK_PLANS.map((q) => (
@@ -524,7 +520,7 @@ export function Planner({ props }: { props: ScreenProps }) {
           </div>
           <div className="ew-day-section">
             <div className="ew-section-heading">
-              <h3>Don’t leave without</h3>
+              <h3>Essentials</h3>
               <Button
                 variant="quiet"
                 onClick={() => open({ kind: "day", date: day })}

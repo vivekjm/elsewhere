@@ -321,7 +321,7 @@ export function Calendar({ props }: { props: ScreenProps }) {
   return (
     <div className="ew-calendar-card">
       <div className="ew-month-toolbar">
-        <h2>{dateLabel(`${month}-01`, { month: "long", year: "numeric" })}</h2>
+        <div className="ew-month-title"><span className="ew-eyebrow">YOUR TRIP CALENDAR</span><h2>{dateLabel(`${month}-01`, { month: "long", year: "numeric" })}</h2></div>
         <div>
           <Button
             variant="quiet"
