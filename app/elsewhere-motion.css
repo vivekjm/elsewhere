@@ -1647,6 +1647,15 @@
   outline: 2px solid var(--ew-muted);
   outline-offset: 3px;
 }
+@media (max-width: 480px) {
+  .ew-preview-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ew-preview-actions .ew-button:last-child {
+    grid-column: 1 / -1;
+  }
+}
 /* ---------- Day panel polish ---------- */
 .ew-day-subtitle.ew-placeholder {
   color: var(--ew-muted);

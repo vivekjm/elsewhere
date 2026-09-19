@@ -96,6 +96,7 @@ export function DayPreview({
   onClose,
   onEditDay,
   onAddPlan,
+  onChooseOutfit,
   onOpenPlan,
   onOpenOutfit,
   onGoToPacking,
@@ -108,6 +109,7 @@ export function DayPreview({
   onClose: () => void;
   onEditDay: () => void;
   onAddPlan: () => void;
+  onChooseOutfit: () => void;
   onOpenPlan: (id: string) => void;
   onOpenOutfit: (id: string) => void;
   onGoToPacking: () => void;
@@ -259,6 +261,9 @@ export function DayPreview({
       <footer className="ew-preview-actions">
         <Button variant="primary" icon="plus" onClick={onAddPlan}>
           Add a plan
+        </Button>
+        <Button icon="hanger" onClick={onChooseOutfit}>
+          Choose outfit
         </Button>
         <Button icon="edit" onClick={onEditDay}>
           Day details
@@ -444,6 +449,10 @@ export function Calendar({ props }: { props: ScreenProps }) {
           onAddPlan={() => {
             setPreview(false);
             plan(day);
+          }}
+          onChooseOutfit={() => {
+            setPreview(false);
+            open({ kind: "day", date: day, focus: "outfits" });
           }}
           onOpenPlan={(id) => {
             setPreview(false);

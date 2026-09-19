@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, type ReactNode } from "react";
+import React, { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ACTIVITY_TYPES,
   CLOTHING_CATEGORIES,
@@ -36,6 +36,7 @@ export type Modal = {
   date?: string;
   /** Pre-filled values for a new entry, e.g. a quick-add starting point. */
   draft?: Record<string, unknown>;
+  focus?: "outfits";
 };
 export type FormDraft = {
   id?: string;
@@ -130,6 +131,7 @@ export function Editor({
   onClose: () => void;
   onSave: (result: EditorResult) => void;
 }) {
+  const outfitSection = useRef<HTMLDivElement>(null);
   const date = modal.date || day || trip?.start || emptyTrip().start;
   const [initial] = useState<FormDraft>(
     () =>
@@ -198,6 +200,16 @@ export function Editor({
     setForm((prev) => ({ ...prev, [key]: value }));
     setError("");
   };
+  useEffect(() => {
+    if (modal.kind !== "day" || modal.focus !== "outfits") return;
+    const frame = requestAnimationFrame(() => {
+      outfitSection.current?.scrollIntoView({ block: "center" });
+      outfitSection.current
+        ?.querySelector<HTMLInputElement>("input")
+        ?.focus();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [modal.focus, modal.kind]);
   const dismiss = () => {
     if (!uploading) onClose();
   };
@@ -568,11 +580,13 @@ export function Editor({
                 />
               </Field>
               {notes("Day notes")}
-              <OutfitPicker
-                w={w}
-                selected={form.outfitIds || []}
-                onChange={(v) => f("outfitIds", v)}
-              />
+              <div ref={outfitSection}>
+                <OutfitPicker
+                  w={w}
+                  selected={form.outfitIds || []}
+                  onChange={(v) => f("outfitIds", v)}
+                />
+              </div>
               <ItemPicker
                 w={w}
                 label="Daily essentials"
