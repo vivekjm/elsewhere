@@ -603,19 +603,6 @@ export function Wardrobe({
   );
   return (
     <>
-      <div className="ew-page-intro">
-        <p>
-          A collection of things you love to travel with.
-          <br />
-          <span>
-            Build a look, add it to a day, and your packing list follows along.
-          </span>
-        </p>
-        <span className="ew-italic">
-          <Icon name="leaf" />
-          Less baggage. More possibility.
-        </span>
-      </div>
       <div className="ew-collection-toolbar">
         <div className="ew-tabs" aria-label="Wardrobe view">
           <button
@@ -733,8 +720,7 @@ export function Wardrobe({
             <span>
               <Icon name="plus" size={23} />
             </span>
-            <h3>Something you love</h3>
-            <p>Add a piece or upload your own photo.</p>
+            <h3>Add clothing</h3>
           </button>
         </div>
       )}
@@ -753,10 +739,7 @@ export function Wardrobe({
             </Button>
           </p>
         )}
-      <p className="ew-collection-note">
-        <Icon name="shield" size={15} />
-        Clothing stays here. Documents, electronics, toiletries, and other trip essentials live in Essentials.
-      </p>
+
     </>
   );
 }
@@ -1303,8 +1286,7 @@ export function Trips({ props }: { props: ScreenProps }) {
           <span>
             <Icon name="plus" size={28} />
           </span>
-          <h2>Where to next?</h2>
-          <p>The best plans start with a little curiosity.</p>
+          <h2>New trip</h2>
           <strong>
             Plan a new trip <Icon name="arrow" size={16} />
           </strong>

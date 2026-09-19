@@ -534,8 +534,8 @@
   left: 4px;
   width: calc(50% - 5.5px);
   height: calc(100% - 8px);
-  background: #fff;
-  border: 1px solid #dfe6d7;
+  background: var(--ew-card, #fff);
+  border: 1px solid var(--ew-line);
   border-radius: 5px;
   box-shadow: 0 1px 5px #253a2510;
   transition: transform var(--ew-base) var(--ew-ease);
@@ -574,14 +574,14 @@
   transform: scale(0.985);
 }
 .ew-calendar .ew-in-trip {
-  background: linear-gradient(180deg, #fbfdf7, #f7faf1);
+  background: linear-gradient(180deg, var(--ew-surface), var(--ew-surface));
 }
 .ew-calendar .ew-has-plans {
-  background: linear-gradient(180deg, #f8fbf1, #f1f7e6);
+  background: linear-gradient(180deg, var(--ew-surface), var(--ew-surface));
 }
 .ew-calendar .ew-selected-day {
-  background: linear-gradient(180deg, #eef5e2, #e6f0d6);
-  box-shadow: inset 0 0 0 1.5px #8fa876;
+  background: linear-gradient(180deg, var(--ew-surface), var(--ew-soft));
+  box-shadow: inset 0 0 0 1.5px var(--ew-line);
 }
 .ew-calendar .ew-selected-day > button {
   transform: none;
@@ -594,7 +594,7 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1.5px solid #90a878;
+  border: 1.5px solid var(--ew-line);
   animation: ew-pulse-ring 3.6s var(--ew-ease) infinite;
 }
 .ew-date-number {
@@ -737,9 +737,9 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #fff;
-  color: #5d7149;
-  border: 1px solid #dfe6d7;
+  background: var(--ew-card, #fff);
+  color: var(--ew-muted);
+  border: 1px solid var(--ew-line);
   opacity: 0;
   transform: scale(0.7) translateY(4px);
   transition:
@@ -752,8 +752,8 @@
   transform: none;
 }
 .ew-cell-add:hover {
-  background: #eef4e4;
-  color: #3d5a2c;
+  background: var(--ew-surface);
+  color: var(--ew-ink);
 }
 /* A dialog that clips its own content would also clip an anchored picker, so
    scrolling that dialog happens on the scroll container inside it instead. */
@@ -769,8 +769,8 @@
 .ew-popover {
   position: fixed;
   z-index: 90;
-  background: #fff;
-  border: 1px solid #e2e7da;
+  background: var(--ew-card, #fff);
+  border: 1px solid var(--ew-line);
   border-radius: 12px;
   box-shadow: 0 26px 60px -26px #26331f55;
   padding: 10px;
@@ -796,8 +796,8 @@
   align-items: center;
   gap: 8px;
   padding: 0 6px 0 10px;
-  background: #fff;
-  border: 1px solid #dde4d4;
+  background: var(--ew-card, #fff);
+  border: 1px solid var(--ew-line);
   border-radius: 8px;
   transition:
     border-color var(--ew-fast) linear,
@@ -805,15 +805,15 @@
   min-height: 40px;
 }
 .ew-picker-input:focus-within {
-  border-color: #8ba36f;
-  box-shadow: 0 0 0 3px #e8f0dd;
+  border-color: var(--ew-line);
+  box-shadow: 0 0 0 3px var(--ew-line);
 }
 .ew-picker-input.ew-invalid {
   border-color: #b4634f;
   box-shadow: 0 0 0 3px #f6e5e0;
 }
 .ew-picker-input > .ew-icon {
-  color: #75876a;
+  color: var(--ew-muted);
 }
 .ew-picker-input input {
   flex: 1;
@@ -833,15 +833,15 @@
   width: 26px;
   height: 26px;
   border-radius: 6px;
-  color: #75876a;
+  color: var(--ew-muted);
   transition:
     background var(--ew-fast) linear,
     transform var(--ew-fast) var(--ew-ease);
 }
 .ew-picker-toggle:hover,
 .ew-picker-clear:hover {
-  background: #eef3e6;
-  color: #3f5a2c;
+  background: var(--ew-surface);
+  color: var(--ew-ink);
 }
 .ew-picker-clear:active,
 .ew-picker-toggle:active {
@@ -877,7 +877,7 @@
   text-align: center;
   font-size: 9px;
   letter-spacing: 0.6px;
-  color: #7b8a6e;
+  color: var(--ew-muted);
 }
 .ew-datepicker-grid {
   display: grid;
@@ -888,33 +888,33 @@
   height: 32px;
   border-radius: 7px;
   font-size: 12px;
-  color: #3d4736;
+  color: var(--ew-ink);
   transition:
     background var(--ew-fast) linear,
     color var(--ew-fast) linear,
     transform var(--ew-fast) var(--ew-ease);
 }
 .ew-day-cell:hover:not(:disabled) {
-  background: #eef3e6;
+  background: var(--ew-surface);
 }
 .ew-day-cell:active:not(:disabled) {
   transform: scale(0.94);
 }
 .ew-day-cell.ew-outside {
-  color: #b3bbaa;
+  color: var(--ew-line);
 }
 .ew-day-cell.ew-today {
-  box-shadow: inset 0 0 0 1.5px #c3d5ac;
+  box-shadow: inset 0 0 0 1.5px var(--ew-line);
   font-weight: 600;
 }
 .ew-day-cell.ew-selected {
-  background: #38472c;
+  background: var(--ew-ink);
   color: #fff;
   font-weight: 600;
   animation: ew-grow var(--ew-base) var(--ew-spring) both;
 }
 .ew-day-cell.ew-selected:hover {
-  background: #38472c;
+  background: var(--ew-ink);
 }
 .ew-day-cell:disabled {
   opacity: 0.35;
@@ -925,18 +925,18 @@
   justify-content: space-between;
   gap: 8px;
   padding: 8px 2px 1px;
-  border-top: 1px solid #eef1e8;
+  border-top: 1px solid var(--ew-line);
   margin-top: 8px;
 }
 .ew-datepicker-foot button {
   font-size: 10.5px;
-  color: #5d7150;
+  color: var(--ew-muted);
   padding: 4px 6px;
   border-radius: 6px;
   transition: background var(--ew-fast) linear;
 }
 .ew-datepicker-foot button:hover {
-  background: #eef3e6;
+  background: var(--ew-surface);
 }
 .ew-timepicker {
   width: 244px;
@@ -954,26 +954,26 @@
   gap: 6px;
   padding: 6px 9px;
   border-radius: 7px;
-  background: #f5f7f0;
+  background: var(--ew-surface);
   font-size: 11px;
-  color: #4a5a3d;
+  color: var(--ew-ink);
   transition:
     background var(--ew-fast) linear,
     transform var(--ew-fast) var(--ew-ease);
 }
 .ew-timepicker-quick button:hover {
-  background: #eaf1e0;
+  background: var(--ew-surface);
 }
 .ew-timepicker-quick button:active {
   transform: scale(0.97);
 }
 .ew-timepicker-quick button[aria-pressed="true"] {
-  background: #e3eed4;
-  box-shadow: inset 0 0 0 1px #b9ceA0;
+  background: var(--ew-soft);
+  box-shadow: inset 0 0 0 1px var(--ew-line);
 }
 .ew-timepicker-quick small {
   font-size: 9px;
-  color: #77876a;
+  color: var(--ew-muted);
 }
 .ew-timepicker-columns {
   display: grid;
@@ -994,16 +994,16 @@
   border-radius: 6px;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-  color: #43503a;
+  color: var(--ew-ink);
   transition:
     background var(--ew-fast) linear,
     transform var(--ew-fast) var(--ew-ease);
 }
 .ew-timepicker-columns button:hover {
-  background: #f1f5ea;
+  background: var(--ew-surface);
 }
 .ew-timepicker-columns button.ew-selected {
-  background: #38472c;
+  background: var(--ew-ink);
   color: #fff;
 }
 .ew-timepicker-hint {
@@ -1013,9 +1013,9 @@
   gap: 6px;
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid #eef1e8;
+  border-top: 1px solid var(--ew-line);
   font-size: 10.5px;
-  color: #6b7a5e;
+  color: var(--ew-muted);
 }
 .ew-select {
   position: relative;
@@ -1027,8 +1027,8 @@
   width: 100%;
   min-height: 40px;
   padding: 8px 10px;
-  background: #fff;
-  border: 1px solid #dde4d4;
+  background: var(--ew-card, #fff);
+  border: 1px solid var(--ew-line);
   border-radius: 8px;
   text-align: left;
   font-size: 13px;
@@ -1037,11 +1037,11 @@
     box-shadow var(--ew-fast) linear;
 }
 .ew-select-trigger:hover {
-  border-color: #c6d3b5;
+  border-color: var(--ew-line);
 }
 .ew-select-trigger[aria-expanded="true"] {
-  border-color: #8ba36f;
-  box-shadow: 0 0 0 3px #e8f0dd;
+  border-color: var(--ew-line);
+  box-shadow: 0 0 0 3px var(--ew-line);
 }
 .ew-select-trigger > span {
   flex: 1;
@@ -1051,10 +1051,10 @@
   white-space: nowrap;
 }
 .ew-select-placeholder {
-  color: #7d8a72;
+  color: var(--ew-muted);
 }
 .ew-select-caret {
-  color: #75876a;
+  color: var(--ew-muted);
   transition: transform var(--ew-base) var(--ew-ease);
 }
 .ew-select-trigger[aria-expanded="true"] .ew-select-caret {
@@ -1069,9 +1069,9 @@
   gap: 7px;
   padding: 6px 8px;
   margin-bottom: 6px;
-  background: #f6f8f2;
+  background: var(--ew-surface);
   border-radius: 7px;
-  color: #7d8a72;
+  color: var(--ew-muted);
 }
 .ew-select-search input {
   flex: 1;
@@ -1100,7 +1100,7 @@
   border-radius: 7px;
   font-size: 12.5px;
   text-align: left;
-  color: #3d4736;
+  color: var(--ew-ink);
   transition: background var(--ew-fast) linear;
 }
 .ew-select-option > span {
@@ -1111,19 +1111,19 @@
   white-space: nowrap;
 }
 .ew-select-option[data-active="true"] {
-  background: #f1f5ea;
+  background: var(--ew-surface);
 }
 .ew-select-option.ew-selected {
-  color: #33481f;
+  color: var(--ew-ink);
   font-weight: 600;
 }
 .ew-select-option .ew-icon {
-  color: #7d8a72;
+  color: var(--ew-muted);
 }
 .ew-select-empty {
   padding: 12px 9px;
   font-size: 11.5px;
-  color: #7d8a72;
+  color: var(--ew-muted);
 }
 .ew-swatches {
   display: grid;
@@ -1146,7 +1146,7 @@
   box-shadow:
     inset 0 0 0 1px #0000001a,
     0 0 0 2px #fff,
-    0 0 0 4px #5c7442;
+    0 0 0 4px var(--ew-line);
 }
 .ew-color-trigger {
   display: flex;
@@ -1155,15 +1155,15 @@
   width: 100%;
   min-height: 40px;
   padding: 8px 10px;
-  background: #fff;
-  border: 1px solid #dde4d4;
+  background: var(--ew-card, #fff);
+  border: 1px solid var(--ew-line);
   border-radius: 8px;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   transition: border-color var(--ew-fast) linear;
 }
 .ew-color-trigger:hover {
-  border-color: #c6d3b5;
+  border-color: var(--ew-line);
 }
 .ew-color-trigger i {
   width: 18px;
@@ -1174,7 +1174,7 @@
 .ew-color-trigger span {
   flex: 1;
   text-align: left;
-  color: #4a5540;
+  color: var(--ew-ink);
 }
 .ew-color-popover {
   width: 248px;
@@ -1185,7 +1185,7 @@
   gap: 8px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid #eef1e8;
+  border-top: 1px solid var(--ew-line);
 }
 .ew-color-preview {
   width: 26px;
@@ -1199,20 +1199,20 @@
   align-items: center;
   gap: 8px;
   font-size: 11px;
-  color: #5d6a52;
+  color: var(--ew-muted);
 }
 .ew-color-custom input[type="color"] {
   width: 34px;
   height: 26px;
   padding: 0;
-  border: 1px solid #dde4d4;
+  border: 1px solid var(--ew-line);
   border-radius: 6px;
   background: none;
 }
 .ew-color-done {
   padding: 6px 12px;
   border-radius: 7px;
-  background: #38472c;
+  background: var(--ew-ink);
   color: #fff;
   font-size: 11px;
 }
@@ -1231,14 +1231,14 @@
   font-size: 10px;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: #6b7a5e;
+  color: var(--ew-muted);
   margin-bottom: 8px;
 }
 .ew-mood-picker legend small {
   text-transform: none;
   letter-spacing: 0;
   font-size: 11px;
-  color: #3f5230;
+  color: var(--ew-ink);
 }
 .ew-mood-grid {
   display: grid;
@@ -1249,8 +1249,8 @@
   position: relative;
   border-radius: 10px;
   overflow: hidden;
-  background: #f4f6ef;
-  box-shadow: inset 0 0 0 1px #e3e8da;
+  background: var(--ew-surface);
+  box-shadow: inset 0 0 0 1px var(--ew-line);
   text-align: left;
   transition:
     transform var(--ew-base) var(--ew-ease),
@@ -1259,12 +1259,12 @@
 .ew-mood-grid > button:hover {
   transform: translateY(-2px);
   box-shadow:
-    inset 0 0 0 1px #cddbb8,
+    inset 0 0 0 1px var(--ew-line),
     var(--ew-shadow-lift);
 }
 .ew-mood-grid > button.ew-selected {
   box-shadow:
-    inset 0 0 0 2px #5c7442,
+    inset 0 0 0 2px var(--ew-line),
     var(--ew-shadow-lift);
 }
 .ew-mood-art {
@@ -1281,8 +1281,8 @@
   display: block;
   padding: 6px 8px 7px;
   font-size: 10px;
-  color: #46543a;
-  background: #fff;
+  color: var(--ew-ink);
+  background: var(--ew-card, #fff);
 }
 .ew-mood-grid > button > .ew-icon {
   position: absolute;
@@ -1290,7 +1290,7 @@
   right: 6px;
   padding: 2px;
   border-radius: 50%;
-  background: #38472c;
+  background: var(--ew-ink);
   color: #fff;
   opacity: 0;
   transform: scale(0.6);
@@ -1323,8 +1323,8 @@
   align-items: center;
   gap: 12px;
   padding: 14px 14px 12px;
-  border-bottom: 1px solid #eef1e8;
-  background: linear-gradient(180deg, #fbfdf7, #fff);
+  border-bottom: 1px solid var(--ew-line);
+  background: linear-gradient(180deg, var(--ew-surface), #fff);
 }
 .ew-preview-date {
   display: grid;
@@ -1332,7 +1332,7 @@
   width: 44px;
   height: 44px;
   border-radius: 11px;
-  background: #38472c;
+  background: var(--ew-ink);
   color: #fff;
   line-height: 1;
 }
@@ -1354,7 +1354,7 @@
 }
 .ew-preview-header p {
   font-size: 11px;
-  color: #6b7a5e;
+  color: var(--ew-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1381,9 +1381,9 @@
   gap: 5px;
   padding: 4px 8px;
   border-radius: 20px;
-  background: #f2f6ec;
+  background: var(--ew-surface);
   font-size: 10px;
-  color: #4f6040;
+  color: var(--ew-muted);
 }
 .ew-preview-body {
   padding: 12px 14px 4px;
@@ -1407,26 +1407,26 @@
   align-items: center;
   gap: 6px;
   margin-bottom: 7px;
-  color: #6b7a5e;
+  color: var(--ew-muted);
 }
 .ew-preview-heading h4 {
   font-size: 9.5px;
   letter-spacing: 1.1px;
   text-transform: uppercase;
   font-weight: 600;
-  color: #6b7a5e;
+  color: var(--ew-muted);
 }
 .ew-preview-heading span {
   margin-left: auto;
   font-size: 10px;
   padding: 1px 6px;
   border-radius: 10px;
-  background: #f1f5ea;
-  color: #5d7150;
+  background: var(--ew-surface);
+  color: var(--ew-muted);
 }
 .ew-preview-empty {
   font-size: 11.5px;
-  color: #7d8a72;
+  color: var(--ew-muted);
 }
 .ew-preview-timeline {
   list-style: none;
@@ -1450,12 +1450,12 @@
     transform var(--ew-fast) var(--ew-ease);
 }
 .ew-preview-timeline button:hover {
-  background: #f4f7ef;
+  background: var(--ew-surface);
   transform: translateX(2px);
 }
 .ew-preview-timeline time {
   font-size: 10.5px;
-  color: #6b7a5e;
+  color: var(--ew-muted);
   font-variant-numeric: tabular-nums;
 }
 .ew-preview-timeline i {
@@ -1480,17 +1480,17 @@
 }
 .ew-preview-timeline small {
   font-size: 10px;
-  color: #7d8a72;
+  color: var(--ew-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .ew-preview-timeline .ew-completed strong {
   text-decoration: line-through;
-  color: #7d8a72;
+  color: var(--ew-muted);
 }
 .ew-preview-timeline .ew-icon {
-  color: #9aa78e;
+  color: var(--ew-muted);
 }
 .ew-preview-looks {
   display: grid;
@@ -1504,8 +1504,8 @@
   padding: 0;
   border-radius: 9px;
   overflow: hidden;
-  background: #f6f8f2;
-  box-shadow: inset 0 0 0 1px #e6ebdd;
+  background: var(--ew-surface);
+  box-shadow: inset 0 0 0 1px var(--ew-line);
   transition:
     transform var(--ew-base) var(--ew-ease),
     box-shadow var(--ew-base) var(--ew-ease);
@@ -1513,7 +1513,7 @@
 .ew-preview-looks button:hover {
   transform: translateY(-2px);
   box-shadow:
-    inset 0 0 0 1px #cfdcbb,
+    inset 0 0 0 1px var(--ew-line),
     var(--ew-shadow-lift);
 }
 .ew-preview-look-art {
@@ -1537,7 +1537,7 @@
 }
 .ew-preview-looks small {
   font-size: 9.5px;
-  color: #7d8a72;
+  color: var(--ew-muted);
   padding: 0 8px 7px;
 }
 .ew-preview-gear {
@@ -1551,16 +1551,16 @@
   gap: 6px;
   padding: 4px 9px 4px 4px;
   border-radius: 20px;
-  background: #f4f7ef;
+  background: var(--ew-surface);
   font-size: 10.5px;
-  color: #46543a;
-  box-shadow: inset 0 0 0 1px #e6ebdd;
+  color: var(--ew-ink);
+  box-shadow: inset 0 0 0 1px var(--ew-line);
   transition:
     background var(--ew-fast) linear,
     transform var(--ew-fast) var(--ew-ease);
 }
 .ew-preview-gear button:hover {
-  background: #eaf1e0;
+  background: var(--ew-surface);
   transform: translateY(-1px);
 }
 .ew-preview-gear-art {
@@ -1569,7 +1569,7 @@
   height: 24px;
   border-radius: 50%;
   overflow: hidden;
-  background: #fff;
+  background: var(--ew-card, #fff);
 }
 .ew-preview-gear-art .ew-piece {
   height: 100%;
@@ -1577,7 +1577,7 @@
 }
 .ew-preview-gear-more {
   background: #fff !important;
-  color: #5d7150 !important;
+  color: var(--ew-muted) !important;
 }
 .ew-preview-notes {
   display: flex;
@@ -1585,9 +1585,9 @@
   gap: 6px;
   padding: 10px 11px;
   border-radius: 9px;
-  background: #f8faf4;
+  background: var(--ew-surface);
   font-size: 11.5px;
-  color: #4f5c46;
+  color: var(--ew-muted);
 }
 .ew-preview-notes p {
   display: flex;
@@ -1598,8 +1598,8 @@
   display: flex;
   gap: 8px;
   padding: 12px 14px;
-  border-top: 1px solid #eef1e8;
-  background: #fcfdfa;
+  border-top: 1px solid var(--ew-line);
+  background: var(--ew-surface);
 }
 .ew-preview-actions .ew-button {
   display: flex;
@@ -1612,7 +1612,7 @@
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 10px 15px;
-  color: #293126;
+  color: var(--ew-ink);
   font: 550 12px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   cursor: pointer;
   white-space: nowrap;
@@ -1627,29 +1627,29 @@
   flex: 0 0 16px;
 }
 .ew-preview-actions .ew-button.ew-primary {
-  background: #293126;
+  background: var(--ew-ink);
   color: #fff;
-  border-color: #293126;
+  border-color: var(--ew-line);
 }
 .ew-preview-actions .ew-button.ew-primary:hover:not(:disabled) {
-  background: #47533e;
+  background: var(--ew-ink);
   box-shadow: 0 3px 10px #29312616;
 }
 .ew-preview-actions .ew-button.ew-secondary {
-  background: #fff;
-  border-color: #e1e6d9;
+  background: var(--ew-card, #fff);
+  border-color: var(--ew-line);
 }
 .ew-preview-actions .ew-button.ew-secondary:hover:not(:disabled) {
-  background: #f3f5ee;
-  border-color: #bccab0;
+  background: var(--ew-surface);
+  border-color: var(--ew-line);
 }
 .ew-preview-actions .ew-button:focus-visible {
-  outline: 2px solid #607a49;
+  outline: 2px solid var(--ew-muted);
   outline-offset: 3px;
 }
 /* ---------- Day panel polish ---------- */
 .ew-day-subtitle.ew-placeholder {
-  color: #7d8a72;
+  color: var(--ew-muted);
   font-style: italic;
 }
 .ew-quick-add {
@@ -1665,20 +1665,20 @@
   gap: 5px;
   padding: 6px 10px;
   border-radius: 20px;
-  background: #f4f7ef;
+  background: var(--ew-surface);
   font-size: 11px;
-  color: #4f6040;
-  box-shadow: inset 0 0 0 1px #e6ebdd;
+  color: var(--ew-muted);
+  box-shadow: inset 0 0 0 1px var(--ew-line);
   transition:
     background var(--ew-fast) linear,
     transform var(--ew-base) var(--ew-spring),
     box-shadow var(--ew-fast) linear;
 }
 .ew-quick-add button:hover {
-  background: #eaf1e0;
+  background: var(--ew-surface);
   transform: translateY(-2px);
   box-shadow:
-    inset 0 0 0 1px #cfdcbb,
+    inset 0 0 0 1px var(--ew-line),
     0 8px 18px -12px #253a2540;
 }
 .ew-quick-add button:active {
@@ -1699,8 +1699,8 @@
 /* The packing ring sweeps to its value instead of snapping. */
 .ew-progress-ring {
   background: conic-gradient(
-    #799662 var(--ew-sweep, var(--progress)),
-    #dbe5ce 0
+    var(--ew-olive) var(--ew-sweep, var(--progress)),
+    var(--ew-soft) 0
   );
   animation: ew-ring-fill 900ms var(--ew-ease) both;
   transition: background var(--ew-slow) var(--ew-ease);
@@ -1719,12 +1719,12 @@
   height: 6px;
   border-radius: 20px;
   overflow: hidden;
-  background: linear-gradient(90deg, #dbe5ce, #e8efe0);
-  --ew-bar: linear-gradient(90deg, #7d9a63, #9db77f);
+  background: linear-gradient(90deg, var(--ew-soft), var(--ew-surface));
+  --ew-bar: linear-gradient(90deg, var(--ew-olive), var(--ew-olive));
 }
 .ew-packing-overview progress::-webkit-progress-bar,
 .ew-trip-card progress::-webkit-progress-bar {
-  background: linear-gradient(90deg, #dbe5ce, #e8efe0);
+  background: linear-gradient(90deg, var(--ew-soft), var(--ew-surface));
   border-radius: 20px;
 }
 .ew-packing-overview progress::-webkit-progress-value,
@@ -1739,10 +1739,10 @@
   border-radius: 20px;
 }
 .ew-packing-row.ew-is-packed {
-  background: linear-gradient(90deg, #f4f8ee, #fbfdf8);
+  background: linear-gradient(90deg, var(--ew-surface), var(--ew-surface));
 }
 .ew-packing-row.ew-is-packed .ew-pack-name strong {
-  color: #6b7a5e;
+  color: var(--ew-muted);
 }
 .ew-packing-row input[type="checkbox"]:checked {
   animation: ew-grow var(--ew-base) var(--ew-spring) both;

@@ -201,6 +201,7 @@ function WorkspaceApp({
     };
   }, []);
   useEffect(() => {
+    document.documentElement.dataset.colorTheme = colorTheme;
     try {
       window.localStorage.setItem("tripsloom-color-theme", colorTheme);
     } catch {
@@ -534,7 +535,7 @@ function WorkspaceApp({
     pageDescription =
       route.view === "planner" && profile
         ? `${profile.travel_style} · planning from ${profile.home_base}`
-        : "A LITTLE SPACE FOR THE JOURNEY";
+        : "";
   const props: ScreenProps = {
     w,
     trip,
@@ -623,7 +624,6 @@ function WorkspaceApp({
             aria-label="Trips Loom, all trips"
           >
             <Brand />
-            <span>THE TRIP, ALL TOGETHER.</span>
           </a>
           <nav aria-label="Main navigation">{navLinks()}</nav>
           {tripSelect()}
@@ -686,7 +686,7 @@ function WorkspaceApp({
           )}
           <div className="ew-page-header">
             <div>
-              <p className="ew-eyebrow">{pageDescription}</p>
+              {pageDescription && <p className="ew-eyebrow">{pageDescription}</p>}
               <h1>{pageTitle}</h1>
             </div>
             <div className="ew-header-actions">
@@ -874,9 +874,6 @@ function WorkspaceApp({
               </Button>
             </section>
           )}
-          <footer className="ew-page-footer">
-            <span>THE TRIP, ALL TOGETHER.</span>
-          </footer>
         </main>
         <nav className="ew-mobile-nav" aria-label="Mobile navigation">
           {navLinks(true)}
