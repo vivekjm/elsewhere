@@ -55,6 +55,8 @@ begin
 end;
 $$;
 
+revoke execute on function public.create_trips_loom_profile() from public, anon, authenticated;
+
 create trigger auth_user_created_profile
 after insert on auth.users
 for each row execute function public.create_trips_loom_profile();
