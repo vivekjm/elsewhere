@@ -1771,7 +1771,8 @@
 @keyframes ew-dialog-in {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.985);
+    /* Keep the modal out of the fixed-position containing-block chain.
+       Pickers in its top layer use viewport coordinates. */
   }
 }
 /* ---------- Reduced motion ---------- */

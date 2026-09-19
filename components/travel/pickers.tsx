@@ -81,14 +81,20 @@ export function Popover({
     if (!open) return;
     const place = () => {
       const trigger = anchor.current?.getBoundingClientRect(),
-        panel = ref.current?.getBoundingClientRect();
-      if (!trigger || !panel) return;
+        element = ref.current;
+      if (!trigger || !element) return;
       const gap = 8,
-        vw = window.innerWidth,
-        vh = window.innerHeight;
-      const height = Math.max(panel.height || 320, minHeight);
-      const below = vh - trigger.bottom - gap;
-      const above = trigger.top - gap;
+        viewport = window.visualViewport,
+        originX = viewport?.offsetLeft ?? 0,
+        originY = viewport?.offsetTop ?? 0,
+        vw = viewport?.width ?? window.innerWidth,
+        vh = viewport?.height ?? window.innerHeight,
+        maxWidth = Math.max(1, vw - 20),
+        maxHeight = Math.max(1, vh - 20);
+      // Measure layout size, not the animated/scaled bounding box.
+      const height = Math.min(Math.max(element.offsetHeight, minHeight), maxHeight);
+      const below = originY + vh - trigger.bottom - gap;
+      const above = trigger.top - originY - gap;
       // Prefer the roomier side, and the row below when the anchor is a
       // calendar cell so the panel does not cover the day it describes.
       const next: Placement =
@@ -99,45 +105,54 @@ export function Popover({
             : below >= above
               ? "bottom"
               : "top";
-      const boxWidth = panel.width || (width === "anchor" ? trigger.width : 0);
+      const boxWidth = Math.min(width === "anchor" ? trigger.width : typeof width === "number" ? width : element.offsetWidth, maxWidth);
       let left =
         align === "end"
-          ? trigger.right - (panel.width || boxWidth)
+          ? trigger.right - boxWidth
           : align === "center"
-            ? trigger.left + trigger.width / 2 - (panel.width || boxWidth) / 2
+            ? trigger.left + trigger.width / 2 - boxWidth / 2
             : trigger.left;
-      left = Math.max(10, Math.min(left, vw - (panel.width || boxWidth) - 10));
+      left = Math.max(originX + 10, Math.min(left, originX + vw - boxWidth - 10));
       const top =
         next === "top" ? trigger.top - height - gap : trigger.bottom + gap;
       setPanel({
         placement: next,
         placed: true,
         style: {
-          top: Math.max(10, Math.min(top, vh - height - 10)),
+          top: Math.max(originY + 10, Math.min(top, originY + vh - height - 10)),
           left,
-          width: width === "anchor" ? trigger.width : width,
-          maxHeight: vh - 20,
+          width: width === "anchor" ? boxWidth : width,
+          maxWidth,
+          minWidth: 0,
+          maxHeight,
         },
       });
     };
     place();
     const observer = new ResizeObserver(place);
     if (ref.current) observer.observe(ref.current);
+    if (anchor.current) observer.observe(anchor.current);
+    window.visualViewport?.addEventListener("resize", place);
+    window.visualViewport?.addEventListener("scroll", place);
     window.addEventListener("resize", place);
     window.addEventListener("scroll", place, true);
     return () => {
       observer.disconnect();
+      window.visualViewport?.removeEventListener("resize", place);
+      window.visualViewport?.removeEventListener("scroll", place);
       window.removeEventListener("resize", place);
       window.removeEventListener("scroll", place, true);
     };
-  }, [open, anchor, align, width, minHeight]);
+  }, [open, anchor, align, width, minHeight, host]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.preventDefault();
         e.stopPropagation();
-        onClose();
         anchor.current?.focus?.();
+        // Date/time inputs open on focus; close after restoring focus.
+        onClose();
       }
     };
     const onPointer = (e: MouseEvent) => {
