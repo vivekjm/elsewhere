@@ -61,12 +61,12 @@ function Frame({
 const Sky = ({ id, from, to }: { id: string; from: string; to: string }) => (
   <>
     <defs>
-      <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id={`${id}-sky`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="360">
         <stop stopColor={from} />
         <stop offset="1" stopColor={to} />
       </linearGradient>
     </defs>
-    <path fill={`url(#${id}-sky)`} d="M0 0h1200v360H0Z" />
+    <path fill={`url(#${id}-sky)`} d="M-100-100h1400v560H-100Z" />
   </>
 );
 const Clouds = ({
@@ -745,13 +745,13 @@ function AuroraScene({ id, motion, className, mood }: SceneProps) {
       viewBox="0 0 1200 360"
     >
       <defs>
-        <linearGradient id={`${id}-night`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`${id}-night`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="360">
           <stop stopColor="#c3d3e8" />
           <stop offset=".55" stopColor="#dde5ee" />
           <stop offset="1" stopColor="#eef1ec" />
         </linearGradient>
       </defs>
-      <path fill={`url(#${id}-night)`} d="M0 0h1200v360H0Z" />
+      <path fill={`url(#${id}-night)`} d="M-100-100h1400v560H-100Z" />
       <defs>
         <linearGradient id={`${id}-band`} x1="0" y1="0" x2="1" y2="0">
           <stop stopColor="#7fc9a6" stopOpacity="0" />
