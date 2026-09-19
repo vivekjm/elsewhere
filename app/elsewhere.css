@@ -5909,3 +5909,25 @@ html.ew-modal-open {
   .ew-calendar tr:not(:has(.ew-in-trip)) td,
   .ew-calendar tr:not(:has(.ew-in-trip)) td > button:not(.ew-cell-add) { height: 40px; }
 }
+
+/* Packing summary: a single progress signal with a separate luggage metric. */
+.ew-pack-summary { display:grid; grid-template-columns:minmax(0,1fr) minmax(230px,.45fr); gap:16px; margin-bottom:28px; }
+.ew-pack-readiness, .ew-pack-weight-card { min-width:0; border:1px solid var(--ew-line); border-radius:18px; padding:24px; background:var(--ew-card); }
+.ew-pack-summary-heading { display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+.ew-pack-summary-icon { display:grid; place-items:center; width:48px; height:48px; flex-shrink:0; border-radius:14px; background:var(--ew-soft); color:var(--ew-ink); }
+.ew-pack-summary-label { color:var(--ew-muted); font-size:12px; margin:0 0 5px; }
+.ew-pack-summary-heading h2 { font: 25px/1.2 var(--ew-serif); margin:0; color:var(--ew-ink); }
+.ew-pack-percentage { margin-left:auto; font-size:28px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--ew-ink); }
+.ew-pack-percentage small { font-size:14px; margin-left:2px; color:var(--ew-muted); }
+.ew-pack-readiness progress { height:8px; }
+.ew-pack-progress-caption { display:flex; justify-content:space-between; gap:12px; margin-top:12px; font-size:12px; color:var(--ew-muted); }
+.ew-pack-progress-caption span:last-child { overflow-wrap:anywhere; }
+.ew-pack-weight-card { background:var(--ew-surface); }
+.ew-pack-weight-heading { display:flex; align-items:center; justify-content:space-between; margin-top:-8px; }
+.ew-pack-weight-heading > span { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ew-muted); }
+.ew-pack-weight-value { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-top:6px; color:var(--ew-ink); }
+.ew-pack-weight-value strong { font-size:30px; line-height:1.2; font-weight:600; font-variant-numeric:tabular-nums; }
+.ew-pack-weight-value span, .ew-pack-weight-card > p { font-size:12px; color:var(--ew-muted); }
+.ew-pack-weight-card > p { margin:10px 0 0; }
+.ew-pack-weight-over > p { color:#a43a2b; font-weight:600; }
+@media(max-width:700px) { .ew-pack-summary { grid-template-columns:1fr; gap:12px; } .ew-pack-readiness,.ew-pack-weight-card { padding:20px; } .ew-pack-summary-heading h2 { font-size:22px; } .ew-pack-progress-caption { flex-wrap:wrap; } }

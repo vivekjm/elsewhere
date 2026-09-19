@@ -955,66 +955,31 @@ export function Packing({ props }: { props: ScreenProps }) {
   ] as const;
   return (
     <>
-      <section className="ew-packing-overview">
-        <div className="ew-packing-intro">
-          <p className="ew-eyebrow">READY WHEN YOU ARE</p>
-          <h2>
-            {progress === 100 && rows.length
-              ? "All packed. Adventure awaits."
-              : "A place for everything."}
-          </h2>
-          <p>
-            {done} of {rows.length} checklist items packed for {trip.name}.
-          </p>
-          <progress
-            value={done}
-            max={rows.length || 1}
-            aria-label="Packing progress"
-          />
-          <small>Outfit pieces are counted once, even when worn again.</small>
-        </div>
-        <div
-          className="ew-progress-ring"
-          style={{ "--progress": `${progress}%` } as React.CSSProperties}
-          aria-hidden="true"
-        >
-          <div>
-            <strong>
-              {progress}
-              <span>%</span>
-            </strong>
-            <small>PACKED & READY</small>
+      <section className="ew-pack-summary" aria-label="Packing summary">
+        <div className="ew-pack-readiness">
+          <div className="ew-pack-summary-heading">
+            <span className="ew-pack-summary-icon"><Icon name="bag" size={22} /></span>
+            <div>
+              <p className="ew-pack-summary-label">Packing progress</p>
+              <h2>{!rows.length ? "Start your packing list" : done === rows.length ? "You're all packed" : `${rows.length - done} left to pack`}</h2>
+            </div>
+            {!!rows.length && <span className="ew-pack-percentage">{progress}<small>%</small></span>}
+          </div>
+          <progress value={done} max={rows.length || 1} aria-label="Packing progress" />
+          <div className="ew-pack-progress-caption">
+            <span>{rows.length ? `${done} of ${rows.length} items packed` : "Add essentials or assign an outfit to a day."}</span>
+            {!!rows.length && <span>{trip.name}</span>}
           </div>
         </div>
-        <div
-          className={`ew-weight-summary ${trip.weightLimit > 0 && weight > trip.weightLimit ? "ew-over-budget" : ""}`}
-        >
-          <Icon name="weight" size={28} />
-          <div>
-            <strong>
-              {weight.toFixed(2)} <span>kg</span>
-            </strong>
-            <p>Known packed-list weight</p>
-            <small>
-              {trip.weightLimit
-                ? `${trip.weightLimit} kg target`
-                : "No luggage target set"}
-            </small>
+        <div className={`ew-pack-weight-card ${trip.weightLimit > 0 && weight > trip.weightLimit ? "ew-pack-weight-over" : ""}`}>
+          <div className="ew-pack-weight-heading">
+            <span><Icon name="weight" size={16} /> List weight</span>
+            <IconButton icon="edit" label="Edit luggage target" onClick={() => open({ kind: "trip", id: trip.id })} />
           </div>
-          <IconButton
-            icon="edit"
-            label="Edit luggage target"
-            onClick={() => open({ kind: "trip", id: trip.id })}
-          />
+          <div className="ew-pack-weight-value"><strong>{weight.toFixed(2)}</strong><span>kg{trip.weightLimit > 0 ? ` / ${trip.weightLimit} kg target` : ""}</span></div>
+          <p>{trip.weightLimit > 0 && weight > trip.weightLimit ? `${(weight - trip.weightLimit).toFixed(2)} kg over target` : missingWeight ? `${missingWeight} ${missingWeight === 1 ? "item has" : "items have"} no weight set` : trip.weightLimit > 0 ? `${Math.max(0, trip.weightLimit - weight).toFixed(2)} kg available` : "Set a luggage target"}</p>
         </div>
       </section>
-      <p className="ew-packing-explainer">
-        <Icon name="layers" size={18} />
-        <span>
-          <strong>It’s all connected.</strong> Clothes and gear assigned to your
-          plans appear here automatically.
-        </span>
-      </p>
       <div className="ew-packing-layout">
         <section>
           <div className="ew-packing-toolbar">
