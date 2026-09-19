@@ -686,11 +686,6 @@ function WorkspaceApp({
               <h1>{pageTitle}</h1>
             </div>
             <div className="ew-header-actions">
-              {["planner", "packing"].includes(route.view) && trip && (
-                <Button icon="download" onClick={() => setExportOpen(true)}>
-                  Export
-                </Button>
-              )}
               {route.view !== "settings" && (
                 <Button
                   variant="primary"
@@ -839,6 +834,25 @@ function WorkspaceApp({
                   </span>
                 </div>
               </section>
+              <section className="ew-settings-card">
+                <div className="ew-settings-icon">
+                  <Icon name="download" size={27} />
+                </div>
+                <p className="ew-eyebrow">EXPORT</p>
+                <h2>Take your plans with you.</h2>
+                <p>
+                  Calendar, packing list, print-ready plan, or a workspace copy.
+                </p>
+                <div className="ew-settings-buttons">
+                  <Button
+                    variant="primary"
+                    icon="download"
+                    onClick={() => setExportOpen(true)}
+                  >
+                    Export
+                  </Button>
+                </div>
+              </section>
             </div>
           )}
           </div>
@@ -938,16 +952,20 @@ function WorkspaceApp({
           </form>
         </Modal>
       )}
-      {exportOpen && trip && (
+      {exportOpen && (
         <Modal
           title="A plan you can take with you."
           onDismiss={() => {
             if (!busy) setExportOpen(false);
           }}
-          description="Export the selected trip, or back up the whole workspace."
+          description={
+            trip
+              ? "Export the selected trip, or back up the whole workspace."
+              : "Back up the whole workspace."
+          }
         >
           <div className="ew-export-options">
-            <button
+            {trip && <button
               onClick={() => {
                 download(
                   `${filename(trip.name)}.ics`,
@@ -968,8 +986,8 @@ function WorkspaceApp({
                 </small>
               </span>
               <Icon name="download" />
-            </button>
-            <button
+            </button>}
+            {trip && <button
               onClick={() => {
                 download(
                   `${filename(trip.name)}-packing.csv`,
@@ -987,8 +1005,8 @@ function WorkspaceApp({
                 </small>
               </span>
               <Icon name="download" />
-            </button>
-            <button
+            </button>}
+            {trip && <button
               onClick={() => {
                 setExportOpen(false);
                 requestAnimationFrame(() => window.print());
@@ -1003,7 +1021,7 @@ function WorkspaceApp({
                 </small>
               </span>
               <Icon name="arrow" />
-            </button>
+            </button>}
             <button disabled={busy} onClick={() => void backup()}>
               <Icon name="shield" />
               <span>
