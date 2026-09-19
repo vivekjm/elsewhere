@@ -1,7 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  seed,
   packing,
   removeItem,
   removeOutfit,
@@ -14,6 +13,7 @@ import {
   safeLink,
   type Workspace,
 } from "../lib/model.ts";
+import { testWorkspace as seed } from "./fixtures.ts";
 import {
   resizeTrip,
   duplicateTrip,
@@ -25,7 +25,7 @@ import {
 import { calendarICS, packingCSV, foldICS, filename } from "../lib/exports.ts";
 import { parseBackup, prepareRestore, exportBackup } from "../lib/backup.ts";
 
-test("existing seed retains packing count, deduplication and per-piece weights", () => {
+test("test workspace retains packing count, deduplication and per-piece weights", () => {
   const w = seed(),
     rows = packing(w, w.trips[0]);
   assert.equal(rows.length, 9);
@@ -274,7 +274,7 @@ for (const link of [
   test(`unsafe reference is rejected: ${link}`, () =>
     assert.equal(safeLink(link), false));
 test("safe references support encoded place parameters", () =>
-  assert(safeLink("https://example.com/?a=Lisbon%20walk")));
+  assert(safeLink("https://example.com/?a=Test%20walk")));
 test("all-day activities are valid but an end-time needs a start-time", () => {
   const a = { ...seed().trips[0].activities[0], time: "" };
   assert(activitySchema.safeParse(a).success);
@@ -288,7 +288,7 @@ test("overlap warnings apply only to intersecting intervals on the same day", ()
       { ...a, id: "c", time: "12:00", endTime: "13:00" },
       { ...a, id: "d", date: "2026-09-22", time: "11:00", endTime: "11:30" },
     ];
-  assert.deepEqual([...overlaps(events)].sort(), ["alfama", "b", "c"]);
+  assert.deepEqual([...overlaps(events)].sort(), ["b", "c", "walk"]);
   assert.equal(overlaps([events[0], events[2]]).size, 0);
 });
 test("calendar exports local wall times and escapes text", () => {
@@ -352,7 +352,7 @@ for (const value of [
     assert(packingCSV(w, w.trips[0]).includes("\"'" + value));
   });
 test("filenames cannot introduce paths", () => {
-  assert.equal(filename("../../A Week / Lisbon!"), "a-week-lisbon");
+  assert.equal(filename("../../Weekend / Away!"), "weekend-away");
   assert.equal(filename("🌿"), "trips-loom-trip");
 });
 function portable() {
@@ -440,7 +440,7 @@ test("new data-only backup round trips through validated envelope", async () => 
     envelope = JSON.parse(text),
     p = parseBackup(text);
   assert.equal(envelope.format, "tripsloom-backup");
-  assert.equal(p.workspace.trips[0].id, "lisbon");
+  assert.equal(p.workspace.trips[0].id, "test-journey");
   assert.equal(p.photos.length, 0);
 });
 test("Elsewhere backup envelopes remain importable after the rename", async () => {
@@ -449,7 +449,7 @@ test("Elsewhere backup envelopes remain importable after the rename", async () =
   envelope.format = "elsewhere-backup";
   assert.equal(
     parseBackup(JSON.stringify(envelope)).workspace.trips[0].id,
-    "lisbon",
+    "test-journey",
   );
 });
 for (const photos of [

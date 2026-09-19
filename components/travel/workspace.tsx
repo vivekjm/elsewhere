@@ -369,7 +369,6 @@ function WorkspaceApp({
           weightLimit: input.weightLimit,
           theme: input.theme,
           notes: input.notes,
-          sample: false,
         });
         if (current)
           d.trips[d.trips.findIndex((t) => t.id === current.id)] = next;

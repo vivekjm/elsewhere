@@ -47,7 +47,7 @@ Autosaves serialize optimistic-revision writes. A failed save leaves edits in th
 
 **Accounts and onboarding.** Supabase email/password sign-in, sign-up, password reset, persistent sessions and sign-out are available from the public app. A new account completes a short onboarding that saves a display name, home base, travel rhythm, interests, packing preference and weight units in the RLS-protected `profiles` table. The planner uses those preferences in its welcome and account settings copy. The first signed-in load claims the current visitor workspace so an existing plan is not lost.
 
-The Lisbon itinerary is illustrative sample data, separately copied for each new visitor or account. It is not a booking or destination recommendation.
+New visitor and account workspaces start empty. Trips, wardrobe pieces, outfits and packing items appear only after the user creates or restores them.
 
 ## Project layout
 

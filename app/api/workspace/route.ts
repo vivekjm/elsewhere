@@ -7,7 +7,7 @@ import {
   failure,
   workspaceOwner,
 } from "@/lib/server";
-import { seed, workspaceSchema } from "@/lib/model";
+import { emptyWorkspace, workspaceSchema } from "@/lib/model";
 
 async function claimVisitorPhotos(data: string, from: string, to: string) {
   try {
@@ -48,6 +48,17 @@ export async function GET(r: Request) {
       );
     const existing = guest(r),
       db = database();
+    // Remove only untouched copies of the retired built-in sample. Rows that
+    // have ever been edited are preserved, so this cannot erase user work.
+    await db
+      .prepare(
+        `DELETE FROM workspaces
+         WHERE revision = 0
+           AND json_extract(data, '$.version') = 1
+           AND json_array_length(json_extract(data, '$.trips')) = 1
+           AND json_extract(data, '$.trips[0].sample') = 1`,
+      )
+      .run();
     let row = await db
       .prepare("SELECT data, revision FROM workspaces WHERE id = ?")
       .bind(owner.id)
@@ -80,7 +91,7 @@ export async function GET(r: Request) {
       }
     }
     if (!row) {
-      const data = seed();
+      const data = emptyWorkspace();
       await db
         .prepare(
           "INSERT OR IGNORE INTO workspaces (id,data,revision,updated_at) VALUES (?, ?, 0, ?)",

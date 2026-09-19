@@ -494,12 +494,6 @@
   margin-bottom: 14px;
   padding-right: 95px;
 }
-.ew-sample {
-  font-size: 9px;
-  color: #5f6d52;
-  border-left: 1px solid #b8c5a7;
-  padding-left: 12px;
-}
 .ew-hero-content h2 {
   font: 42px/1.16 var(--ew-serif);
   letter-spacing: -1.4px;
@@ -3341,11 +3335,6 @@ html.ew-modal-open {
     padding: 5px 7px;
     gap: 4px;
   }
-  .ew-sample {
-    font-size: 7px;
-    padding-left: 8px;
-    white-space: nowrap;
-  }
   .ew-hero-edit {
     top: 16px;
     right: 12px;
@@ -4215,10 +4204,6 @@ html.ew-modal-open {
   .ew-hero-label .ew-pill {
     font-size: 5.5px;
     padding: 4px 5px;
-  }
-  .ew-sample {
-    font-size: 6px;
-    padding-left: 6px;
   }
   .ew-hero-footer > div {
     font-size: 7px;

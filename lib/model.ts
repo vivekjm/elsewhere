@@ -138,7 +138,6 @@ export type Trip = {
   packed: string[];
   theme?: (typeof TRIP_MOODS)[number];
   notes?: string;
-  sample?: boolean;
 };
 export type Workspace = {
   version: 1;
@@ -413,7 +412,6 @@ function parseTrip(value: unknown): Trip {
     // Cover mood: an unknown value falls back rather than rejecting a whole trip.
     theme: isMood(v.theme) ? v.theme : "mountains",
     notes: text(v.notes ?? "", "Trip notes", 5000),
-    sample: boolean(v.sample ?? false, "sample status"),
   };
 }
 function parseWorkspace(value: unknown): Workspace {
@@ -580,174 +578,7 @@ export function removeOutfit(w: Workspace, id: string) {
   });
   return w;
 }
-/** Stable sample IDs retain backwards compatibility with existing regression tests. */
-export function seed(): Workspace {
-  return {
-    version: 1,
-    items: [
-      {
-        id: "linen",
-        name: "Linen shirt",
-        category: "Tops",
-        weight: 180,
-        image: "",
-        shape: "shirt",
-        color: "#c2ae88",
-      },
-      {
-        id: "trousers",
-        name: "Everyday trousers",
-        category: "Bottoms",
-        weight: 380,
-        image: "",
-        shape: "pants",
-        color: "#3d443c",
-      },
-      {
-        id: "trainers",
-        name: "Walking trainers",
-        category: "Shoes",
-        weight: 620,
-        image: "",
-        shape: "sneakers",
-        color: "#dedbd0",
-      },
-      {
-        id: "jacket",
-        name: "Light jacket",
-        category: "Layers",
-        weight: 320,
-        image: "",
-        shape: "coat",
-        color: "#85907c",
-      },
-      {
-        id: "camera",
-        name: "Camera",
-        category: "Gear",
-        weight: 450,
-        image: "",
-        shape: "camera",
-        color: "#40433e",
-      },
-      {
-        id: "dress",
-        name: "Evening dress",
-        category: "Tops",
-        weight: 260,
-        image: "",
-        shape: "dress",
-        color: "#c3ad99",
-      },
-    ],
-    outfits: [
-      {
-        id: "city",
-        name: "The city wanderer",
-        items: ["linen", "trousers", "trainers"],
-        occasion: "Everyday",
-      },
-      {
-        id: "coast",
-        name: "A breezy afternoon",
-        items: ["linen", "trousers", "jacket", "trainers"],
-        occasion: "Exploring",
-      },
-      {
-        id: "evening",
-        name: "Dinner at sunset",
-        items: ["dress", "jacket"],
-        occasion: "Evening",
-      },
-    ],
-    trips: [
-      {
-        id: "lisbon",
-        name: "A week in Lisbon",
-        destination: "Lisbon, Portugal",
-        start: "2026-09-21",
-        end: "2026-09-27",
-        travellers: 2,
-        budget: 1500,
-        currency: "EUR",
-        weightLimit: 8,
-        theme: "coast",
-        sample: true,
-        days: {
-          "2026-09-21": {
-            outfitId: "city",
-            title: "A slow start in Alfama",
-            stay: "Casa do Pátio · Alfama",
-            notes: "Take it slow on our first day.",
-          },
-          "2026-09-23": { outfitId: "coast", stay: "", notes: "" },
-        },
-        activities: [
-          {
-            id: "alfama",
-            date: "2026-09-21",
-            time: "10:00",
-            title: "Wander through Alfama",
-            place: "Alfama, Lisbon",
-            category: "Explore",
-            cost: 0,
-            link: "",
-            notes: "Narrow streets, tiled façades, a coffee or two.",
-            outfitId: "city",
-            gear: ["camera"],
-          },
-          {
-            id: "dinner",
-            date: "2026-09-21",
-            time: "18:30",
-            title: "Dinner by the river",
-            place: "Cais do Sodré",
-            category: "Food & drink",
-            cost: 45,
-            link: "",
-            notes: "Find a table around golden hour.",
-            outfitId: "evening",
-            gear: [],
-          },
-          {
-            id: "sintra",
-            date: "2026-09-23",
-            time: "09:00",
-            title: "Day trip to Sintra",
-            place: "Sintra",
-            category: "Explore",
-            cost: 35,
-            link: "",
-            notes: "Comfortable shoes for the hills.",
-            outfitId: "coast",
-            gear: ["camera"],
-          },
-        ],
-        extras: [
-          {
-            id: "passport",
-            name: "Passport & travel documents",
-            quantity: 1,
-            weight: 80,
-            packed: false,
-          },
-          {
-            id: "charger",
-            name: "Phone charger",
-            quantity: 1,
-            weight: 120,
-            packed: false,
-          },
-          {
-            id: "toiletries",
-            name: "Toiletries",
-            quantity: 1,
-            weight: 350,
-            packed: false,
-          },
-        ],
-        packed: [],
-      },
-    ],
-  };
+/** A new account starts blank; every visible plan belongs to its user. */
+export function emptyWorkspace(): Workspace {
+  return { version: 1, trips: [], items: [], outfits: [] };
 }

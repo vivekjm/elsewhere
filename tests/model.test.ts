@@ -1,14 +1,22 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  seed,
+  emptyWorkspace,
   packing,
   removeItem,
   removeOutfit,
   workspaceSchema,
   tripDates,
 } from "../lib/model.ts";
+import { testWorkspace as seed } from "./fixtures.ts";
 import { calendarICS, packingCSV } from "../lib/exports.ts";
+test("new workspaces contain no default user data", () => {
+  const first = emptyWorkspace(),
+    second = emptyWorkspace();
+  assert.deepEqual(first, { version: 1, trips: [], items: [], outfits: [] });
+  first.trips.push(seed().trips[0]);
+  assert.deepEqual(second.trips, []);
+});
 test("reused outfit pieces and activity gear count once", () => {
   const w = seed(),
     t = w.trips[0];

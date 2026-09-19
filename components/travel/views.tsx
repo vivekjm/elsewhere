@@ -88,9 +88,6 @@ export function TripHero({
             <Icon name="compass" size={12} />
             THE NEXT ADVENTURE
           </span>
-          {trip.sample && (
-            <span className="ew-sample">Sample trip · make it yours</span>
-          )}
         </div>
         <h2>{trip.name}</h2>
         <div className="ew-hero-meta">
@@ -1237,9 +1234,7 @@ export function Trips({ props }: { props: ScreenProps }) {
               >
                 <Landscape theme={moodOf(t.theme)} />
                 <span className="ew-pill">
-                  {t.sample
-                    ? "SAMPLE TRIP"
-                    : t.end < today()
+                  {t.end < today()
                       ? "A GOOD MEMORY"
                       : t.start <= today()
                         ? "ON THE JOURNEY"

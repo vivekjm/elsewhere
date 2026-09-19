@@ -52,7 +52,6 @@ export type FormDraft = {
   currency?: Trip["currency"];
   weightLimit?: number;
   theme?: Trip["theme"];
-  sample?: boolean;
   category?: string;
   weight?: number;
   image?: string;

@@ -87,7 +87,6 @@ export function duplicateTrip(trip: Trip): Trip {
   const copy = structuredClone(trip);
   copy.id = uid();
   copy.name = `${copy.name.slice(0, 190)} (copy)`;
-  copy.sample = false;
   copy.packed = [];
   copy.activities.forEach((a) => {
     a.id = uid();
@@ -156,7 +155,6 @@ export function emptyTrip(): Trip {
     weightLimit: 15,
     theme: "mountains",
     notes: "",
-    sample: false,
     days: {},
     activities: [],
     extras: [],
