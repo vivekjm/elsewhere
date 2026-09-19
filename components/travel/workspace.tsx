@@ -16,13 +16,7 @@ import {
 } from "@/lib/model";
 import { duplicateTrip, resizeTrip, today, money } from "@/lib/planning";
 import { calendarICS, packingCSV, filename, download } from "@/lib/exports";
-import {
-  parseBackup,
-  prepareRestore,
-  exportBackup,
-  MAX_BACKUP_BYTES,
-  type PendingBackup,
-} from "@/lib/backup";
+import { exportBackup } from "@/lib/backup";
 import { Editor, type Modal as EditorModal, type EditorResult } from "./editor";
 import { Button, Icon, IconButton, Modal } from "./primitives";
 import { Select } from "./pickers";
@@ -46,6 +40,17 @@ import {
 import { AuthLoading, AuthScreen } from "@/components/auth/auth-screen";
 import { OnboardingFlow } from "@/components/auth/onboarding";
 type Route = { view: View; tripId: string; day: string; month: string };
+type ColorTheme = "olive" | "coast" | "terracotta" | "lavender";
+const COLOR_THEMES: { id: ColorTheme; label: string; description: string }[] = [
+  { id: "olive", label: "Forest", description: "Calm olive and warm paper" },
+  { id: "coast", label: "Coast", description: "Sea blue and cool mist" },
+  {
+    id: "terracotta",
+    label: "Terracotta",
+    description: "Clay, sand and soft cream",
+  },
+  { id: "lavender", label: "Lavender", description: "Plum and pale lilac" },
+];
 function readRoute(w: Workspace): Route {
   const [path, query] = window.location.hash.slice(1).split("?"),
     params = new URLSearchParams(query);
@@ -149,6 +154,17 @@ function WorkspaceApp({
     } | null>(null),
     [busy, setBusy] = useState(false),
     [includePhotos, setIncludePhotos] = useState(true),
+    [colorTheme, setColorTheme] = useState<ColorTheme>(() => {
+      if (typeof window === "undefined") return "olive";
+      try {
+        const saved = window.localStorage.getItem("tripsloom-color-theme");
+        return COLOR_THEMES.some((theme) => theme.id === saved)
+          ? (saved as ColorTheme)
+          : "olive";
+      } catch {
+        return "olive";
+      }
+    }),
     [reducedMotion, setReducedMotion] = useState(() => {
       if (typeof window === "undefined") return false;
       try {
@@ -164,8 +180,7 @@ function WorkspaceApp({
       () => typeof navigator === "undefined" || navigator.onLine,
     ),
     [undo, setUndo] = useState<Workspace | null>(null);
-  const restoreInput = useRef<HTMLInputElement>(null),
-    main = useRef<HTMLElement>(null);
+  const main = useRef<HTMLElement>(null);
   const w = store.w,
     trip = w?.trips.find((t) => t.id === route.tripId) || w?.trips[0];
   function notify(message: string, error = false) {
@@ -185,6 +200,13 @@ function WorkspaceApp({
       window.removeEventListener("offline", update);
     };
   }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("tripsloom-color-theme", colorTheme);
+    } catch {
+      // Local preference storage can be unavailable in private browsing.
+    }
+  }, [colorTheme]);
   useEffect(() => {
     document.documentElement.classList.toggle("ew-reduced-motion", reducedMotion);
     try {
@@ -474,41 +496,6 @@ function WorkspaceApp({
       setBusy(false);
     }
   }
-  async function restore(file?: File) {
-    if (!file) return;
-    try {
-      if (file.size > MAX_BACKUP_BYTES)
-        throw new Error("Choose a backup under 24 MB.");
-      const pending: PendingBackup = parseBackup(await file.text());
-      setConfirm({
-        title: "Replace this workspace?",
-        description: `${pending.workspace.trips.length} trips, ${pending.workspace.items.length} wardrobe pieces, ${pending.workspace.outfits.length} outfits and ${pending.photos.length} embedded photos will be restored. Back up your current plans first. Photo references without embedded files may not open in another browser.`,
-        label: "Restore backup",
-        dangerous: true,
-        action: async () => {
-          const version = store.latest.current;
-          const next = await prepareRestore(pending);
-          if (store.latest.current !== version)
-            throw new Error(
-              "The workspace changed while photos were restoring. Please start the restore again.",
-            );
-          store.change((d) => Object.assign(d, next));
-          setUndo(null);
-          navigate("trips");
-          notify("Backup restored.");
-        },
-      });
-    } catch (e) {
-      notify(
-        e instanceof Error
-          ? e.message
-          : "That file is not a valid Trips Loom backup.",
-        true,
-      );
-    } finally {
-      if (restoreInput.current) restoreInput.current.value = "";
-    }
-  }
   const retryReload = () =>
     setConfirm({
       title: "Reload the server version?",
@@ -613,7 +600,7 @@ function WorkspaceApp({
       </div>
     );
   return (
-    <div className="ew">
+    <div className="ew" data-color-theme={colorTheme}>
       <a
         className="ew-skip"
         href="#ew-main"
@@ -658,7 +645,7 @@ function WorkspaceApp({
             aria-current={route.view === "settings" ? "page" : undefined}
           >
             <Icon name="settings" />
-            Settings & backups
+            Settings
           </button>
         </aside>
         <header className="ew-mobile-header">
@@ -675,7 +662,7 @@ function WorkspaceApp({
           {tripSelect(true)}
           <IconButton
             icon="settings"
-            label="Settings and backups"
+            label="Settings"
             onClick={() => navigate("settings")}
           />
         </header>
@@ -801,70 +788,55 @@ function WorkspaceApp({
               )}
               <section className="ew-settings-card">
                 <div className="ew-settings-icon">
-                  <Icon name="download" size={27} />
-                </div>
-                <p className="ew-eyebrow">DATA</p>
-                <h2>Backups &amp; data</h2>
-                <p>
-                  Export a copy of your plans, wardrobe and packing list, or
-                  restore one you already have.
-                </p>
-                <label className="ew-check-line">
-                  <input
-                    type="checkbox"
-                    checked={includePhotos}
-                    onChange={(e) => setIncludePhotos(e.target.checked)}
-                  />
-                  Include uploaded photos in exports
-                </label>
-                <div className="ew-settings-buttons">
-                  <Button
-                    variant="primary"
-                    icon="download"
-                    disabled={busy}
-                    onClick={() => void backup()}
-                  >
-                    {busy ? "Preparing backup…" : "Download workspace backup"}
-                  </Button>
-                  <Button
-                    icon="upload"
-                    disabled={busy}
-                    onClick={() => restoreInput.current?.click()}
-                  >
-                    Restore a backup
-                  </Button>
-                </div>
-                <input
-                  ref={restoreInput}
-                  type="file"
-                  accept=".json,application/json"
-                  className="ew-sr-only"
-                  aria-label="Restore backup file"
-                  onChange={(e) => void restore(e.target.files?.[0])}
-                />
-                <p className="ew-hint">
-                  Backups up to 24 MB. Restores replace this workspace after
-                  confirmation.
-                </p>
-              </section>
-              <section className="ew-settings-card">
-                <div className="ew-settings-icon">
                   <Icon name="settings" size={27} />
                 </div>
                 <p className="ew-eyebrow">APPEARANCE</p>
-                <h2>Motion</h2>
+                <h2>Make it feel like yours.</h2>
                 <p>
-                  Keep the gentle transitions, or reduce movement throughout
-                  the app.
+                  Choose a color story for your journeys. Your choice stays on
+                  this browser.
                 </p>
-                <label className="ew-check-line">
-                  <input
-                    type="checkbox"
-                    checked={reducedMotion}
-                    onChange={(e) => setReducedMotion(e.target.checked)}
-                  />
-                  Reduce motion
-                </label>
+                <div
+                  className="ew-theme-picker"
+                  role="group"
+                  aria-label="Color theme"
+                >
+                  {COLOR_THEMES.map((theme) => (
+                    <button
+                      type="button"
+                      key={theme.id}
+                      className="ew-theme-option"
+                      data-theme-preview={theme.id}
+                      aria-pressed={colorTheme === theme.id}
+                      onClick={() => setColorTheme(theme.id)}
+                    >
+                      <span className="ew-theme-swatches" aria-hidden="true">
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                      <span>
+                        <strong>{theme.label}</strong>
+                        <small>{theme.description}</small>
+                      </span>
+                      {colorTheme === theme.id && <Icon name="check" size={17} />}
+                    </button>
+                  ))}
+                </div>
+                <div className="ew-motion-setting">
+                  <div>
+                    <strong>Reduce motion</strong>
+                    <small>Use simpler transitions throughout the app.</small>
+                  </div>
+                  <label className="ew-check-line">
+                    <input
+                      type="checkbox"
+                      checked={reducedMotion}
+                      onChange={(e) => setReducedMotion(e.target.checked)}
+                      aria-label="Reduce motion"
+                    />
+                  </label>
+                </div>
               </section>
               <section className="ew-settings-card">
                 <div className="ew-settings-icon">
