@@ -9,93 +9,6 @@ import {
 } from "@/lib/server";
 import { emptyWorkspace, workspaceSchema } from "@/lib/model";
 
-const LEGACY_TRIP_ID = "lisbon",
-  LEGACY_OUTFIT_IDS = new Set(["city", "coast", "evening"]),
-  LEGACY_ITEM_IDS = new Set([
-    "linen",
-    "trousers",
-    "trainers",
-    "jacket",
-    "camera",
-    "dress",
-  ]);
-
-async function retireLegacyDemo(db: ReturnType<typeof database>) {
-  const result = await db
-    .prepare(
-      `SELECT id, data, revision FROM workspaces
-       WHERE instr(data, '"id":"lisbon"') > 0
-          OR instr(data, '"sample":') > 0`,
-    )
-    .all<{ id: string; data: string; revision: number }>();
-  for (const row of result.results) {
-    try {
-      const raw = JSON.parse(row.data) as Record<string, unknown>,
-        trips = Array.isArray(raw.trips)
-          ? (raw.trips as Array<Record<string, unknown>>).filter(
-              (trip) => trip.id !== LEGACY_TRIP_ID,
-            )
-          : [];
-      trips.forEach((trip) => delete trip.sample);
-      const usedOutfits = new Set<string>(),
-        usedItems = new Set<string>();
-      for (const trip of trips) {
-        if (Array.isArray(trip.packed))
-          trip.packed.forEach((id) => usedItems.add(String(id)));
-        if (Array.isArray(trip.activities))
-          trip.activities.forEach((entry) => {
-            const activity = entry as Record<string, unknown>;
-            if (activity.outfitId) usedOutfits.add(String(activity.outfitId));
-            if (Array.isArray(activity.gear))
-              activity.gear.forEach((id) => usedItems.add(String(id)));
-          });
-        if (trip.days && typeof trip.days === "object")
-          Object.values(trip.days as Record<string, Record<string, unknown>>).forEach(
-            (day) => {
-              if (day.outfitId) usedOutfits.add(String(day.outfitId));
-              if (Array.isArray(day.outfitIds))
-                day.outfitIds.forEach((id) => usedOutfits.add(String(id)));
-              if (Array.isArray(day.gear))
-                day.gear.forEach((id) => usedItems.add(String(id)));
-            },
-          );
-      }
-      const outfits = Array.isArray(raw.outfits)
-        ? (raw.outfits as Array<Record<string, unknown>>).filter(
-            (outfit) =>
-              !LEGACY_OUTFIT_IDS.has(String(outfit.id)) ||
-              usedOutfits.has(String(outfit.id)),
-          )
-        : [];
-      outfits.forEach((outfit) => {
-        if (Array.isArray(outfit.items))
-          outfit.items.forEach((id) => usedItems.add(String(id)));
-      });
-      const items = Array.isArray(raw.items)
-        ? (raw.items as Array<Record<string, unknown>>).filter(
-            (item) =>
-              !LEGACY_ITEM_IDS.has(String(item.id)) ||
-              usedItems.has(String(item.id)),
-          )
-        : [];
-      const cleaned = workspaceSchema.parse({ ...raw, trips, outfits, items });
-      await db
-        .prepare(
-          "UPDATE workspaces SET data = ?, revision = revision + 1, updated_at = ? WHERE id = ? AND revision = ?",
-        )
-        .bind(
-          JSON.stringify(cleaned),
-          new Date().toISOString(),
-          row.id,
-          row.revision,
-        )
-        .run();
-    } catch {
-      // A malformed workspace is left untouched rather than risking user data.
-    }
-  }
-}
-
 async function claimVisitorPhotos(data: string, from: string, to: string) {
   try {
     const workspace = JSON.parse(data) as { items?: Array<{ image?: unknown }> },
@@ -135,7 +48,6 @@ export async function GET(r: Request) {
       );
     const existing = guest(r),
       db = database();
-    await retireLegacyDemo(db);
     let row = await db
       .prepare("SELECT data, revision FROM workspaces WHERE id = ?")
       .bind(owner.id)
