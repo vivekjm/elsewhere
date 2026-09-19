@@ -553,7 +553,7 @@ export function Planner({ props }: { props: ScreenProps }) {
             <Icon name="stay" />
             <span>
               <small>STAYING AT</small>
-              {details?.stay || "Add tonight’s accommodation"}
+              <strong>{details?.stay || "Add tonight’s accommodation"}</strong>
             </span>
             <Icon name="edit" size={12} />
           </button>
