@@ -12,19 +12,6 @@ function Brand() {
   );
 }
 
-export function AuthLoading({ message = "Making room for the journey." }: { message?: string }) {
-  return (
-    <main className="ew ew-startup">
-      <Brand />
-      <span className="ew-startup-icon">
-        <Icon name="compass" size={33} />
-      </span>
-      <h1>{message}</h1>
-      <p>Opening your private planning space…</p>
-    </main>
-  );
-}
-
 export function AuthScreen() {
   const auth = useAuth();
   const [mode, setMode] = useState<AuthMode>(

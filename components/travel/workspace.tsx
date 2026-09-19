@@ -37,7 +37,7 @@ import {
   useAuth,
   type AuthProfile,
 } from "@/components/auth/auth-context";
-import { AuthLoading, AuthScreen } from "@/components/auth/auth-screen";
+import { AuthScreen } from "@/components/auth/auth-screen";
 import { OnboardingFlow } from "@/components/auth/onboarding";
 type Route = { view: View; tripId: string; day: string; month: string };
 type ColorTheme = "olive" | "coast" | "terracotta" | "lavender";
@@ -507,22 +507,18 @@ function WorkspaceApp({
       dangerous: store.dirty,
       action: () => store.load(),
     });
+  if (!w && !store.loadError)
+    return <main className="ew ew-boot" aria-label="Opening Trips Loom" aria-busy="true" />;
   if (!w)
     return (
       <main className="ew ew-startup">
         <Brand />
-        <span className="ew-startup-icon">
-          <Icon name={store.loadError ? "warning" : "compass"} size={33} />
-        </span>
-        <h1>
-          {store.loadError ? "A small detour." : "Making room for the journey."}
-        </h1>
-        <p>{store.loadError || "Getting your plans together…"}</p>
-        {store.loadError && (
-          <Button variant="primary" onClick={() => void store.load()}>
-            Try again
-          </Button>
-        )}
+        <span className="ew-startup-icon"><Icon name="warning" size={33} /></span>
+        <h1>A small detour.</h1>
+        <p>{store.loadError}</p>
+        <Button variant="primary" onClick={() => void store.load()}>
+          Try again
+        </Button>
       </main>
     );
   const rows = trip ? packing(w, trip) : [],
@@ -1117,7 +1113,8 @@ function WorkspaceApp({
 function AppEntry() {
   const auth = useAuth();
   const [editingProfile, setEditingProfile] = useState(false);
-  if (auth.phase === "loading") return <AuthLoading />;
+  if (auth.phase === "loading")
+    return <main className="ew ew-boot" aria-label="Opening Trips Loom" aria-busy="true" />;
   if (auth.recovery) return <AuthScreen key="recover" />;
   if (!auth.user && !auth.guestMode)
     return <AuthScreen key={auth.recovery ? "recover" : "auth"} />;
@@ -1125,7 +1122,8 @@ function AppEntry() {
     return <WorkspaceApp key="visitor" />;
   const user = auth.user;
   if (!user) return <AuthScreen key={auth.recovery ? "recover" : "auth"} />;
-  if (auth.profileLoading) return <AuthLoading message="Getting your plans together." />;
+  if (auth.profileLoading)
+    return <main className="ew ew-boot" aria-label="Opening Trips Loom" aria-busy="true" />;
   if (auth.profileError)
     return (
       <main className="ew ew-startup">

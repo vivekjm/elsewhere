@@ -2626,6 +2626,10 @@ html[data-color-theme="lavender"], .ew[data-color-theme="lavender"] {
   gap: 22px;
   min-height: 100dvh;
 }
+.ew-boot {
+  min-height: 100dvh;
+  background: var(--ew-paper);
+}
 .ew-startup h1 {
   font: 32px/1.35 var(--ew-serif);
   letter-spacing: -0.6px;
