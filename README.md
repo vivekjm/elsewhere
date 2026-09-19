@@ -1,4 +1,4 @@
-# Elsewhere
+# Trips Loom
 
 The trip, all together. Calendar-first travel planning that connects each day's places and activities to what you'll wear and what you'll pack.
 
@@ -106,13 +106,13 @@ npm run build
 With a disposable local Worker running:
 
 ```sh
-ELSEWHERE_TEST_URL=http://127.0.0.1:4173 node tests/api-smoke.mjs
+TRIPS_LOOM_TEST_URL=http://127.0.0.1:4173 node tests/api-smoke.mjs
 python -m pip install playwright==1.57.0
 python -m playwright install chromium
-ELSEWHERE_TEST_URL=http://127.0.0.1:4173 python e2e/browser.py
+TRIPS_LOOM_TEST_URL=http://127.0.0.1:4173 python e2e/browser.py
 ```
 
-GitHub Actions performs the locked install, type check, lint, domain tests, Worker build, local database setup, API checks and real-browser acceptance tests. Browser tests include reload persistence, private photo upload/restore, failed-save retry, real revision conflicts, and layouts from 320 to 1920 CSS pixels. Screenshots and results are uploaded as the `elsewhere-verification` artifact.
+GitHub Actions performs the locked install, type check, lint, domain tests, Worker build, local database setup, API checks and real-browser acceptance tests. Browser tests include reload persistence, private photo upload/restore, failed-save retry, real revision conflicts, and layouts from 320 to 1920 CSS pixels. Screenshots and results are uploaded as the `trips-loom-verification` artifact.
 
 See [the verification notes](docs/VERIFICATION.md) for the distinction between local component checks and real Worker tests.
 

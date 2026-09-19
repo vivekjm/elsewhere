@@ -12,21 +12,22 @@ create table public.profiles (
 );
 
 alter table public.profiles enable row level security;
+grant select, insert, update on public.profiles to authenticated;
 
-create policy "Users can view their own Elsewhere profile"
-  on public.profiles for select
-  using (auth.uid() = id);
+create policy "Users can view their own Trips Loom profile"
+  on public.profiles for select to authenticated
+  using ((select auth.uid()) = id);
 
-create policy "Users can create their own Elsewhere profile"
-  on public.profiles for insert
-  with check (auth.uid() = id);
+create policy "Users can create their own Trips Loom profile"
+  on public.profiles for insert to authenticated
+  with check ((select auth.uid()) = id);
 
-create policy "Users can update their own Elsewhere profile"
-  on public.profiles for update
-  using (auth.uid() = id)
-  with check (auth.uid() = id);
+create policy "Users can update their own Trips Loom profile"
+  on public.profiles for update to authenticated
+  using ((select auth.uid()) = id)
+  with check ((select auth.uid()) = id);
 
-create or replace function public.touch_elsewhere_profile()
+create or replace function public.touch_trips_loom_profile()
 returns trigger
 language plpgsql
 set search_path = public
@@ -39,4 +40,21 @@ $$;
 
 create trigger profiles_updated_at
 before update on public.profiles
-for each row execute function public.touch_elsewhere_profile();
+for each row execute function public.touch_trips_loom_profile();
+
+create or replace function public.create_trips_loom_profile()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.profiles (id, display_name)
+  values (new.id, coalesce(new.raw_user_meta_data ->> 'display_name', ''));
+  return new;
+end;
+$$;
+
+create trigger auth_user_created_profile
+after insert on auth.users
+for each row execute function public.create_trips_loom_profile();

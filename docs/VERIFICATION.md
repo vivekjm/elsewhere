@@ -49,10 +49,10 @@ Follow README's build and local-storage setup, start the application at `http://
 npm run typecheck
 npm run lint
 npm test
-ELSEWHERE_TEST_URL=http://127.0.0.1:4173 npm run test:api
+TRIPS_LOOM_TEST_URL=http://127.0.0.1:4173 npm run test:api
 python3 -m pip install playwright==1.57.0
 python3 -m playwright install chromium
-ELSEWHERE_TEST_URL=http://127.0.0.1:4173 npm run test:e2e
+TRIPS_LOOM_TEST_URL=http://127.0.0.1:4173 npm run test:e2e
 ```
 
 Linux machines without browser libraries may need `python3 -m playwright install --with-deps chromium`. Run the write tests only against a disposable local instance. CI provisions that instance automatically.

@@ -82,7 +82,7 @@ const href = (r: Route) =>
 function Brand() {
   return (
     <span className="ew-wordmark">
-      elsewhere<span>.</span>
+      trips loom<span>.</span>
     </span>
   );
 }
@@ -101,7 +101,7 @@ class Boundary extends React.Component<
         <h1>Something got in the way.</h1>
         <p>Reload to reopen the latest version saved to your workspace.</p>
         <Button onClick={() => window.location.reload()}>
-          Reload Elsewhere
+          Reload Trips Loom
         </Button>
       </main>
     ) : (
@@ -114,11 +114,13 @@ function WorkspaceApp({
   profile,
   accountEmail,
   onSignOut,
+  onEditProfile,
 }: {
   accessToken?: string | null;
   profile?: AuthProfile | null;
   accountEmail?: string;
   onSignOut?: () => Promise<void>;
+  onEditProfile?: () => void;
 }) {
   const [route, setRoute] = useState<Route>(() => {
     const day = today();
@@ -150,7 +152,10 @@ function WorkspaceApp({
     [reducedMotion, setReducedMotion] = useState(() => {
       if (typeof window === "undefined") return false;
       try {
-        return window.localStorage.getItem("elsewhere-reduced-motion") === "true";
+        return (
+          window.localStorage.getItem("tripsloom-reduced-motion") ||
+          window.localStorage.getItem("elsewhere-reduced-motion")
+        ) === "true";
       } catch {
         return false;
       }
@@ -184,7 +189,7 @@ function WorkspaceApp({
     document.documentElement.classList.toggle("ew-reduced-motion", reducedMotion);
     try {
       window.localStorage.setItem(
-        "elsewhere-reduced-motion",
+        "tripsloom-reduced-motion",
         String(reducedMotion),
       );
     } catch {
@@ -204,7 +209,7 @@ function WorkspaceApp({
     };
   }, [store.latest]);
   useEffect(() => {
-    document.title = `${nav.find((n) => n.view === route.view)?.label || "Settings"} — Elsewhere`;
+    document.title = `${nav.find((n) => n.view === route.view)?.label || "Settings"} — Trips Loom`;
     main.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [route.view]);
@@ -458,7 +463,7 @@ function WorkspaceApp({
         structuredClone(store.latest.current),
         includePhotos,
       );
-      download(`elsewhere-backup-${today()}.json`, content);
+      download(`trips-loom-backup-${today()}.json`, content);
       notify(
         includePhotos
           ? "Backup downloaded, including your uploaded photos."
@@ -498,7 +503,7 @@ function WorkspaceApp({
       notify(
         e instanceof Error
           ? e.message
-          : "That file is not a valid Elsewhere backup.",
+          : "That file is not a valid Trips Loom backup.",
         true,
       );
     } finally {
@@ -629,7 +634,7 @@ function WorkspaceApp({
               e.preventDefault();
               navigate("trips");
             }}
-            aria-label="Elsewhere, all trips"
+            aria-label="Trips Loom, all trips"
           >
             <Brand />
             <span>THE TRIP, ALL TOGETHER.</span>
@@ -671,7 +676,7 @@ function WorkspaceApp({
               e.preventDefault();
               navigate("trips");
             }}
-            aria-label="Elsewhere, all trips"
+            aria-label="Trips Loom, all trips"
           >
             <Brand />
           </a>
@@ -777,7 +782,7 @@ function WorkspaceApp({
                   <div className="ew-settings-icon">
                     <Icon name="compass" size={27} />
                   </div>
-                  <p className="ew-eyebrow">YOUR ELSEWHERE</p>
+                  <p className="ew-eyebrow">YOUR TRAVEL PROFILE</p>
                   <h2>{profile.display_name}, this is your space.</h2>
                   <p>
                     Signed in as <strong>{accountEmail || "your account"}</strong>.
@@ -788,11 +793,18 @@ function WorkspaceApp({
                     <span><b>Travel rhythm</b>{profile.travel_style}</span>
                     <span><b>Packing</b>{profile.packing_style}</span>
                   </div>
-                  {onSignOut && (
-                    <Button icon="logout" onClick={() => void onSignOut()}>
-                      Sign out
-                    </Button>
-                  )}
+                  <div className="ew-settings-buttons">
+                    {onEditProfile && (
+                      <Button icon="edit" onClick={onEditProfile}>
+                        Edit travel profile
+                      </Button>
+                    )}
+                    {onSignOut && (
+                      <Button icon="logout" onClick={() => void onSignOut()}>
+                        Sign out
+                      </Button>
+                    )}
+                  </div>
                 </section>
               )}
               <section className="ew-settings-card">
@@ -1186,6 +1198,7 @@ function WorkspaceApp({
 }
 function AppEntry() {
   const auth = useAuth();
+  const [editingProfile, setEditingProfile] = useState(false);
   if (auth.phase === "loading") return <AuthLoading />;
   if (auth.recovery) return <AuthScreen key="recover" />;
   if (!auth.user && !auth.guestMode)
@@ -1195,7 +1208,29 @@ function AppEntry() {
   const user = auth.user;
   if (!user) return <AuthScreen key={auth.recovery ? "recover" : "auth"} />;
   if (auth.profileLoading) return <AuthLoading message="Getting your plans together." />;
-  if (!auth.profile) return <OnboardingFlow />;
+  if (auth.profileError)
+    return (
+      <main className="ew ew-startup">
+        <Brand />
+        <span className="ew-startup-icon">
+          <Icon name="warning" size={33} />
+        </span>
+        <h1>We couldn’t open your travel profile.</h1>
+        <p>{auth.profileError}</p>
+        <Button variant="primary" onClick={() => void auth.refreshProfile()}>
+          Try again
+        </Button>
+      </main>
+    );
+  if (!auth.profile?.onboarding_completed)
+    return <OnboardingFlow onComplete={() => setEditingProfile(false)} />;
+  if (editingProfile)
+    return (
+      <OnboardingFlow
+        onCancel={() => setEditingProfile(false)}
+        onComplete={() => setEditingProfile(false)}
+      />
+    );
   return (
     <WorkspaceApp
       key={user.id}
@@ -1203,11 +1238,12 @@ function AppEntry() {
       profile={auth.profile}
       accountEmail={user.email}
       onSignOut={auth.signOut}
+      onEditProfile={() => setEditingProfile(true)}
     />
   );
 }
 
-export default function Elsewhere() {
+export default function TripsLoom() {
   return (
     <Boundary>
       <AuthProvider>

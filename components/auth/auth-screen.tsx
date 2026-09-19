@@ -7,7 +7,7 @@ import { Button, Icon } from "@/components/travel/primitives";
 function Brand() {
   return (
     <span className="ew-wordmark">
-      elsewhere<span>.</span>
+      trips loom<span>.</span>
     </span>
   );
 }
@@ -73,7 +73,7 @@ export function AuthScreen() {
       } else if (mode === "sign-up") {
         const result = await auth.signUp(email, password, name);
         if (result.needsEmailConfirmation) {
-          setNotice("Check your email to confirm your account, then come back to Elsewhere.");
+          setNotice("Check your email to confirm your account, then come back to Trips Loom.");
         } else {
           setNotice("Your account is ready. Let’s make it yours.");
         }
@@ -100,7 +100,7 @@ export function AuthScreen() {
         ? "A way back to your plans."
         : mode === "recover"
           ? "Choose a new password."
-          : "Welcome back to Elsewhere.";
+          : "Welcome back to Trips Loom.";
   const description =
     mode === "sign-up"
       ? "Create a private space for the trips, clothes, and details you want to remember."
@@ -112,15 +112,15 @@ export function AuthScreen() {
 
   return (
     <main className="ew ew-auth-shell">
-      <section className="ew-auth-story" aria-label="About Elsewhere">
-        <div className="ew-auth-brand" aria-label="Elsewhere home">
+      <section className="ew-auth-story" aria-label="About Trips Loom">
+        <div className="ew-auth-brand" aria-label="Trips Loom home">
           <Brand />
         </div>
         <div className="ew-auth-story-copy">
           <p className="ew-eyebrow">A LITTLE SPACE FOR THE JOURNEY</p>
           <h1>Plan the days you’ll talk about for years.</h1>
           <p>
-            Elsewhere keeps the route, the wardrobe, and the small details in
+            Trips Loom keeps the route, the wardrobe, and the small details in
             one calm place.
           </p>
         </div>
@@ -145,7 +145,7 @@ export function AuthScreen() {
             </>
           ) : (
             <>
-              <p className="ew-eyebrow">{mode === "recover" ? "RESET YOUR PASSWORD" : "WELCOME TO ELSEWHERE"}</p>
+              <p className="ew-eyebrow">{mode === "recover" ? "RESET YOUR PASSWORD" : "WELCOME TO TRIPS LOOM"}</p>
               <h2 id="auth-heading">{heading}</h2>
               <p className="ew-auth-description">{description}</p>
             </>

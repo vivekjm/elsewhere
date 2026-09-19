@@ -1417,7 +1417,7 @@ export function PrintPlan({ w, trip }: { w: Workspace; trip?: Trip }) {
         )}{" "}
         · Times are destination-local.
       </p>
-      <footer>Planned with Elsewhere. A plan, not a rulebook.</footer>
+      <footer>Planned with Trips Loom. A plan, not a rulebook.</footer>
     </section>
   );
 }

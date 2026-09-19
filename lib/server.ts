@@ -94,9 +94,10 @@ export function bucket() {
   return env.BUCKET;
 }
 export function guest(r: Request) {
-  const s = r.headers
-    .get("cookie")
-    ?.match(/(?:^|; )elsewhere_guest=([a-f0-9-]{36})(?:;|$)/)?.[1];
+  const cookie = r.headers.get("cookie") || "",
+    s =
+      cookie.match(/(?:^|; )tripsloom_guest=([a-f0-9-]{36})(?:;|$)/)?.[1] ||
+      cookie.match(/(?:^|; )elsewhere_guest=([a-f0-9-]{36})(?:;|$)/)?.[1];
   return s || null;
 }
 export function headers(id?: string, r?: Request) {
@@ -104,7 +105,7 @@ export function headers(id?: string, r?: Request) {
     "Cache-Control": "no-store",
     ...(id
       ? {
-          "Set-Cookie": `elsewhere_guest=${id}; HttpOnly; SameSite=Lax; Path=/; Max-Age=31536000${r && new URL(r.url).protocol === "https:" ? "; Secure" : ""}`,
+          "Set-Cookie": `tripsloom_guest=${id}; HttpOnly; SameSite=Lax; Path=/; Max-Age=31536000${r && new URL(r.url).protocol === "https:" ? "; Secure" : ""}`,
         }
       : {}),
   };
@@ -113,7 +114,7 @@ export function sameOrigin(r: Request) {
   return r.headers.get("origin") === new URL(r.url).origin;
 }
 export function failure(e: unknown) {
-  console.error("Elsewhere storage error", e);
+  console.error("Trips Loom storage error", e);
   return Response.json(
     { error: "We couldn’t reach your workspace. Please try again." },
     { status: 503, headers: headers() },

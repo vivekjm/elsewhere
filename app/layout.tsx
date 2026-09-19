@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Elsewhere — Trip Planner",
-  description: "Plan your days, put together outfits, and pack with confidence.",
+  title: "Trips Loom — Trip Planner",
+  description: "Plan your days, shape your wardrobe, and pack with confidence.",
   other: {
     "codex-preview": "development",
   },

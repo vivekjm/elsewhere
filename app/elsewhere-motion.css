@@ -1,4 +1,4 @@
-/* Elsewhere motion and interaction layer.
+/* Trips Loom motion and interaction layer.
    One place for movement: tokens, keyframes and the animated cover scenes.
    Everything here is transform/opacity only, and every loop stops for
    `prefers-reduced-motion`, so the planner stays calm and smooth. */

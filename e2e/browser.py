@@ -1,4 +1,4 @@
-"""Real-browser acceptance tests against a running Elsewhere Worker.
+"""Real-browser acceptance tests against a running Trips Loom Worker.
 
 The application uses its production fetch repository, visitor cookies, D1 and R2.
 Only the explicit failed-save test intercepts PUT to simulate a network failure.
@@ -14,8 +14,8 @@ import traceback
 
 from playwright.sync_api import expect, sync_playwright
 
-BASE = os.environ.get('ELSEWHERE_TEST_URL', 'http://127.0.0.1:4173').rstrip('/')
-OUT = Path(os.environ.get('ELSEWHERE_E2E_OUTPUT', 'test-results/browser'))
+BASE = os.environ.get('TRIPS_LOOM_TEST_URL', os.environ.get('ELSEWHERE_TEST_URL', 'http://127.0.0.1:4173')).rstrip('/')
+OUT = Path(os.environ.get('TRIPS_LOOM_E2E_OUTPUT', os.environ.get('ELSEWHERE_E2E_OUTPUT', 'test-results/browser')))
 OUT.mkdir(parents=True, exist_ok=True)
 RESULTS = []
 ERRORS = []
@@ -187,7 +187,7 @@ with sync_playwright() as pw:
         target = OUT / 'roundtrip-backup.json'
         download.value.save_as(target)
         data = json.loads(target.read_text())
-        assert data['format'] == 'elsewhere-backup' and len(data['photos']) == 1
+        assert data['format'] == 'tripsloom-backup' and len(data['photos']) == 1
         assert data['photos'][0]['data'].startswith('data:image/png;base64,')
         other, p2 = fresh(browser)
         try:

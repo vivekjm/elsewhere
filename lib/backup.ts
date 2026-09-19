@@ -35,14 +35,16 @@ const activityType = (v: unknown) =>
       other: "Other",
     }) as Record<string, string>
   )[String(v)] || v;
+const BACKUP_FORMATS = new Set(["tripsloom-backup", "elsewhere-backup"]);
 /** Accept the hosted v1 format and both earlier portable HTML/React workspaces. */
 export function parseBackup(text: string): PendingBackup {
   if (new TextEncoder().encode(text).byteLength > MAX_BACKUP_BYTES)
     throw new Error("Choose a backup under 24 MB.");
   const raw = record(JSON.parse(text));
-  let data = record(raw.format === "elsewhere-backup" ? raw.workspace : raw);
+  const wrapped = BACKUP_FORMATS.has(String(raw.format));
+  let data = record(wrapped ? raw.workspace : raw);
   const photos: PendingBackup["photos"] = [];
-  if (raw.format === "elsewhere-backup") {
+  if (wrapped) {
     if (raw.backupVersion !== 2)
       throw new Error("This backup format is not supported.");
     for (const value of array(raw.photos ?? [])) {
@@ -173,7 +175,7 @@ export async function exportBackup(
     }
   const result = JSON.stringify(
     {
-      format: "elsewhere-backup",
+      format: "tripsloom-backup",
       backupVersion: 2,
       exportedAt: new Date().toISOString(),
       workspace,

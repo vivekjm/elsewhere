@@ -18,19 +18,30 @@ function initialName(email?: string, metadata?: Record<string, unknown>) {
   return email?.split("@")[0]?.replace(/[._-]+/g, " ") || "";
 }
 
-export function OnboardingFlow() {
+export function OnboardingFlow({
+  onCancel,
+  onComplete,
+}: {
+  onCancel?: () => void;
+  onComplete?: () => void;
+} = {}) {
   const auth = useAuth();
   const [step, setStep] = useState(1),
     [draft, setDraft] = useState<OnboardingInput>(() => ({
-      display_name: initialName(
-        auth.user?.email,
-        auth.user?.user_metadata as Record<string, unknown> | undefined,
-      ),
-      home_base: "",
-      travel_style: "a little of everything",
-      interests: ["Food and drink", "Local life"],
-      packing_style: "light and considered",
-      unit: "metric",
+      display_name:
+        auth.profile?.display_name ||
+        initialName(
+          auth.user?.email,
+          auth.user?.user_metadata as Record<string, unknown> | undefined,
+        ),
+      home_base: auth.profile?.home_base || "",
+      travel_style: auth.profile?.travel_style || "a little of everything",
+      interests:
+        auth.profile?.interests?.length
+          ? auth.profile.interests
+          : ["Food and drink", "Local life"],
+      packing_style: auth.profile?.packing_style || "light and considered",
+      unit: auth.profile?.unit || "metric",
     })),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
@@ -64,6 +75,10 @@ export function OnboardingFlow() {
       setError("A home base helps us make the planning feel personal.");
       return;
     }
+    if (step === 3 && draft.interests.length === 0) {
+      setError("Choose at least one detail you would love more of.");
+      return;
+    }
     if (step < TOTAL_STEPS) {
       setStep((current) => current + 1);
       return;
@@ -75,6 +90,7 @@ export function OnboardingFlow() {
         display_name: draft.display_name.trim(),
         home_base: draft.home_base.trim(),
       });
+      onComplete?.();
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -91,12 +107,12 @@ export function OnboardingFlow() {
       <section className="ew-onboarding-card" aria-labelledby="onboarding-heading">
         <div className="ew-onboarding-brand">
           <span className="ew-wordmark">
-            elsewhere<span>.</span>
+            trips loom<span>.</span>
           </span>
           <span className="ew-onboarding-account">{auth.user?.email}</span>
         </div>
         <div className="ew-onboarding-progress" aria-label={`Step ${step} of ${TOTAL_STEPS}`}>
-          <span>YOUR ELSEWHERE</span>
+          <span>YOUR TRAVEL PROFILE</span>
           <span>{step} / {TOTAL_STEPS}</span>
           <div><i style={{ width: `${(step / TOTAL_STEPS) * 100}%` }} /></div>
         </div>
@@ -106,7 +122,7 @@ export function OnboardingFlow() {
               <p className="ew-eyebrow">A GENTLE START</p>
               <h1 id="onboarding-heading">Let’s make this feel like yours.</h1>
               <p className="ew-onboarding-description">
-                A couple of small details help Elsewhere suggest the right pace
+                A couple of small details help Trips Loom suggest the right pace
                 and keep the useful things close at hand.
               </p>
               <div className="ew-onboarding-fields">
@@ -134,7 +150,7 @@ export function OnboardingFlow() {
           )}
           {step === 2 && (
             <>
-              <p className="ew-eyebrow">YOUR KIND OF ELSEWHERE</p>
+              <p className="ew-eyebrow">YOUR KIND OF TRIP</p>
               <h1 id="onboarding-heading">What kind of trips pull you in?</h1>
               <p className="ew-onboarding-description">
                 Choose the rhythm that sounds most like you. You can change it anytime.
@@ -230,9 +246,15 @@ export function OnboardingFlow() {
           )}
           {error && <p className="ew-auth-message ew-auth-error" role="alert"><Icon name="warning" size={16} />{error}</p>}
           <div className="ew-onboarding-actions">
-            {step > 1 ? <Button variant="quiet" onClick={() => setStep((current) => current - 1)} disabled={busy}>Back</Button> : <span />}
+            {step > 1 ? (
+              <Button variant="quiet" onClick={() => setStep((current) => current - 1)} disabled={busy}>Back</Button>
+            ) : onCancel ? (
+              <Button variant="quiet" onClick={onCancel} disabled={busy}>Cancel</Button>
+            ) : (
+              <span />
+            )}
             <Button variant="primary" onClick={() => void next()} disabled={busy}>
-              {busy ? "Saving your preferences…" : step === TOTAL_STEPS ? "Open my Elsewhere" : "Continue"}
+              {busy ? "Saving your preferences…" : step === TOTAL_STEPS ? "Open Trips Loom" : "Continue"}
               {!busy && <Icon name="arrow" size={15} />}
             </Button>
           </div>

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-const base=process.env.ELSEWHERE_TEST_URL||'http://localhost:5173';
+const base=process.env.TRIPS_LOOM_TEST_URL||process.env.ELSEWHERE_TEST_URL||'http://localhost:5173';
 async function open(){const response=await fetch(base+'/api/workspace');assert.equal(response.status,200);return {cookie:response.headers.get('set-cookie').split(';')[0],data:await response.json()}}
 const a=await open(),b=await open();assert.notEqual(a.cookie,b.cookie);
 const edited=structuredClone(a.data.workspace);edited.trips[0].name='API isolation test';

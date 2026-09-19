@@ -353,7 +353,7 @@ for (const value of [
   });
 test("filenames cannot introduce paths", () => {
   assert.equal(filename("../../A Week / Lisbon!"), "a-week-lisbon");
-  assert.equal(filename("🌿"), "elsewhere-trip");
+  assert.equal(filename("🌿"), "trips-loom-trip");
 });
 function portable() {
   const w = seed(),
@@ -437,9 +437,20 @@ test("legacy hosted workspace backup is still supported", () =>
 test("new data-only backup round trips through validated envelope", async () => {
   const w = seed(),
     text = await exportBackup(w, false),
+    envelope = JSON.parse(text),
     p = parseBackup(text);
+  assert.equal(envelope.format, "tripsloom-backup");
   assert.equal(p.workspace.trips[0].id, "lisbon");
   assert.equal(p.photos.length, 0);
+});
+test("Elsewhere backup envelopes remain importable after the rename", async () => {
+  const text = await exportBackup(seed(), false),
+    envelope = JSON.parse(text);
+  envelope.format = "elsewhere-backup";
+  assert.equal(
+    parseBackup(JSON.stringify(envelope)).workspace.trips[0].id,
+    "lisbon",
+  );
 });
 for (const photos of [
   [{ itemId: "missing", data: "data:image/png;base64,aGVsbG8=" }],
@@ -453,7 +464,7 @@ for (const photos of [
     assert.throws(() =>
       parseBackup(
         JSON.stringify({
-          format: "elsewhere-backup",
+          format: "tripsloom-backup",
           backupVersion: 2,
           workspace: seed(),
           photos,
@@ -470,7 +481,7 @@ test("future backup versions are rejected", () =>
   assert.throws(() =>
     parseBackup(
       JSON.stringify({
-        format: "elsewhere-backup",
+        format: "tripsloom-backup",
         backupVersion: 99,
         workspace: seed(),
         photos: [],

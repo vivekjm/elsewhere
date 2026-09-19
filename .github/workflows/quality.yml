@@ -1,4 +1,4 @@
-name: Elsewhere quality
+name: Trips Loom quality
 on:
   push:
     branches: [main, 'fix/calendar-wardrobe-ui-completion']
@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: elsewhere-quality-${{ github.ref }}
+  group: trips-loom-quality-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   verify:
@@ -46,7 +46,7 @@ jobs:
           exit 1
       - name: API isolation, revision and image-ownership checks
         env:
-          ELSEWHERE_TEST_URL: http://127.0.0.1:4173
+          TRIPS_LOOM_TEST_URL: http://127.0.0.1:4173
         run: node tests/api-smoke.mjs
       - name: Install browser test dependencies
         run: |
@@ -54,12 +54,12 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Real browser workflows and responsive checks
         env:
-          ELSEWHERE_TEST_URL: http://127.0.0.1:4173
+          TRIPS_LOOM_TEST_URL: http://127.0.0.1:4173
         run: python e2e/browser.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: elsewhere-verification
+          name: trips-loom-verification
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7

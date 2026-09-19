@@ -77,14 +77,14 @@ export function calendarICS(t: Trip): string {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Elsewhere//Trip Planner//EN",
+    "PRODID:-//Trips Loom//Trip Planner//EN",
     "CALSCALE:GREGORIAN",
     `X-WR-CALNAME:${escapeICS(t.name)}`,
   ];
   for (const a of t.activities) {
     lines.push(
       "BEGIN:VEVENT",
-      `UID:${encodeURIComponent(t.id)}-${encodeURIComponent(a.id)}@elsewhere`,
+      `UID:${encodeURIComponent(t.id)}-${encodeURIComponent(a.id)}@tripsloom`,
       `DTSTAMP:${stamp}`,
     );
     if (a.time) {
@@ -117,4 +117,4 @@ export const filename = (name: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
-    .slice(0, 80) || "elsewhere-trip";
+    .slice(0, 80) || "trips-loom-trip";

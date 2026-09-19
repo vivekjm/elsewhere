@@ -104,6 +104,7 @@ type AuthContextValue = {
   guestMode: boolean;
   enterGuestMode: () => void;
   leaveGuestMode: () => void;
+  refreshProfile: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName: string) => Promise<{
     needsEmailConfirmation: boolean;
@@ -272,6 +273,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       guestMode,
       enterGuestMode: () => setGuestMode(true),
       leaveGuestMode: () => setGuestMode(false),
+      refreshProfile: async () => {
+        if (!client || !session?.user) return;
+        await loadProfile(client, session.user);
+      },
       signIn: async (email, password) => {
         if (!client) throw new Error("Sign-in is not available yet.");
         const { error } = await client.auth.signInWithPassword({
@@ -355,6 +360,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profileError,
       recovery,
       guestMode,
+      loadProfile,
     ],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
