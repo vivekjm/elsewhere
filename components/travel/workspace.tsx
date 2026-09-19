@@ -628,17 +628,6 @@ function WorkspaceApp({
           <nav aria-label="Main navigation">{navLinks()}</nav>
           {tripSelect()}
           <div className="ew-sidebar-spacer" />
-          <div className="ew-sidebar-note">
-            <Icon name="leaf" size={25} />
-            <h2>
-              A little planning.
-              <br />A lot of possibility.
-            </h2>
-            <p>Make room for the things you’ll remember.</p>
-            <Button variant="quiet" onClick={() => open({ kind: "trip" })}>
-              Plan your next trip <Icon name="arrow" size={14} />
-            </Button>
-          </div>
           <button
             className="ew-settings-link"
             onClick={() => navigate("settings")}

@@ -1314,14 +1314,6 @@ export function Trips({ props }: { props: ScreenProps }) {
           </strong>
         </button>
       </div>
-      <div className="ew-trips-footer">
-        <Icon name="mountain" size={32} />
-        <p>
-          Collect moments.
-          <br />
-          <strong>We’ll look after the details.</strong>
-        </p>
-      </div>
     </>
   );
 }
