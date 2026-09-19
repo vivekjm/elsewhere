@@ -20,6 +20,31 @@
     transform: translateY(10px);
   }
 }
+@keyframes ew-auth-swap {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.ew-auth-copy,
+.ew-auth-form {
+  animation: ew-auth-swap var(--ew-base) var(--ew-ease) both;
+}
+.ew-auth-form > * {
+  animation: ew-auth-swap var(--ew-base) var(--ew-ease) both;
+}
+.ew-auth-form > :nth-child(2) {
+  animation-delay: 28ms;
+}
+.ew-auth-form > :nth-child(3) {
+  animation-delay: 56ms;
+}
+.ew-auth-form > :nth-child(4) {
+  animation-delay: 84ms;
+}
+.ew-auth-form > :nth-child(5) {
+  animation-delay: 112ms;
+}
 @keyframes ew-rise {
   from {
     opacity: 0;

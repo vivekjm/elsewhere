@@ -4364,6 +4364,10 @@ html.ew-modal-open {
 }
 .ew-auth-panel-inner {
   width: min(100%, 430px);
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 .ew-auth-mobile-brand {
   display: none;
@@ -4374,11 +4378,17 @@ html.ew-modal-open {
   letter-spacing: -1px;
   margin: 18px 0 12px;
 }
+.ew-auth-copy {
+  min-height: 156px;
+}
 .ew-auth-description {
   max-width: 390px;
   color: #66765c;
   font-size: 13px;
   line-height: 1.85;
+}
+.ew-auth-tabs-slot {
+  min-height: 81px;
 }
 .ew-auth-tabs {
   display: flex;
@@ -4391,17 +4401,27 @@ html.ew-modal-open {
   padding: 0 0 12px;
   color: #77856d;
   font-size: 12px;
+  transition: color var(--ew-fast) ease;
 }
 .ew-auth-tabs button[aria-selected="true"] {
   color: #34482a;
   font-weight: 650;
 }
-.ew-auth-tabs button[aria-selected="true"]::after {
+.ew-auth-tabs button::after {
   content: "";
   position: absolute;
   inset: auto 0 -1px;
   height: 2px;
   background: #5f7a48;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--ew-base) var(--ew-ease);
+}
+.ew-auth-tabs button[aria-selected="true"]::after {
+  transform: scaleX(1);
+}
+.ew-auth-form-stage {
+  min-height: 364px;
 }
 .ew-auth-form {
   display: flex;
@@ -4458,11 +4478,15 @@ html.ew-modal-open {
 }
 .ew-auth-link {
   display: block;
-  margin: 18px auto 0;
+  margin: 0 auto;
   color: #587443;
   font-size: 11px;
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+.ew-auth-link-slot {
+  min-height: 45px;
+  padding-top: 18px;
 }
 .ew-auth-guest {
   display: flex;
@@ -4470,7 +4494,7 @@ html.ew-modal-open {
   justify-content: center;
   gap: 5px;
   flex-wrap: wrap;
-  margin-top: 50px;
+  margin-top: 24px;
   color: #84917a;
   font-size: 11px;
 }
@@ -4744,7 +4768,13 @@ html.ew-modal-open {
   }
   .ew-auth-mobile-brand {
     display: block;
-    margin-bottom: 55px;
+    margin-bottom: 42px;
+  }
+  .ew-auth-panel-inner {
+    min-height: 830px;
+  }
+  .ew-auth-copy {
+    min-height: 146px;
   }
   .ew-auth-panel h2 {
     font-size: 33px;

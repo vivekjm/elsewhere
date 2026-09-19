@@ -130,48 +130,63 @@ export function AuthScreen() {
         </div>
       </section>
       <section className="ew-auth-panel" aria-labelledby="auth-heading">
-        <div className="ew-auth-panel-inner">
+        <div className="ew-auth-panel-inner" data-mode={mode}>
           <div className="ew-auth-mobile-brand">
             <Brand />
           </div>
-          {!isConfigured ? (
-            <>
-              <p className="ew-eyebrow">A SMALL DETOUR</p>
-              <h2 id="auth-heading">Sign-in is being connected.</h2>
-              <p className="ew-auth-description">
-                Supabase is not configured for this environment yet. You can
-                still explore the visitor workspace while it is being set up.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="ew-eyebrow">{mode === "recover" ? "RESET YOUR PASSWORD" : "WELCOME TO TRIPS LOOM"}</p>
-              <h2 id="auth-heading">{heading}</h2>
-              <p className="ew-auth-description">{description}</p>
-            </>
-          )}
-          {isConfigured && mode !== "recover" && (
-            <div className="ew-auth-tabs" role="tablist" aria-label="Account actions">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === "sign-in"}
-                onClick={() => switchMode("sign-in")}
+          <div className="ew-auth-copy" key={`auth-copy-${mode}`}>
+            {!isConfigured ? (
+              <>
+                <p className="ew-eyebrow">A SMALL DETOUR</p>
+                <h2 id="auth-heading">Sign-in is being connected.</h2>
+                <p className="ew-auth-description">
+                  Supabase is not configured for this environment yet. You can
+                  still explore the visitor workspace while it is being set up.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="ew-eyebrow">{mode === "recover" ? "RESET YOUR PASSWORD" : "WELCOME TO TRIPS LOOM"}</p>
+                <h2 id="auth-heading">{heading}</h2>
+                <p className="ew-auth-description">{description}</p>
+              </>
+            )}
+          </div>
+          <div className="ew-auth-tabs-slot">
+            {isConfigured && mode !== "recover" && (
+              <div className="ew-auth-tabs" role="tablist" aria-label="Account actions">
+                <button
+                  id="auth-tab-sign-in"
+                  type="button"
+                  role="tab"
+                  aria-controls="auth-form"
+                  aria-selected={mode === "sign-in"}
+                  onClick={() => switchMode("sign-in")}
+                >
+                  Sign in
+                </button>
+                <button
+                  id="auth-tab-sign-up"
+                  type="button"
+                  role="tab"
+                  aria-controls="auth-form"
+                  aria-selected={mode === "sign-up"}
+                  onClick={() => switchMode("sign-up")}
+                >
+                  Create account
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="ew-auth-form-stage">
+            {isConfigured ? (
+              <form
+                id="auth-form"
+                className="ew-auth-form"
+                key={`auth-form-${mode}`}
+                onSubmit={submit}
+                noValidate
               >
-                Sign in
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === "sign-up"}
-                onClick={() => switchMode("sign-up")}
-              >
-                Create account
-              </button>
-            </div>
-          )}
-          {isConfigured ? (
-            <form className="ew-auth-form" onSubmit={submit} noValidate>
               {mode === "sign-up" && (
                 <label className="ew-auth-field">
                   <span>Your name</span>
@@ -240,18 +255,21 @@ export function AuthScreen() {
                         ? "Send reset link"
                         : "Update password"}
               </Button>
-            </form>
-          ) : null}
-          {isConfigured && mode === "sign-in" && (
-            <button className="ew-auth-link" type="button" onClick={() => switchMode("forgot")}>
-              Forgot your password?
-            </button>
-          )}
-          {isConfigured && (mode === "forgot" || mode === "recover") && (
-            <button className="ew-auth-link" type="button" onClick={() => switchMode("sign-in")}>
-              Back to sign in
-            </button>
-          )}
+              </form>
+            ) : null}
+          </div>
+          <div className="ew-auth-link-slot">
+            {isConfigured && mode === "sign-in" && (
+              <button className="ew-auth-link" type="button" onClick={() => switchMode("forgot")}>
+                Forgot your password?
+              </button>
+            )}
+            {isConfigured && (mode === "forgot" || mode === "recover") && (
+              <button className="ew-auth-link" type="button" onClick={() => switchMode("sign-in")}>
+                Back to sign in
+              </button>
+            )}
+          </div>
           <div className="ew-auth-guest">
             <span>Just looking around?</span>
             <button type="button" onClick={auth.enterGuestMode}>
