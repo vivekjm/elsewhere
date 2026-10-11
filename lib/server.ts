@@ -93,6 +93,17 @@ export function bucket() {
   if (!env.BUCKET) throw new Error("Uploads unavailable");
   return env.BUCKET;
 }
+/** Deletion markers contain no workspace payload and stop in-flight writes. */
+export async function accountDeleting(owner: string) {
+  if (!owner.startsWith("user:")) return false;
+  const row = await database().prepare("SELECT revision FROM workspaces WHERE id = ?")
+    .bind(owner).first<{ revision: number }>();
+  return !!row && row.revision < 0;
+}
+
+export function accountDeletionResponse() {
+  return Response.json({ error: "This account is being deleted. Finish deletion before continuing." }, { status: 410, headers: headers() });
+}
 export function guest(r: Request) {
   const cookie = r.headers.get("cookie") || "",
     s =

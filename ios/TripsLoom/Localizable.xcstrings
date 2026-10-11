@@ -1,0 +1,5622 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@"
+          }
+        }
+      }
+    },
+    "%@ %@%@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@%@"
+          }
+        }
+      }
+    },
+    "%@ / %@ %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ / %@ %@"
+          }
+        }
+      }
+    },
+    "%@ left this month · ": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ left this month · "
+          }
+        }
+      }
+    },
+    "%@ on days after day %lld": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ on days after day %lld"
+          }
+        }
+      }
+    },
+    "%@ · %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@"
+          }
+        }
+      }
+    },
+    "%@ · %@ m": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@ m"
+          }
+        }
+      }
+    },
+    "%@ · %@ · %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@ · %@"
+          }
+        }
+      }
+    },
+    "%@ · %lld %@ · %@ est.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld %@ · %@ est."
+          }
+        }
+      }
+    },
+    "%@ · %lld people": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld people"
+          }
+        }
+      }
+    },
+    "%@ · %lld° / %lld°": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld° / %lld°"
+          }
+        }
+      }
+    },
+    "%@ · worn %lld×": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · worn %lld×"
+          }
+        }
+      }
+    },
+    "%@ → %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ → %@"
+          }
+        }
+      }
+    },
+    "%@%@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%@"
+          }
+        }
+      }
+    },
+    "%@%@ a %@. Renews automatically; cancel anytime in Settings.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%@ a %@. Renews automatically; cancel anytime in Settings."
+          }
+        }
+      }
+    },
+    "%@, %lld votes": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %lld votes"
+          }
+        }
+      }
+    },
+    "%@: %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: %@"
+          }
+        }
+      }
+    },
+    "%@: %lld of %lld": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: %lld of %lld"
+          }
+        }
+      }
+    },
+    "%@: %lld percent": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: %lld percent"
+          }
+        }
+      }
+    },
+    "%lld": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        }
+      }
+    },
+    "%lld %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld %@"
+          }
+        }
+      }
+    },
+    "%lld %@ %@.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld %@ %@."
+          }
+        }
+      }
+    },
+    "%lld days": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days"
+          }
+        }
+      }
+    },
+    "%lld of 5 stars": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of 5 stars"
+          }
+        }
+      }
+    },
+    "%lld percent": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld percent"
+          }
+        }
+      }
+    },
+    "%lld percent ready": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld percent ready"
+          }
+        }
+      }
+    },
+    "%lld trips and %lld wardrobe items. This replaces data on this device and, when signed in, your account. Export your current data first.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld trips and %lld wardrobe items. This replaces data on this device and, when signed in, your account. Export your current data first."
+          }
+        }
+      }
+    },
+    "%lld upcoming trips, add a trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld upcoming trips, add a trip"
+          }
+        }
+      }
+    },
+    "%lld%%": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        }
+      }
+    },
+    "%lldk": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lldk"
+          }
+        }
+      }
+    },
+    "%lld°": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld°"
+          }
+        }
+      }
+    },
+    "%lld° · %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld° · %@"
+          }
+        }
+      }
+    },
+    "+": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+"
+          }
+        }
+      }
+    },
+    "0": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0"
+          }
+        }
+      }
+    },
+    "00": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "00"
+          }
+        }
+      }
+    },
+    "1 %@ = %@ %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 %@ = %@ %@"
+          }
+        }
+      }
+    },
+    "A week in Portugal, food and tiles": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A week in Portugal, food and tiles"
+          }
+        }
+      }
+    },
+    "AI draft": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI draft"
+          }
+        }
+      }
+    },
+    "AI stylist": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI stylist"
+          }
+        }
+      }
+    },
+    "AMS": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AMS"
+          }
+        }
+      }
+    },
+    "AMS %@ m": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AMS %@ m"
+          }
+        }
+      }
+    },
+    "About": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About"
+          }
+        }
+      }
+    },
+    "About you": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About you"
+          }
+        }
+      }
+    },
+    "Account & trips": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account & trips"
+          }
+        }
+      }
+    },
+    "Add": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        }
+      }
+    },
+    "Add %@ to…": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add %@ to…"
+          }
+        }
+      }
+    },
+    "Add %lld": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add %lld"
+          }
+        }
+      }
+    },
+    "Add %lld to trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add %lld to trip"
+          }
+        }
+      }
+    },
+    "Add a permit": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a permit"
+          }
+        }
+      }
+    },
+    "Add a photo": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a photo"
+          }
+        }
+      }
+    },
+    "Add a plan": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a plan"
+          }
+        }
+      }
+    },
+    "Add an expense in Budget and split it to see who owes whom.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add an expense in Budget and split it to see who owes whom."
+          }
+        }
+      }
+    },
+    "Add bookings": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add bookings"
+          }
+        }
+      }
+    },
+    "Add clothes in Wardrobe first, then build a capsule here.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add clothes in Wardrobe first, then build a capsule here."
+          }
+        }
+      }
+    },
+    "Add document": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add document"
+          }
+        }
+      }
+    },
+    "Add expense": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add expense"
+          }
+        }
+      }
+    },
+    "Add gear": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add gear"
+          }
+        }
+      }
+    },
+    "Add item": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add item"
+          }
+        }
+      }
+    },
+    "Add my numbers": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add my numbers"
+          }
+        }
+      }
+    },
+    "Add piece": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add piece"
+          }
+        }
+      }
+    },
+    "Add someone by name": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add someone by name"
+          }
+        }
+      }
+    },
+    "Add stages": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add stages"
+          }
+        }
+      }
+    },
+    "Add stop": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add stop"
+          }
+        }
+      }
+    },
+    "Add the first stage": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add the first stage"
+          }
+        }
+      }
+    },
+    "Add the people on this trip in Edit trip to split costs.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add the people on this trip in Edit trip to split costs."
+          }
+        }
+      }
+    },
+    "Add to a trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to a trip"
+          }
+        }
+      }
+    },
+    "Add to my trips": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to my trips"
+          }
+        }
+      }
+    },
+    "Add your peak to see the wind at the summit for the next 16 days, the calmest window, and your high-camp and turnaround times.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add your peak to see the wind at the summit for the next 16 days, the calmest window, and your high-camp and turnaround times."
+          }
+        }
+      }
+    },
+    "Add your route": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add your route"
+          }
+        }
+      }
+    },
+    "Adds a boarding pass with gate and seat, and a Live Activity on the day.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adds a boarding pass with gate and seat, and a Live Activity on the day."
+          }
+        }
+      }
+    },
+    "All packed": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All packed"
+          }
+        }
+      }
+    },
+    "All settled up": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All settled up"
+          }
+        }
+      }
+    },
+    "All trips": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All trips"
+          }
+        }
+      }
+    },
+    "Altitude": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Altitude"
+          }
+        }
+      }
+    },
+    "Altitude guidance · CDC": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Altitude guidance · CDC"
+          }
+        }
+      }
+    },
+    "Always free: trips, packing, budgets, weather, wardrobe, shared trips and safety check-ins.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always free: trips, packing, budgets, weather, wardrobe, shared trips and safety check-ins."
+          }
+        }
+      }
+    },
+    "Amount (%@)": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amount (%@)"
+          }
+        }
+      }
+    },
+    "Amount in %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amount in %@"
+          }
+        }
+      }
+    },
+    "Apple Intelligence is off or unavailable here, so drafts use a simple template. Turn it on in Settings for fuller plans.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence is off or unavailable here, so drafts use a simple template. Turn it on in Settings for fuller plans."
+          }
+        }
+      }
+    },
+    "Ascent per week: %@ m": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ascent per week: %@ m"
+          }
+        }
+      }
+    },
+    "Back to sign in": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to sign in"
+          }
+        }
+      }
+    },
+    "Bag weight": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bag weight"
+          }
+        }
+      }
+    },
+    "Balances update in the Shared tab.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balances update in the Shared tab."
+          }
+        }
+      }
+    },
+    "Base": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Base"
+          }
+        }
+      }
+    },
+    "Based on a %lld-day %@ and your wardrobe.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on a %lld-day %@ and your wardrobe."
+          }
+        }
+      }
+    },
+    "Before you go": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before you go"
+          }
+        }
+      }
+    },
+    "Blood oxygen": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blood oxygen"
+          }
+        }
+      }
+    },
+    "Book · $%lld/day": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Book · $%lld/day"
+          }
+        }
+      }
+    },
+    "Booking codes, reminders": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Booking codes, reminders"
+          }
+        }
+      }
+    },
+    "Bottom time: %lld min": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bottom time: %lld min"
+          }
+        }
+      }
+    },
+    "Budget": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budget"
+          }
+        }
+      }
+    },
+    "Build a capsule for me": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Build a capsule for me"
+          }
+        }
+      }
+    },
+    "By day": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By day"
+          }
+        }
+      }
+    },
+    "Call %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Call %@"
+          }
+        }
+      }
+    },
+    "Call emergency services?": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Call emergency services?"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Cancel booking": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel booking"
+          }
+        }
+      }
+    },
+    "Cancel your subscription with Apple first if you have one. Deleting your account does not cancel billing.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel your subscription with Apple first if you have one. Deleting your account does not cancel billing."
+          }
+        }
+      }
+    },
+    "Category": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Category"
+          }
+        }
+      }
+    },
+    "Change photo": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change photo"
+          }
+        }
+      }
+    },
+    "Change the budget": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change the budget"
+          }
+        }
+      }
+    },
+    "Check-in": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check-in"
+          }
+        }
+      }
+    },
+    "Check-in time": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check-in time"
+          }
+        }
+      }
+    },
+    "Choose another photo": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose another photo"
+          }
+        }
+      }
+    },
+    "City breaks, coasts and summits. Plans, outfits, gear and safety in one place.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "City breaks, coasts and summits. Plans, outfits, gear and safety in one place."
+          }
+        }
+      }
+    },
+    "City or airport": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "City or airport"
+          }
+        }
+      }
+    },
+    "City or region": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "City or region"
+          }
+        }
+      }
+    },
+    "Close": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "Colour": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colour"
+          }
+        }
+      }
+    },
+    "Confirm the correct emergency number for your destination before travel. Numbers differ by country.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm the correct emergency number for your destination before travel. Numbers differ by country."
+          }
+        }
+      }
+    },
+    "Continue": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        }
+      }
+    },
+    "Continue as guest": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue as guest"
+          }
+        }
+      }
+    },
+    "Continue with Email": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue with Email"
+          }
+        }
+      }
+    },
+    "Control": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control"
+          }
+        }
+      }
+    },
+    "Convert amounts at today's rate": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Convert amounts at today's rate"
+          }
+        }
+      }
+    },
+    "Couldn't reach the forecast. Pull down to try again.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't reach the forecast. Pull down to try again."
+          }
+        }
+      }
+    },
+    "Cover": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cover"
+          }
+        }
+      }
+    },
+    "Cover %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cover %@"
+          }
+        }
+      }
+    },
+    "Create a trip first.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a trip first."
+          }
+        }
+      }
+    },
+    "Create a trip, choose its dates and destination time zone, then add activities, outfits and essentials. Your packing list collects the pieces you need.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a trip, choose its dates and destination time zone, then add activities, outfits and essentials. Your packing list collects the pieces you need."
+          }
+        }
+      }
+    },
+    "Create account": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create account"
+          }
+        }
+      }
+    },
+    "Currency": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Currency"
+          }
+        }
+      }
+    },
+    "D%lld": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D%lld"
+          }
+        }
+      }
+    },
+    "Data & privacy": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data & privacy"
+          }
+        }
+      }
+    },
+    "Day": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        }
+      }
+    },
+    "Day %lld": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day %lld"
+          }
+        }
+      }
+    },
+    "Day %lld outfit": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day %lld outfit"
+          }
+        }
+      }
+    },
+    "Day %lld · %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day %lld · %@"
+          }
+        }
+      }
+    },
+    "Day %lld, %lld metres. Highest %lld metres.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day %lld, %lld metres. Highest %lld metres."
+          }
+        }
+      }
+    },
+    "Decrease": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrease"
+          }
+        }
+      }
+    },
+    "Decrease %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrease %@"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "Delete %@?": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete %@?"
+          }
+        }
+      }
+    },
+    "Delete account": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete account"
+          }
+        }
+      }
+    },
+    "Delete all trips and wardrobe": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete all trips and wardrobe"
+          }
+        }
+      }
+    },
+    "Delete my account": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete my account"
+          }
+        }
+      }
+    },
+    "Delete piece": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete piece"
+          }
+        }
+      }
+    },
+    "Delete plan": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete plan"
+          }
+        }
+      }
+    },
+    "Delete stage": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete stage"
+          }
+        }
+      }
+    },
+    "Delete the sample trips": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the sample trips"
+          }
+        }
+      }
+    },
+    "Delete them": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete them"
+          }
+        }
+      }
+    },
+    "Delete trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete trip"
+          }
+        }
+      }
+    },
+    "Deleting account…": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleting account…"
+          }
+        }
+      }
+    },
+    "Describe the trip. I'll draft the days, stays, gear and packing.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe the trip. I'll draft the days, stays, gear and packing."
+          }
+        }
+      }
+    },
+    "Describe your trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe your trip"
+          }
+        }
+      }
+    },
+    "Destination": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destination"
+          }
+        }
+      }
+    },
+    "Destination names are sent to Apple Maps and, when needed, Open-Meteo for place search and weather. Currency codes are sent to ExchangeRate-API. Cover photos load from Unsplash. Requests expose your IP address to these providers. AI drafting uses Apple's on-device model when available.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destination names are sent to Apple Maps and, when needed, Open-Meteo for place search and weather. Currency codes are sent to ExchangeRate-API. Cover photos load from Unsplash. Requests expose your IP address to these providers. AI drafting uses Apple's on-device model when available."
+          }
+        }
+      }
+    },
+    "Details": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Details"
+          }
+        }
+      }
+    },
+    "Directions": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Directions"
+          }
+        }
+      }
+    },
+    "Discover": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discover"
+          }
+        }
+      }
+    },
+    "Distance": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distance"
+          }
+        }
+      }
+    },
+    "Distance per day": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distance per day"
+          }
+        }
+      }
+    },
+    "Dive site": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dive site"
+          }
+        }
+      }
+    },
+    "Documents & sharing": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Documents & sharing"
+          }
+        }
+      }
+    },
+    "Documents are locked": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Documents are locked"
+          }
+        }
+      }
+    },
+    "Done": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Draft trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draft trip"
+          }
+        }
+      }
+    },
+    "Drafting your trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drafting your trip"
+          }
+        }
+      }
+    },
+    "Duplicate": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplicate"
+          }
+        }
+      }
+    },
+    "Each day's distance, climb and sleeping altitude builds the elevation profile and the altitude warnings.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each day's distance, climb and sleeping altitude builds the elevation profile and the altitude warnings."
+          }
+        }
+      }
+    },
+    "Edit": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        }
+      }
+    },
+    "Edit document": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit document"
+          }
+        }
+      }
+    },
+    "Edit name": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit name"
+          }
+        }
+      }
+    },
+    "Edit plan": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit plan"
+          }
+        }
+      }
+    },
+    "Edit stage": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit stage"
+          }
+        }
+      }
+    },
+    "Edit summit": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit summit"
+          }
+        }
+      }
+    },
+    "Edit trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit trip"
+          }
+        }
+      }
+    },
+    "Edit your name": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit your name"
+          }
+        }
+      }
+    },
+    "Elevation": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elevation"
+          }
+        }
+      }
+    },
+    "Elevation profile": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elevation profile"
+          }
+        }
+      }
+    },
+    "Emergency call": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emergency call"
+          }
+        }
+      }
+    },
+    "End Live Activities": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End Live Activities"
+          }
+        }
+      }
+    },
+    "Enter numbers from Apple Health or your watch. Health sync isn't connected in this build.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter numbers from Apple Health or your watch. Health sync isn't connected in this build."
+          }
+        }
+      }
+    },
+    "Estimated from the lunar cycle · check local tide tables before diving": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimated from the lunar cycle · check local tide tables before diving"
+          }
+        }
+      }
+    },
+    "Every trip,\nwoven together.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every trip,\nwoven together."
+          }
+        }
+      }
+    },
+    "Every trip, plan, packing list and wardrobe piece is removed from your account, here and on tripsloom.com.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every trip, plan, packing list and wardrobe piece is removed from your account, here and on tripsloom.com."
+          }
+        }
+      }
+    },
+    "Every trip, plan, packing list and wardrobe piece on this iPhone is removed.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every trip, plan, packing list and wardrobe piece on this iPhone is removed."
+          }
+        }
+      }
+    },
+    "Export my data": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export my data"
+          }
+        }
+      }
+    },
+    "Export or delete your data from Data & privacy. Signing out removes account data from this device. Deleting your account removes account data from the server. Copies of invitations and exports that you have shared cannot be recalled.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export or delete your data from Data & privacy. Signing out removes account data from this device. Deleting your account removes account data from the server. Copies of invitations and exports that you have shared cannot be recalled."
+          }
+        }
+      }
+    },
+    "Export to calendar": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export to calendar"
+          }
+        }
+      }
+    },
+    "External services": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "External services"
+          }
+        }
+      }
+    },
+    "Feature idea": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feature idea"
+          }
+        }
+      }
+    },
+    "File": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File"
+          }
+        }
+      }
+    },
+    "Files never leave this iPhone and aren't synced.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files never leave this iPhone and aren't synced."
+          }
+        }
+      }
+    },
+    "Flight": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flight"
+          }
+        }
+      }
+    },
+    "Flight number, like 6E 2451": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flight number, like 6E 2451"
+          }
+        }
+      }
+    },
+    "For turn-by-turn maps without signal, download this area in Apple Maps: Profile → Offline Maps.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For turn-by-turn maps without signal, download this area in Apple Maps: Profile → Offline Maps."
+          }
+        }
+      }
+    },
+    "Forgot password?": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forgot password?"
+          }
+        }
+      }
+    },
+    "Found bookings": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found bookings"
+          }
+        }
+      }
+    },
+    "Free plan: %lld documents per trip. Files never leave this iPhone and aren't synced.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free plan: %lld documents per trip. Files never leave this iPhone and aren't synced."
+          }
+        }
+      }
+    },
+    "From → To": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From → To"
+          }
+        }
+      }
+    },
+    "From → To, or a rest day": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From → To, or a rest day"
+          }
+        }
+      }
+    },
+    "Getting started": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Getting started"
+          }
+        }
+      }
+    },
+    "Getting the forecast at %@ m…": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Getting the forecast at %@ m…"
+          }
+        }
+      }
+    },
+    "Go unlimited": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go unlimited"
+          }
+        }
+      }
+    },
+    "Goal: %lld km": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal: %lld km"
+          }
+        }
+      }
+    },
+    "Got it": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got it"
+          }
+        }
+      }
+    },
+    "Group": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group"
+          }
+        }
+      }
+    },
+    "Guests keep trips on this iPhone. Signing in sends your trips, plans, wardrobe, cover photos and travel preferences to Trips Loom's Cloudflare and Supabase services so you can use them on other devices. Session credentials are stored in the iOS Keychain.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guests keep trips on this iPhone. Signing in sends your trips, plans, wardrobe, cover photos and travel preferences to Trips Loom's Cloudflare and Supabase services so you can use them on other devices. Session credentials are stored in the iOS Keychain."
+          }
+        }
+      }
+    },
+    "Height": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Height"
+          }
+        }
+      }
+    },
+    "Help & feedback": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help & feedback"
+          }
+        }
+      }
+    },
+    "High camp height (m)": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High camp height (m)"
+          }
+        }
+      }
+    },
+    "Home base": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home base"
+          }
+        }
+      }
+    },
+    "Home city or airport": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home city or airport"
+          }
+        }
+      }
+    },
+    "Imperial": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imperial"
+          }
+        }
+      }
+    },
+    "Includes trips, plans, budgets, packing, wardrobe details and preferences. Photos and travel documents stay on this device and are not included. Export documents individually before signing out or deleting a trip. Backup files contain personal information; store them privately.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Includes trips, plans, budgets, packing, wardrobe details and preferences. Photos and travel documents stay on this device and are not included. Export documents individually before signing out or deleting a trip. Backup files contain personal information; store them privately."
+          }
+        }
+      }
+    },
+    "Increase": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Increase"
+          }
+        }
+      }
+    },
+    "Increase %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Increase %@"
+          }
+        }
+      }
+    },
+    "Invitations share a copy of the plan. They do not enable live editing between travellers.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitations share a copy of the plan. They do not enable live editing between travellers."
+          }
+        }
+      }
+    },
+    "Invite people": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invite people"
+          }
+        }
+      }
+    },
+    "It comes out of your wardrobe, outfits and packing lists, here and on tripsloom.com.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It comes out of your wardrobe, outfits and packing lists, here and on tripsloom.com."
+          }
+        }
+      }
+    },
+    "It comes out of your wardrobe, outfits and packing lists.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It comes out of your wardrobe, outfits and packing lists."
+          }
+        }
+      }
+    },
+    "It's added to the first day as a plan with its price in the budget.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's added to the first day as a plan with its price in the budget."
+          }
+        }
+      }
+    },
+    "Item": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Item"
+          }
+        }
+      }
+    },
+    "Itinerary PDF": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Itinerary PDF"
+          }
+        }
+      }
+    },
+    "Keep them": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep them"
+          }
+        }
+      }
+    },
+    "Kind": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kind"
+          }
+        }
+      }
+    },
+    "Km": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Km"
+          }
+        }
+      }
+    },
+    "Leave at 0 for no limit.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave at 0 for no limit."
+          }
+        }
+      }
+    },
+    "Leave empty for no limit.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave empty for no limit."
+          }
+        }
+      }
+    },
+    "Live Activity": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live Activity"
+          }
+        }
+      }
+    },
+    "Live forecast at %@ m · updated %@ · pull to refresh": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live forecast at %@ m · updated %@ · pull to refresh"
+          }
+        }
+      }
+    },
+    "Loading plans…": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading plans…"
+          }
+        }
+      }
+    },
+    "Local emergency number": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local emergency number"
+          }
+        }
+      }
+    },
+    "Log a dive": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log a dive"
+          }
+        }
+      }
+    },
+    "Longest hike: %lld km": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Longest hike: %lld km"
+          }
+        }
+      }
+    },
+    "Look around every trip type, then keep them or start with your own.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Look around every trip type, then keep them or start with your own."
+          }
+        }
+      }
+    },
+    "Make it yours": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make it yours"
+          }
+        }
+      }
+    },
+    "Manage subscriptions": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage subscriptions"
+          }
+        }
+      }
+    },
+    "Mark as paid": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark as paid"
+          }
+        }
+      }
+    },
+    "Mark as settled": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark as settled"
+          }
+        }
+      }
+    },
+    "Mark required": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark required"
+          }
+        }
+      }
+    },
+    "Max depth: %lld m": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Max depth: %lld m"
+          }
+        }
+      }
+    },
+    "Message": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message"
+          }
+        }
+      }
+    },
+    "Metric": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metric"
+          }
+        }
+      }
+    },
+    "Mild": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mild"
+          }
+        }
+      }
+    },
+    "Moderate": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moderate"
+          }
+        }
+      }
+    },
+    "More": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More"
+          }
+        }
+      }
+    },
+    "Move to %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to %@"
+          }
+        }
+      }
+    },
+    "Move to day %lld": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to day %lld"
+          }
+        }
+      }
+    },
+    "Move to next day": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to next day"
+          }
+        }
+      }
+    },
+    "Move to previous day": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to previous day"
+          }
+        }
+      }
+    },
+    "Name": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "New password": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New password"
+          }
+        }
+      }
+    },
+    "New plan": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New plan"
+          }
+        }
+      }
+    },
+    "New stage": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New stage"
+          }
+        }
+      }
+    },
+    "New trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New trip"
+          }
+        }
+      }
+    },
+    "Next": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
+          }
+        }
+      }
+    },
+    "No budget set": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No budget set"
+          }
+        }
+      }
+    },
+    "No budget set · add expenses and a limit": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No budget set · add expenses and a limit"
+          }
+        }
+      }
+    },
+    "No dives logged yet.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No dives logged yet."
+          }
+        }
+      }
+    },
+    "No free AI drafts left this month · ": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No free AI drafts left this month · "
+          }
+        }
+      }
+    },
+    "No ideas for this filter yet.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No ideas for this filter yet."
+          }
+        }
+      }
+    },
+    "No permits added.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No permits added."
+          }
+        }
+      }
+    },
+    "No sessions planned.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sessions planned."
+          }
+        }
+      }
+    },
+    "None": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        }
+      }
+    },
+    "Not now": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now"
+          }
+        }
+      }
+    },
+    "Not packed": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not packed"
+          }
+        }
+      }
+    },
+    "Not required": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not required"
+          }
+        }
+      }
+    },
+    "Not saved for offline yet": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not saved for offline yet"
+          }
+        }
+      }
+    },
+    "Not split: it counts toward the trip budget only.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not split: it counts toward the trip budget only."
+          }
+        }
+      }
+    },
+    "Notes": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
+          }
+        }
+      }
+    },
+    "Nothing booked yet.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing booked yet."
+          }
+        }
+      }
+    },
+    "Nothing else planned yet.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing else planned yet."
+          }
+        }
+      }
+    },
+    "Nothing planned yet. Plans with a price and expenses appear here.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing planned yet. Plans with a price and expenses appear here."
+          }
+        }
+      }
+    },
+    "Notifications are off for Trips Loom. %@ to get check-in reminders.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are off for Trips Loom. %@ to get check-in reminders."
+          }
+        }
+      }
+    },
+    "Notifications are optional and requested when you enable reminders. Photos and documents use Apple's pickers. Face ID or your passcode can protect the document viewer. The app does not request your current location or contacts.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are optional and requested when you enable reminders. Photos and documents use Apple's pickers. Face ID or your passcode can protect the document viewer. The app does not request your current location or contacts."
+          }
+        }
+      }
+    },
+    "Now": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now"
+          }
+        }
+      }
+    },
+    "OK": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Off": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
+    },
+    "Offline map and safety": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline map and safety"
+          }
+        }
+      }
+    },
+    "On": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
+          }
+        }
+      }
+    },
+    "Open": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open"
+          }
+        }
+      }
+    },
+    "Open Settings": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Settings"
+          }
+        }
+      }
+    },
+    "Open in Maps": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open in Maps"
+          }
+        }
+      }
+    },
+    "Open route in Maps": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open route in Maps"
+          }
+        }
+      }
+    },
+    "Open trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open trip"
+          }
+        }
+      }
+    },
+    "Opens the full map": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the full map"
+          }
+        }
+      }
+    },
+    "Optional. Used to personalize your trips and suggestions.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optional. Used to personalize your trips and suggestions."
+          }
+        }
+      }
+    },
+    "Outfit for day %lld": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outfit for day %lld"
+          }
+        }
+      }
+    },
+    "Pack": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pack"
+          }
+        }
+      }
+    },
+    "Packed": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Packed"
+          }
+        }
+      }
+    },
+    "Paid": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paid"
+          }
+        }
+      }
+    },
+    "Paid by": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paid by"
+          }
+        }
+      }
+    },
+    "Panaji, Goa": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panaji, Goa"
+          }
+        }
+      }
+    },
+    "Password": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password"
+          }
+        }
+      }
+    },
+    "Past": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Past"
+          }
+        }
+      }
+    },
+    "Paste or scan a booking confirmation and it's filed to the right day of %@.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste or scan a booking confirmation and it's filed to the right day of %@."
+          }
+        }
+      }
+    },
+    "Pay in your usual app (UPI, bank or cash), then mark it settled here.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pay in your usual app (UPI, bank or cash), then mark it settled here."
+          }
+        }
+      }
+    },
+    "Peak, like Island Peak": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peak, like Island Peak"
+          }
+        }
+      }
+    },
+    "Permanently delete account": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permanently delete account"
+          }
+        }
+      }
+    },
+    "Permanently removes your account and its server data. Your App Store subscription continues until you cancel it with Apple.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permanently removes your account and its server data. Your App Store subscription continues until you cancel it with Apple."
+          }
+        }
+      }
+    },
+    "Permissions": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permissions"
+          }
+        }
+      }
+    },
+    "Permit name": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permit name"
+          }
+        }
+      }
+    },
+    "Photo": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photo"
+          }
+        }
+      }
+    },
+    "Pick the pieces yourself in Wardrobe, or let the stylist choose from what you own.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick the pieces yourself in Wardrobe, or let the stylist choose from what you own."
+          }
+        }
+      }
+    },
+    "Pieces": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pieces"
+          }
+        }
+      }
+    },
+    "Place": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Place"
+          }
+        }
+      }
+    },
+    "Plan": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan"
+          }
+        }
+      }
+    },
+    "Plan less.\nGo further.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan less.\nGo further."
+          }
+        }
+      }
+    },
+    "Plan with AI": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan with AI"
+          }
+        }
+      }
+    },
+    "Plans, dates and costs are replaced with %@'s latest. Your packing, outfits and cover stay.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plans, dates and costs are replaced with %@'s latest. Your packing, outfits and cover stay."
+          }
+        }
+      }
+    },
+    "Plans, packing, gear": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plans, packing, gear"
+          }
+        }
+      }
+    },
+    "Porter bag": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Porter bag"
+          }
+        }
+      }
+    },
+    "Prices are guides. Booking links arrive with partner integrations.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prices are guides. Booking links arrive with partner integrations."
+          }
+        }
+      }
+    },
+    "Privacy": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy"
+          }
+        }
+      }
+    },
+    "Privacy & permissions": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy & permissions"
+          }
+        }
+      }
+    },
+    "Privacy policy": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy policy"
+          }
+        }
+      }
+    },
+    "Pro is unavailable right now. Your free features still work.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro is unavailable right now. Your free features still work."
+          }
+        }
+      }
+    },
+    "Profile": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile"
+          }
+        }
+      }
+    },
+    "Question": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Question"
+          }
+        }
+      }
+    },
+    "Quick draft": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick draft"
+          }
+        }
+      }
+    },
+    "Rates load when you're online, then work offline.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rates load when you're online, then work offline."
+          }
+        }
+      }
+    },
+    "Rating": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rating"
+          }
+        }
+      }
+    },
+    "Refine": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refine"
+          }
+        }
+      }
+    },
+    "Remove photo": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove photo"
+          }
+        }
+      }
+    },
+    "Rename": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename"
+          }
+        }
+      }
+    },
+    "Renews %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renews %@"
+          }
+        }
+      }
+    },
+    "Rent %@%lld/d": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rent %@%lld/d"
+          }
+        }
+      }
+    },
+    "Replace your current trips?": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace your current trips?"
+          }
+        }
+      }
+    },
+    "Report an issue or share an idea": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report an issue or share an idea"
+          }
+        }
+      }
+    },
+    "Required": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Required"
+          }
+        }
+      }
+    },
+    "Reset password": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset password"
+          }
+        }
+      }
+    },
+    "Restore a backup": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore a backup"
+          }
+        }
+      }
+    },
+    "Restore backup": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore backup"
+          }
+        }
+      }
+    },
+    "Restore purchases": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore purchases"
+          }
+        }
+      }
+    },
+    "Restyle": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restyle"
+          }
+        }
+      }
+    },
+    "Retry saving": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry saving"
+          }
+        }
+      }
+    },
+    "Route map": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Route map"
+          }
+        }
+      }
+    },
+    "Route map, %lld percent complete": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Route map, %lld percent complete"
+          }
+        }
+      }
+    },
+    "Route · %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Route · %@"
+          }
+        }
+      }
+    },
+    "Safety": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Safety"
+          }
+        }
+      }
+    },
+    "Sample forecast · check a mountain forecast before you commit": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sample forecast · check a mountain forecast before you commit"
+          }
+        }
+      }
+    },
+    "Save": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "Save as trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save as trip"
+          }
+        }
+      }
+    },
+    "Save check-in": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save check-in"
+          }
+        }
+      }
+    },
+    "Save document": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save document"
+          }
+        }
+      }
+    },
+    "Save for offline": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save for offline"
+          }
+        }
+      }
+    },
+    "Save needs attention": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save needs attention"
+          }
+        }
+      }
+    },
+    "Save password": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save password"
+          }
+        }
+      }
+    },
+    "Save preferences": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save preferences"
+          }
+        }
+      }
+    },
+    "Saved for offline · %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved for offline · %@"
+          }
+        }
+      }
+    },
+    "Saving…": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving…"
+          }
+        }
+      }
+    },
+    "Scan": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan"
+          }
+        }
+      }
+    },
+    "Search plans, packing and your wardrobe across every trip.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search plans, packing and your wardrobe across every trip."
+          }
+        }
+      }
+    },
+    "Search this trip's plans, packing and gear.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search this trip's plans, packing and gear."
+          }
+        }
+      }
+    },
+    "Seat": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seat"
+          }
+        }
+      }
+    },
+    "Section": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Section"
+          }
+        }
+      }
+    },
+    "Send feedback": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send feedback"
+          }
+        }
+      }
+    },
+    "Send reset link": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send reset link"
+          }
+        }
+      }
+    },
+    "Sending…": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sending…"
+          }
+        }
+      }
+    },
+    "Set a budget": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set a budget"
+          }
+        }
+      }
+    },
+    "Set a new password": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set a new password"
+          }
+        }
+      }
+    },
+    "Set up later": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up later"
+          }
+        }
+      }
+    },
+    "Set up summit": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up summit"
+          }
+        }
+      }
+    },
+    "Settle up": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settle up"
+          }
+        }
+      }
+    },
+    "Severe": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Severe"
+          }
+        }
+      }
+    },
+    "Share": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
+          }
+        }
+      }
+    },
+    "Share as text": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share as text"
+          }
+        }
+      }
+    },
+    "Share trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share trip"
+          }
+        }
+      }
+    },
+    "Share with guide": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share with guide"
+          }
+        }
+      }
+    },
+    "Shared": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared"
+          }
+        }
+      }
+    },
+    "Show daily list": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show daily list"
+          }
+        }
+      }
+    },
+    "Show on Lock Screen": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show on Lock Screen"
+          }
+        }
+      }
+    },
+    "Show trail day on Lock Screen": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show trail day on Lock Screen"
+          }
+        }
+      }
+    },
+    "Sign in": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in"
+          }
+        }
+      }
+    },
+    "Sign in from Profile to send feedback.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in from Profile to send feedback."
+          }
+        }
+      }
+    },
+    "Sign in with Apple isn't available": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with Apple isn't available"
+          }
+        }
+      }
+    },
+    "Sign out": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign out"
+          }
+        }
+      }
+    },
+    "Sign out?": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign out?"
+          }
+        }
+      }
+    },
+    "Signed-in accounts sync when online. Offline edits stay on this device and retry when you return. Travel documents stay on the device.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed-in accounts sync when online. Offline edits stay on this device and retry when you return. Travel documents stay on the device."
+          }
+        }
+      }
+    },
+    "So everyone on %@ knows who invited them and who paid for what.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "So everyone on %@ knows who invited them and who paid for what."
+          }
+        }
+      }
+    },
+    "So split costs show what you owe and are owed.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "So split costs show what you owe and are owed."
+          }
+        }
+      }
+    },
+    "Some edits have not synced yet. We will try again. If they cannot be sent, you will stay signed in so you can reconnect or export your data.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some edits have not synced yet. We will try again. If they cannot be sent, you will stay signed in so you can reconnect or export your data."
+          }
+        }
+      }
+    },
+    "Something isn't working": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something isn't working"
+          }
+        }
+      }
+    },
+    "SpO₂ %": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SpO₂ %"
+          }
+        }
+      }
+    },
+    "Split costs and vote on plans with them in the Shared tab.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split costs and vote on plans with them in the Shared tab."
+          }
+        }
+      }
+    },
+    "Split equally": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split equally"
+          }
+        }
+      }
+    },
+    "Start %lld-day free trial": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start %lld-day free trial"
+          }
+        }
+      }
+    },
+    "Start fresh": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start fresh"
+          }
+        }
+      }
+    },
+    "Start fresh?": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start fresh?"
+          }
+        }
+      }
+    },
+    "Starts": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts"
+          }
+        }
+      }
+    },
+    "Status": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status"
+          }
+        }
+      }
+    },
+    "Stock photo": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stock photo"
+          }
+        }
+      }
+    },
+    "Suggest items": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggest items"
+          }
+        }
+      }
+    },
+    "Suggestions": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggestions"
+          }
+        }
+      }
+    },
+    "Summit": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summit"
+          }
+        }
+      }
+    },
+    "Summit height (m)": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summit height (m)"
+          }
+        }
+      }
+    },
+    "Summit wind": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summit wind"
+          }
+        }
+      }
+    },
+    "Swap currencies": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swap currencies"
+          }
+        }
+      }
+    },
+    "Swap day %lld": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swap day %lld"
+          }
+        }
+      }
+    },
+    "Symptom score": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Symptom score"
+          }
+        }
+      }
+    },
+    "Sync now": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync now"
+          }
+        }
+      }
+    },
+    "Tabs: %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tabs: %@"
+          }
+        }
+      }
+    },
+    "Tell us what happened and what you expected": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tell us what happened and what you expected"
+          }
+        }
+      }
+    },
+    "Terms of Use": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terms of Use"
+          }
+        }
+      }
+    },
+    "The same account works on tripsloom.com. Your trips sync between them.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The same account works on tripsloom.com. Your trips sync between them."
+          }
+        }
+      }
+    },
+    "The sample trips and sample clothes are removed. Trips you made stay.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sample trips and sample clothes are removed. Trips you made stay."
+          }
+        }
+      }
+    },
+    "The sample trips and wardrobe are removed. You can restore them from Profile.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sample trips and wardrobe are removed. You can restore them from Profile."
+          }
+        }
+      }
+    },
+    "The trip is shorter now. Keep those plans on the last day, or delete them.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The trip is shorter now. Keep those plans on the last day, or delete them."
+          }
+        }
+      }
+    },
+    "These are sample trips": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These are sample trips"
+          }
+        }
+      }
+    },
+    "This is the invite for your own trip. Send it to the people on it; opening it here changes nothing.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is the invite for your own trip. Send it to the people on it; opening it here changes nothing."
+          }
+        }
+      }
+    },
+    "This opens the Phone app with the emergency number you set. Satellite SOS depends on your iPhone, location and Apple service availability; Trips Loom cannot activate it.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This opens the Phone app with the emergency number you set. Satellite SOS depends on your iPhone, location and Apple service availability; Trips Loom cannot activate it."
+          }
+        }
+      }
+    },
+    "This permanently deletes your Trips Loom account, trips and uploaded photos from the server. Documents stored on this device will also be removed. This cannot be undone.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This permanently deletes your Trips Loom account, trips and uploaded photos from the server. Documents stored on this device will also be removed. This cannot be undone."
+          }
+        }
+      }
+    },
+    "Ticket": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ticket"
+          }
+        }
+      }
+    },
+    "Time": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time"
+          }
+        }
+      }
+    },
+    "Time zone: %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time zone: %@"
+          }
+        }
+      }
+    },
+    "Time, e.g. 5–6 h": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time, e.g. 5–6 h"
+          }
+        }
+      }
+    },
+    "Title": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title"
+          }
+        }
+      }
+    },
+    "To": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To"
+          }
+        }
+      }
+    },
+    "Today's outfit": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today's outfit"
+          }
+        }
+      }
+    },
+    "Topic": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Topic"
+          }
+        }
+      }
+    },
+    "Travel documents and health check-ins stay on this device with iOS file protection. New trip invitations exclude health records and include the plan, names, costs and votes. Anyone with the invitation can read and forward it; only share it with people you trust. Invitations are copies, not live collaborative editing.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travel documents and health check-ins stay on this device with iOS file protection. New trip invitations exclude health records and include the plan, names, costs and votes. Anyone with the invitation can read and forward it; only share it with people you trust. Invitations are copies, not live collaborative editing."
+          }
+        }
+      }
+    },
+    "Travel style": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travel style"
+          }
+        }
+      }
+    },
+    "Travelling with": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travelling with"
+          }
+        }
+      }
+    },
+    "Trip budget": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trip budget"
+          }
+        }
+      }
+    },
+    "Trip name": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trip name"
+          }
+        }
+      }
+    },
+    "Trip options": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trip options"
+          }
+        }
+      }
+    },
+    "Trip time zone": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trip time zone"
+          }
+        }
+      }
+    },
+    "Trips": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trips"
+          }
+        }
+      }
+    },
+    "Trips Loom": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trips Loom"
+          }
+        }
+      }
+    },
+    "Trips Loom Pro": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trips Loom Pro"
+          }
+        }
+      }
+    },
+    "Trips to show": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trips to show"
+          }
+        }
+      }
+    },
+    "Trips, plans, packing": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trips, plans, packing"
+          }
+        }
+      }
+    },
+    "Try again": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try again"
+          }
+        }
+      }
+    },
+    "Type": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type"
+          }
+        }
+      }
+    },
+    "Type DELETE to confirm": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type DELETE to confirm"
+          }
+        }
+      }
+    },
+    "Units": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Units"
+          }
+        }
+      }
+    },
+    "Unlock": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock"
+          }
+        }
+      }
+    },
+    "Upcoming": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upcoming"
+          }
+        }
+      }
+    },
+    "Update my copy": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update my copy"
+          }
+        }
+      }
+    },
+    "Update your numbers": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update your numbers"
+          }
+        }
+      }
+    },
+    "Updated %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updated %@"
+          }
+        }
+      }
+    },
+    "Use your own photo": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use your own photo"
+          }
+        }
+      }
+    },
+    "Used in your check-in reminder so you remember who to message.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Used in your check-in reminder so you remember who to message."
+          }
+        }
+      }
+    },
+    "Usually %lld° · %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usually %lld° · %@"
+          }
+        }
+      }
+    },
+    "VO₂ max: %lld": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VO₂ max: %lld"
+          }
+        }
+      }
+    },
+    "Verified local number": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verified local number"
+          }
+        }
+      }
+    },
+    "Version": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version"
+          }
+        }
+      }
+    },
+    "Website": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Website"
+          }
+        }
+      }
+    },
+    "Weekend in Goa": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekend in Goa"
+          }
+        }
+      }
+    },
+    "What was it?": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What was it?"
+          }
+        }
+      }
+    },
+    "What's the plan?": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's the plan?"
+          }
+        }
+      }
+    },
+    "Where to\nnext?": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where to\nnext?"
+          }
+        }
+      }
+    },
+    "Where to next,\n%@?": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where to next,\n%@?"
+          }
+        }
+      }
+    },
+    "Where your trips usually start, like Bangalore or BLR. Shared with tripsloom.com.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where your trips usually start, like Bangalore or BLR. Shared with tripsloom.com."
+          }
+        }
+      }
+    },
+    "Where · details": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where · details"
+          }
+        }
+      }
+    },
+    "Who to tell": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who to tell"
+          }
+        }
+      }
+    },
+    "Whole trip": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whole trip"
+          }
+        }
+      }
+    },
+    "You and %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You and %@"
+          }
+        }
+      }
+    },
+    "You get your own copy. When %@ shares the trip again, opening it updates yours.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You get your own copy. When %@ shares the trip again, opening it updates yours."
+          }
+        }
+      }
+    },
+    "Your data": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your data"
+          }
+        }
+      }
+    },
+    "Your message, account ID, app version and language are sent. Please omit passwords, passport numbers and other sensitive information.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your message, account ID, app version and language are sent. Please omit passwords, passport numbers and other sensitive information."
+          }
+        }
+      }
+    },
+    "Your name": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your name"
+          }
+        }
+      }
+    },
+    "Your numbers": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your numbers"
+          }
+        }
+      }
+    },
+    "Your travel preferences": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your travel preferences"
+          }
+        }
+      }
+    },
+    "Your trips are saved to your account and come back when you sign in. This iPhone is cleared.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your trips are saved to your account and come back when you sign in. This iPhone is cleared."
+          }
+        }
+      }
+    },
+    "Your trips stay on this iPhone.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your trips stay on this iPhone."
+          }
+        }
+      }
+    },
+    "e.g. Mum + Rahul": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. Mum + Rahul"
+          }
+        }
+      }
+    },
+    "items packed": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "items packed"
+          }
+        }
+      }
+    },
+    "km/h": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "km/h"
+          }
+        }
+      }
+    },
+    "of %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "of %@"
+          }
+        }
+      }
+    },
+    "of %@ · %@ left": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "of %@ · %@ left"
+          }
+        }
+      }
+    },
+    "readiness": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "readiness"
+          }
+        }
+      }
+    },
+    "trips loom": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "trips loom"
+          }
+        }
+      }
+    },
+    "−": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "−"
+          }
+        }
+      }
+    },
+    "● %@ %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "● %@ %@"
+          }
+        }
+      }
+    },
+    "★ %@ · %lld treks · licensed": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "★ %@ · %lld treks · licensed"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

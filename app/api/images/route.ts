@@ -4,7 +4,10 @@ import {
   failure,
   headers,
   workspaceOwner,
+  accountDeleting,
+  accountDeletionResponse,
 } from "@/lib/server";
+import { readLimitedBody, RequestBodyTooLarge } from "@/lib/request-body";
 export async function POST(r: Request) {
   if (!sameOrigin(r)) return new Response(null, { status: 403 });
   const resolved = await workspaceOwner(r);
@@ -12,13 +15,15 @@ export async function POST(r: Request) {
     return new Response(null, { status: 401 });
   const owner = resolved.id;
   try {
-    if (Number(r.headers.get("content-length")) > 5 * 1024 * 1024 + 10000)
-      return Response.json(
-        { error: "Use an image smaller than 5 MB." },
-        { status: 413 },
-      );
-    const form = await r.formData(),
-      file = form.get("image");
+    if (await accountDeleting(owner)) return accountDeletionResponse();
+    const multipart = await readLimitedBody(r, 5 * 1024 * 1024 + 65536);
+    let form: FormData;
+    try {
+      form = await new Response(multipart, { headers: { "Content-Type": r.headers.get("content-type") || "" } }).formData();
+    } catch {
+      return Response.json({ error: "Choose a JPEG, PNG or WebP image." }, { status: 400 });
+    }
+    const file = form.get("image");
     if (!(file instanceof File) || file.size > 5 * 1024 * 1024)
       return Response.json(
         { error: "Use an image smaller than 5 MB." },
@@ -41,11 +46,19 @@ export async function POST(r: Request) {
         { status: 400 },
       );
     const id = crypto.randomUUID();
-    await bucket().put(`${owner}/${id}`, bytes, {
+    const storage = bucket();
+    await storage.put(`${owner}/${id}`, bytes, {
       httpMetadata: { contentType: type },
     });
+    // A deletion may have started while reading the multipart upload or R2 PUT.
+    if (await accountDeleting(owner)) {
+      await storage.delete(`${owner}/${id}`);
+      return accountDeletionResponse();
+    }
     return Response.json({ url: `/api/images/${id}` }, { headers: headers() });
   } catch (e) {
+    if (e instanceof RequestBodyTooLarge)
+      return Response.json({ error: "Use an image smaller than 5 MB." }, { status: 413 });
     return failure(e);
   }
 }

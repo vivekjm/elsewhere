@@ -1,0 +1,460 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+        A12000000000000000000001 = {isa = PBXFileSystemSynchronizedRootGroup; path = TripsLoomUITests; sourceTree = "<group>"; };
+        A12000000000000000000002 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = TripsLoomUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+        A12000000000000000000003 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A12000000000000000000004 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A12000000000000000000005 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A12000000000000000000006 = {isa = PBXNativeTarget; buildConfigurationList = A12000000000000000000007; buildPhases = (A12000000000000000000003, A12000000000000000000004, A12000000000000000000005,); buildRules = (); dependencies = (A1200000000000000000000A,); fileSystemSynchronizedGroups = (A12000000000000000000001,); name = TripsLoomUITests; productName = TripsLoomUITests; productReference = A12000000000000000000002; productType = "com.apple.product-type.bundle.ui-testing"; };
+        A12000000000000000000007 = {isa = XCConfigurationList; buildConfigurations = (A12000000000000000000008, A12000000000000000000009,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+        A12000000000000000000008 = {isa = XCBuildConfiguration; buildSettings = { GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.tripsloom.ios.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated; TEST_TARGET_NAME = TripsLoom; TARGETED_DEVICE_FAMILY = "1,2"; CODE_SIGN_STYLE = Automatic; }; name = Debug; };
+        A12000000000000000000009 = {isa = XCBuildConfiguration; buildSettings = { GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.tripsloom.ios.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated; TEST_TARGET_NAME = TripsLoom; TARGETED_DEVICE_FAMILY = "1,2"; CODE_SIGN_STYLE = Automatic; }; name = Release; };
+        A1200000000000000000000A = {isa = PBXTargetDependency; target = A8B151EF80197D866D8AAC4C; targetProxy = A1200000000000000000000B; };
+        A1200000000000000000000B = {isa = PBXContainerItemProxy; containerPortal = EA2ADDE5C377CB5E09D14B71; proxyType = 1; remoteGlobalIDString = A8B151EF80197D866D8AAC4C; remoteInfo = TripsLoom; };
+
+
+        A11000000000000000000001 = {isa = PBXFileSystemSynchronizedRootGroup; path = TripsLoomTests; sourceTree = "<group>"; };
+        A11000000000000000000002 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = TripsLoomTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+        A11000000000000000000003 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A11000000000000000000004 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A11000000000000000000005 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A11000000000000000000006 = {isa = PBXNativeTarget; buildConfigurationList = A11000000000000000000007; buildPhases = (A11000000000000000000003, A11000000000000000000004, A11000000000000000000005,); buildRules = (); dependencies = (A1100000000000000000000A,); fileSystemSynchronizedGroups = (A11000000000000000000001,); name = TripsLoomTests; productName = TripsLoomTests; productReference = A11000000000000000000002; productType = "com.apple.product-type.bundle.unit-test"; };
+        A11000000000000000000007 = {isa = XCConfigurationList; buildConfigurations = (A11000000000000000000008, A11000000000000000000009,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+        A11000000000000000000008 = {isa = XCBuildConfiguration; buildSettings = { GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.tripsloom.ios.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TripsLoom.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TripsLoom"; BUNDLE_LOADER = "$(TEST_HOST)"; TARGETED_DEVICE_FAMILY = "1,2"; CODE_SIGN_STYLE = Automatic; }; name = Debug; };
+        A11000000000000000000009 = {isa = XCBuildConfiguration; buildSettings = { GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.tripsloom.ios.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TripsLoom.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TripsLoom"; BUNDLE_LOADER = "$(TEST_HOST)"; TARGETED_DEVICE_FAMILY = "1,2"; CODE_SIGN_STYLE = Automatic; }; name = Release; };
+        A1100000000000000000000A = {isa = PBXTargetDependency; target = A8B151EF80197D866D8AAC4C; targetProxy = A1100000000000000000000B; };
+        A1100000000000000000000B = {isa = PBXContainerItemProxy; containerPortal = EA2ADDE5C377CB5E09D14B71; proxyType = 1; remoteGlobalIDString = A8B151EF80197D866D8AAC4C; remoteInfo = TripsLoom; };
+
+
+/* Begin PBXBuildFile section */
+		0EA4CE23C1BE0FCB7A4D8588 /* TripsLoomWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CA6B919C908D3B51C53FDF8E /* TripsLoomWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E69E6446E892E3922E76C82E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = EA2ADDE5C377CB5E09D14B71 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 65A470CF277D035FF44192C4;
+			remoteInfo = TripsLoomWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C17EE73343E7B19A3D0C610A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0EA4CE23C1BE0FCB7A4D8588 /* TripsLoomWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0BDBB2C325525E986D55EF50 /* TripsLoom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TripsLoom.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA6B919C908D3B51C53FDF8E /* TripsLoomWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TripsLoomWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		6D3F2D3BBDF671C1D2EB055F /* Exceptions for "TripsLoomWidgets" folder in "TripsLoomWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				TripsLoomWidgets.entitlements,
+			);
+			target = 65A470CF277D035FF44192C4 /* TripsLoomWidgets */;
+		};
+		1C73B495F529CBFED9134D12 /* Exceptions for "TripsLoom" folder in "TripsLoom" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				TripsLoom.entitlements,
+			);
+			target = A8B151EF80197D866D8AAC4C /* TripsLoom */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		4133148486FD3F88917196CC /* TripsLoom */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (1C73B495F529CBFED9134D12 /* Exceptions for "TripsLoom" folder in "TripsLoom" target */, ); path = TripsLoom; sourceTree = "<group>"; };
+		5946ABB114403A2E5563F52C /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Shared; sourceTree = "<group>"; };
+		B2E1ECB6F6733BF99F307DE9 /* TripsLoomWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (6D3F2D3BBDF671C1D2EB055F /* Exceptions for "TripsLoomWidgets" folder in "TripsLoomWidgets" target */, ); path = TripsLoomWidgets; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D559DD42EEC179AF0A55B8E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		678E738F223D082329DBB7D0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		186495F7DA296BF880DF3A22 = {
+			isa = PBXGroup;
+			children = (
+				4133148486FD3F88917196CC /* TripsLoom */,
+                A11000000000000000000001 /* TripsLoomTests */,
+                A12000000000000000000001 /* TripsLoomUITests */,
+				B2E1ECB6F6733BF99F307DE9 /* TripsLoomWidgets */,
+				5946ABB114403A2E5563F52C /* Shared */,
+				D71BD8A0B6A6AA54EDBA6454 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D71BD8A0B6A6AA54EDBA6454 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0BDBB2C325525E986D55EF50 /* TripsLoom.app */,
+				CA6B919C908D3B51C53FDF8E /* TripsLoomWidgets.appex */,
+                A11000000000000000000002 /* TripsLoomTests.xctest */,
+                A12000000000000000000002 /* TripsLoomUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A8B151EF80197D866D8AAC4C /* TripsLoom */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3310DDD30EFB4A8C6AB9C189 /* Build configuration list for PBXNativeTarget "TripsLoom" */;
+			buildPhases = (
+				C5459B89CEFDD994ADAF9BE2 /* Sources */,
+				8D559DD42EEC179AF0A55B8E /* Frameworks */,
+				F631AA1EB59CA78A63BB2E35 /* Resources */,
+				C17EE73343E7B19A3D0C610A /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A72EC9C8E41B0DCD5B470268 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				4133148486FD3F88917196CC /* TripsLoom */,
+				5946ABB114403A2E5563F52C /* Shared */,
+			);
+			name = TripsLoom;
+			packageProductDependencies = (
+			);
+			productName = TripsLoom;
+			productReference = 0BDBB2C325525E986D55EF50 /* TripsLoom.app */;
+			productType = "com.apple.product-type.application";
+		};
+		65A470CF277D035FF44192C4 /* TripsLoomWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EEA1D5F9DA9AE083B0D135D7 /* Build configuration list for PBXNativeTarget "TripsLoomWidgets" */;
+			buildPhases = (
+				35DC72F32831B8F3F33E178C /* Sources */,
+				678E738F223D082329DBB7D0 /* Frameworks */,
+				2B903D064AD1D7B8A7A95A41 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B2E1ECB6F6733BF99F307DE9 /* TripsLoomWidgets */,
+				5946ABB114403A2E5563F52C /* Shared */,
+			);
+			name = TripsLoomWidgets;
+			packageProductDependencies = (
+			);
+			productName = TripsLoomWidgets;
+			productReference = CA6B919C908D3B51C53FDF8E /* TripsLoomWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		EA2ADDE5C377CB5E09D14B71 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					A8B151EF80197D866D8AAC4C = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					65A470CF277D035FF44192C4 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+				};
+			};
+			buildConfigurationList = B9EACD5B950CEA3A53B1A8E9 /* Build configuration list for PBXProject "TripsLoom" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 186495F7DA296BF880DF3A22;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = D71BD8A0B6A6AA54EDBA6454 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A8B151EF80197D866D8AAC4C /* TripsLoom */,
+				65A470CF277D035FF44192C4 /* TripsLoomWidgets */,
+                A11000000000000000000006 /* TripsLoomTests */,
+                A12000000000000000000006 /* TripsLoomUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F631AA1EB59CA78A63BB2E35 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2B903D064AD1D7B8A7A95A41 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C5459B89CEFDD994ADAF9BE2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		35DC72F32831B8F3F33E178C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A72EC9C8E41B0DCD5B470268 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 65A470CF277D035FF44192C4 /* TripsLoomWidgets */;
+			targetProxy = E69E6446E892E3922E76C82E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		544CA989ED0C35AEA0B89FD3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		8E872A2AC6FC9A0BA378E28D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		9E9CE62D837366615C600C6C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TripsLoom/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Trips Loom";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan tickets and booking confirmations to add them to a trip.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				CODE_SIGN_ENTITLEMENTS = TripsLoom/TripsLoom.entitlements;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tripsloom.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		9633CD74DE3E9E0CEF51B914 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TripsLoom/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Trips Loom";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan tickets and booking confirmations to add them to a trip.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				CODE_SIGN_ENTITLEMENTS = TripsLoom/TripsLoom.entitlements;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tripsloom.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A3F6D5EC3133A798C03A3C0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TripsLoomWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Trips Loom";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				CODE_SIGN_ENTITLEMENTS = TripsLoomWidgets/TripsLoomWidgets.entitlements;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tripsloom.ios.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		771352F92BA1147871158985 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TripsLoomWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Trips Loom";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				CODE_SIGN_ENTITLEMENTS = TripsLoomWidgets/TripsLoomWidgets.entitlements;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tripsloom.ios.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B9EACD5B950CEA3A53B1A8E9 /* Build configuration list for PBXProject "TripsLoom" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				544CA989ED0C35AEA0B89FD3 /* Debug */,
+				8E872A2AC6FC9A0BA378E28D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3310DDD30EFB4A8C6AB9C189 /* Build configuration list for PBXNativeTarget "TripsLoom" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9E9CE62D837366615C600C6C /* Debug */,
+				9633CD74DE3E9E0CEF51B914 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EEA1D5F9DA9AE083B0D135D7 /* Build configuration list for PBXNativeTarget "TripsLoomWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A3F6D5EC3133A798C03A3C0A /* Debug */,
+				771352F92BA1147871158985 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = EA2ADDE5C377CB5E09D14B71 /* Project object */;
+}

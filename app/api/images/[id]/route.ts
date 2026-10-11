@@ -1,4 +1,4 @@
-import { bucket, failure, workspaceOwner } from "@/lib/server";
+import { accountDeleting, bucket, failure, workspaceOwner } from "@/lib/server";
 export async function GET(
   r: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -12,6 +12,7 @@ export async function GET(
   )
     return new Response(null, { status: 404 });
   try {
+    if (await accountDeleting(resolved.id)) return new Response(null, { status: 404 });
     const object = await bucket().get(`${resolved.id}/${id}`);
     if (!object) return new Response(null, { status: 404 });
     return new Response(object.body, {

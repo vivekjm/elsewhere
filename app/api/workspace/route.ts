@@ -6,8 +6,11 @@ import {
   sameOrigin,
   failure,
   workspaceOwner,
+  accountDeleting,
+  accountDeletionResponse,
 } from "@/lib/server";
 import { emptyWorkspace, workspaceSchema } from "@/lib/model";
+import { readLimitedBody, RequestBodyTooLarge } from "@/lib/request-body";
 
 async function claimVisitorPhotos(data: string, from: string, to: string) {
   try {
@@ -32,6 +35,10 @@ async function claimVisitorPhotos(data: string, from: string, to: string) {
         httpMetadata: source.httpMetadata,
         customMetadata: source.customMetadata,
       });
+      if (await accountDeleting(to)) {
+        await storage.delete(`${to}/${id}`);
+        return;
+      }
     }
   } catch {
     // Workspace data can still be claimed if a legacy visitor photo is gone.
@@ -52,6 +59,7 @@ export async function GET(r: Request) {
       .prepare("SELECT data, revision FROM workspaces WHERE id = ?")
       .bind(owner.id)
       .first<{ data: string; revision: number }>();
+    if (row && row.revision < 0) return accountDeletionResponse();
     // The first signed-in load claims the visitor workspace from this browser.
     // The copy keeps the existing trip data intact while future saves use the
     // stable Supabase user ID across browsers and devices.
@@ -92,6 +100,7 @@ export async function GET(r: Request) {
         .bind(owner.id)
         .first<{ data: string; revision: number }>();
     }
+    if (row && row.revision < 0) return accountDeletionResponse();
     return Response.json(
       { workspace: JSON.parse(row!.data), revision: row!.revision },
       {
@@ -120,14 +129,7 @@ export async function PUT(r: Request) {
       { status: 401 },
     );
   try {
-    const raw = await r.text();
-    if (raw.length > 1500000)
-      return Response.json(
-        {
-          error: "Workspace is too large. Export a backup and reduce its size.",
-        },
-        { status: 413 },
-      );
+    const raw = new TextDecoder().decode(await readLimitedBody(r, 1500000));
     const payload = JSON.parse(raw),
       parsed = workspaceSchema.safeParse(payload.workspace);
     if (
@@ -150,7 +152,8 @@ export async function PUT(r: Request) {
         payload.revision,
       )
       .run();
-    if (!result.meta.changes)
+    if (!result.meta.changes) {
+      if (await accountDeleting(owner.id)) return accountDeletionResponse();
       return Response.json(
         {
           error:
@@ -158,11 +161,14 @@ export async function PUT(r: Request) {
         },
         { status: 409 },
       );
+    }
     return Response.json(
       { revision: payload.revision + 1 },
       { headers: headers() },
     );
   } catch (e) {
+    if (e instanceof RequestBodyTooLarge)
+      return Response.json({ error: "Workspace is too large. Export a backup and reduce its size." }, { status: 413 });
     if (e instanceof SyntaxError)
       return Response.json({ error: "Invalid JSON" }, { status: 400 });
     return failure(e);
