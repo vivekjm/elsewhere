@@ -226,3 +226,20 @@ nonisolated final class LedgerRoundingRegressionTests: XCTestCase {
         XCTAssertEqual(trip.ledger.first { $0.person == "Sam" }?.amount ?? 0, -16_237.0 / 3, accuracy: 0.001)
     }
 }
+
+/// Treks, camps and climbs pack from their gear list; reminders and the
+/// widget must count that, not the (often empty) packing list.
+nonisolated final class PackingProgressRegressionTests: XCTestCase {
+    @MainActor func testAdventureTripsCountGear() {
+        var climb = Trip(name: "Island Peak", place: "Lukla, Nepal", kind: .climb, start: .now, dayCount: 4, photo: .himalaya)
+        climb.gear = PackingSuggestions.gear(for: .climb)
+        XCTAssertFalse(climb.gear.isEmpty)
+        climb.gear[0].packed = true
+        XCTAssertEqual(climb.packingProgress.packed, 1)
+        XCTAssertEqual(climb.packingProgress.total, climb.gear.count)
+        var city = Trip(name: "Paris", place: "Paris, France", kind: .city, start: .now, dayCount: 3, photo: .lisbon)
+        city.packing = [PackItem(name: "Socks", section: "Basics"), PackItem(name: "Shirt", section: "Tops", packed: true)]
+        XCTAssertEqual(city.packingProgress.packed, 1)
+        XCTAssertEqual(city.packingProgress.total, 2)
+    }
+}

@@ -25,7 +25,8 @@ enum Reminders {
             else { continue }
             let content = UNMutableNotificationContent()
             content.title = "\(trip.name) starts tomorrow"
-            let left = trip.packing.count - trip.packedCount
+            let progress = trip.packingProgress
+            let left = progress.total - progress.packed
             content.body = left > 0 ? "\(left) items left to pack." : "You're packed. Have a good trip."
             content.sound = .default
             var components = trip.calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fire)

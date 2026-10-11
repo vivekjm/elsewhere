@@ -36,6 +36,9 @@ struct DocumentsView: View {
     @State private var renaming: TripDocuments.Document?
     @State private var paywall = false
     @State private var unlocked = false
+    /// Set when the app went to the background with the vault open.
+    @State private var relockPending = false
+    @Environment(\.scenePhase) private var scenePhase
     @State private var suggestion: String?
     @State private var importError: String?
 
@@ -151,6 +154,18 @@ struct DocumentsView: View {
             Button("OK") { importError = nil }
         } message: { Text(importError ?? "") }
         .task { if store.profile.isPro, store.profile.lockDocuments == true { await unlock() } }
+        // Leaving the app locks the vault again; coming back asks once. The
+        // Face ID sheet only makes the app inactive, so it doesn't count.
+        .onChange(of: scenePhase) { _, phase in
+            guard store.profile.isPro, store.profile.lockDocuments == true else { return }
+            if phase == .background {
+                unlocked = false
+                relockPending = true
+            } else if phase == .active, relockPending {
+                relockPending = false
+                Task { await unlock() }
+            }
+        }
     }
 
     @ViewBuilder

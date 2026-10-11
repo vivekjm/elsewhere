@@ -12,10 +12,13 @@ final class TripStore {
             sync.localChange()
             let kept = Set(trips.map(\.id))
             if !replacingData, oldValue.contains(where: { !kept.contains($0.id) }) {
+                let remaining = trips
                 Task { @MainActor in
                     TripDocuments.shared.prune(keeping: kept)
                     CoverStore.shared.prune(keeping: kept)
                     RouteSnapshots.prune(keeping: kept)
+                    // A deleted trip's flight or trail leaves the Lock Screen now.
+                    await LiveActivities.refresh(trips: remaining)
                 }
             }
         }
@@ -124,15 +127,16 @@ final class TripStore {
     }
 
     static var defaultURL: URL {
+        // A fresh install has no Application Support folder yet.
+        let dir = URL.applicationSupportDirectory
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         #if DEBUG
         // UI tests use a unique file and never reset a traveller's real store.
         if let testID = ProcessInfo.processInfo.environment["TRIPSLOOM_UI_TEST_ID"],
            UUID(uuidString: testID) != nil {
-            return URL.applicationSupportDirectory.appending(path: "ui-test-\(testID).json")
+            return dir.appending(path: "ui-test-\(testID).json")
         }
         #endif
-        let dir = URL.applicationSupportDirectory
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appending(path: "tripsloom.json")
     }
 

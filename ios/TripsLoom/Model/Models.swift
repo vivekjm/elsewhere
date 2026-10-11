@@ -237,6 +237,12 @@ extension Trip {
     var outfitDays: Int { Set(outfits.map(\.day)).count }
     var packedCount: Int { packing.filter(\.packed).count }
     var packedFraction: Double { packing.isEmpty ? 0 : Double(packedCount) / Double(packing.count) }
+    /// What's packed out of what's needed: gear for treks, camps and climbs
+    /// that list it, the packing list otherwise. Used by reminders and the widget.
+    var packingProgress: (packed: Int, total: Int) {
+        if kind.isAdventure && !gear.isEmpty { return (gear.filter(\.packed).count, gear.count) }
+        return (packedCount, packing.count)
+    }
     /// Share of days planned plus share packed. Adventure trips count route
     /// stages and packed gear instead of plans and the packing list.
     var readiness: Double {
