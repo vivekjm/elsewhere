@@ -87,6 +87,14 @@ export async function GET(r: Request) {
           .first<{ data: string; revision: number }>();
       }
     }
+    // Anonymous reads never write: a visitor's row is created by its first
+    // save, so requests without an account can't fill the database.
+    if (!row && !owner.authenticated) {
+      return Response.json(
+        { workspace: emptyWorkspace(), revision: 0 },
+        { headers: headers(existing ? undefined : owner.id, r) },
+      );
+    }
     if (!row) {
       const data = emptyWorkspace();
       await db
@@ -153,6 +161,17 @@ export async function PUT(r: Request) {
       )
       .run();
     if (!result.meta.changes) {
+      // First save of a workspace that was only ever read: create it.
+      if (payload.revision === 0) {
+        const created = await database()
+          .prepare(
+            "INSERT OR IGNORE INTO workspaces (id,data,revision,updated_at) VALUES (?, ?, 1, ?)",
+          )
+          .bind(owner.id, JSON.stringify(parsed.data), new Date().toISOString())
+          .run();
+        if (created.meta.changes)
+          return Response.json({ revision: 1 }, { headers: headers() });
+      }
       if (await accountDeleting(owner.id)) return accountDeletionResponse();
       return Response.json(
         {

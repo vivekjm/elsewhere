@@ -67,13 +67,24 @@ enum BookingParser {
             return seenNumbers.insert(compact).inserted
         }
         if lower.contains("flight") || lower.contains("boarding") || lower.contains("departure") {
-            for match in flights.prefix(2) {
+            let legs = Array(flights.prefix(2))
+            let routePattern = /\b([A-Z]{3})\s*(?:→|->|-|to)\s*([A-Z]{3})\b/
+            let gatePattern = /(?i)gate[:\s]*([A-Z]?\d{1,3}[A-Z]?)/
+            let seatPattern = /(?i)seat[:\s]*(\d{1,2}[A-K])/
+            let routes = cleaned.matches(of: routePattern)
+            for (index, match) in legs.enumerated() {
                 let number = "\(match.1) \(match.2)"
-                let route = cleaned.firstMatch(of: /\b([A-Z]{3})\s*(?:→|->|-|to)\s*([A-Z]{3})\b/)
+                // Each flight's details sit between its number and the next
+                // flight's, so a return leg keeps its own route, date and seat.
+                // Anything printed elsewhere (say, above both) is the fallback.
+                let end = index + 1 < legs.count ? legs[index + 1].range.lowerBound : cleaned.endIndex
+                let leg = cleaned[match.range.lowerBound..<end]
+                let route = leg.firstMatch(of: routePattern) ?? (index < routes.count ? routes[index] : routes.first)
                 let destination = route.map { String($0.2) } ?? "Destination"
-                let time = timeString(dates.first)
-                let gate = cleaned.firstMatch(of: /(?i)gate[:\s]*([A-Z]?\d{1,3}[A-Z]?)/).map { String($0.1) } ?? "TBC"
-                let seat = cleaned.firstMatch(of: /(?i)seat[:\s]*(\d{1,2}[A-K])/).map { String($0.1) } ?? "TBC"
+                let legDate = detectDates(in: String(leg)).first ?? (index < dates.count ? dates[index] : dates.first)
+                let time = timeString(legDate)
+                let gate = (leg.firstMatch(of: gatePattern) ?? (index == 0 ? cleaned.firstMatch(of: gatePattern) : nil)).map { String($0.1) } ?? "TBC"
+                let seat = (leg.firstMatch(of: seatPattern) ?? (index == 0 ? cleaned.firstMatch(of: seatPattern) : nil)).map { String($0.1) } ?? "TBC"
                 var metaParts = [number]
                 if let route { metaParts.append("\(route.1) → \(route.2)") }
                 if let reference { metaParts.append("PNR \(reference)") }
@@ -81,7 +92,7 @@ enum BookingParser {
                     category: .flight,
                     title: route.map { "Flight \($0.1) → \($0.2)" } ?? "Flight \(number)",
                     meta: metaParts.joined(separator: " · "),
-                    date: dates.first,
+                    date: legDate,
                     time: time,
                     flight: FlightInfo(number: number, destination: destination, boards: time ?? "TBC", gate: gate, seat: seat)
                 ))

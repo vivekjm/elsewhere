@@ -135,6 +135,37 @@ nonisolated final class BookingPasteRegressionTests: XCTestCase {
         let found = BookingParser.parse(text)
         XCTAssertEqual(found.count, 1, "\(found)")
         XCTAssertEqual(found.first?.category, .flight)
+        XCTAssertEqual(found.first?.title, "Flight LHR → CDG")
+        XCTAssertEqual(found.first?.flight?.gate, "A12")
+        XCTAssertEqual(found.first?.flight?.seat, "14C")
+        XCTAssertEqual(found.first?.time, "10:45")
+    }
+
+    /// Outbound and return each keep their own route, date and seat.
+    @MainActor func testRoundTripFlightsKeepTheirOwnRouteAndDate() {
+        let text = """
+        Booking reference QA5678
+        Flight BA 312 LHR → CDG
+        Departure 25 October 2026 at 09:00
+        Seat 14C
+        Flight BA 313 CDG → LHR
+        Departure 28 October 2026 at 18:30
+        Seat 21A
+        """
+        let found = BookingParser.parse(text)
+        XCTAssertEqual(found.count, 2, "\(found)")
+        guard found.count == 2 else { return }
+        XCTAssertEqual(found[0].title, "Flight LHR → CDG")
+        XCTAssertEqual(found[1].title, "Flight CDG → LHR")
+        XCTAssertEqual(found[0].flight?.destination, "CDG")
+        XCTAssertEqual(found[1].flight?.destination, "LHR")
+        XCTAssertEqual(found[0].time, "09:00")
+        XCTAssertEqual(found[1].time, "18:30")
+        XCTAssertEqual(found[0].flight?.seat, "14C")
+        XCTAssertEqual(found[1].flight?.seat, "21A")
+        let day = Calendar.current
+        XCTAssertEqual(found[0].date.map { day.component(.day, from: $0) }, 25)
+        XCTAssertEqual(found[1].date.map { day.component(.day, from: $0) }, 28)
     }
 }
 
