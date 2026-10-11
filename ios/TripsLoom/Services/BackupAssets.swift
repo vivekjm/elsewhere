@@ -116,10 +116,22 @@ extension DataPortability {
             for doc in oldDocuments where !documents.contains(where: { $0.fileName == doc.fileName }) {
                 try? FileManager.default.removeItem(at: TripDocuments.shared.url(doc))
             }
+            // The restore replaced every trip and piece, so photos the restored
+            // data doesn't use would stay on the phone with nothing pointing at them.
+            for file in photoFiles(in: "covers").subtracting(trips.compactMap(\.coverFile)) { CoverStore.shared.delete(file) }
+            for file in photoFiles(in: "wardrobe").subtracting(wardrobe.compactMap(\.imageFile)) { WardrobePhotos.delete(file) }
+            RouteSnapshots.prune(keeping: Set(trips.map(\.id)))
         } catch {
             try? TripDocuments.shared.replaceIndex(oldDocuments)
             for file in staged { try? FileManager.default.removeItem(at: file) }
             throw error
         }
+    }
+
+    /// App-generated photo names in one of the app's photo folders.
+    private static func photoFiles(in folder: String) -> Set<String> {
+        let directory = URL.applicationSupportDirectory.appending(path: folder, directoryHint: .isDirectory)
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false))) ?? []
+        return Set(names.filter(WardrobePhotos.isSafeFileName))
     }
 }

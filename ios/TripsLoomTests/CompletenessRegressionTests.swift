@@ -167,3 +167,31 @@ nonisolated final class SummitEncodingRegressionTests: XCTestCase {
         XCTAssertEqual(decoded.dawnTemps?[id], -18)
     }
 }
+
+/// Sample trips are there to explore; they must never send notifications.
+nonisolated final class ReminderSampleRegressionTests: XCTestCase {
+    @MainActor func testSampleTripsNeverGetReminders() {
+        var sample = Trip(name: "Sample trek", place: "Lukla, Nepal", kind: .trek, start: .now.addingTimeInterval(86_400), dayCount: 5, photo: .himalaya)
+        sample.isSample = true
+        let mine = Trip(name: "My trek", place: "Lukla, Nepal", kind: .trek, start: .now.addingTimeInterval(86_400), dayCount: 5, photo: .himalaya)
+        XCTAssertEqual(Reminders.remindable([sample, mine]).map(\.name), ["My trek"])
+        let samples = SampleData.make().trips
+        XCTAssertFalse(samples.isEmpty)
+        XCTAssertTrue(samples.contains { $0.adventure?.checkInReminders == true }, "The sample trek ships with check-ins on")
+        XCTAssertTrue(Reminders.remindable(samples).isEmpty, "Every bundled sample trip must be excluded")
+    }
+}
+
+/// A settled split stays settled after the trip switches to a currency with
+/// no minor unit, where each amount is rounded on its own.
+nonisolated final class LedgerRoundingRegressionTests: XCTestCase {
+    @MainActor func testSettledSplitShowsNoLeftoverInWholeUnitCurrency() {
+        var trip = Trip(name: "Tokyo", place: "Tokyo, Japan", kind: .city, start: .now, dayCount: 3, photo: .lisbon)
+        trip.currency = "¥"
+        // ¥16,237 split three ways, Alex's share settled after conversion rounding.
+        trip.expenses = [Expense(title: "Dinner", category: .food, amount: 16_237, splitWith: [Trip.me, "Alex", "Sam"])]
+        trip.settlements = [Settlement(person: "Alex", amount: -5_412)]
+        XCTAssertNil(trip.ledger.first { $0.person == "Alex" }, "\(trip.ledger)")
+        XCTAssertEqual(trip.ledger.first { $0.person == "Sam" }?.amount ?? 0, -16_237.0 / 3, accuracy: 0.001)
+    }
+}

@@ -65,7 +65,10 @@ enum LiveActivities {
             let trip = activity.attributes.tripID.flatMap { id in trips.first { $0.id == id } }
             switch activity.attributes.kind {
             case .flight:
-                if let stale = activity.content.staleDate, stale < .now { await activity.end(nil, dismissalPolicy: .immediate) }
+                // Ends once the flight has left, or when its trip was deleted
+                // or signed out of this phone.
+                let departed = activity.content.staleDate.map { $0 < .now } ?? false
+                if departed || trip == nil { await activity.end(nil, dismissalPolicy: .immediate) }
             case .trail:
                 guard let trip, trip.status != .past, let state = trailState(trip) else {
                     await activity.end(nil, dismissalPolicy: .immediate)

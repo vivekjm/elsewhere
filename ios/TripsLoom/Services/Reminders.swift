@@ -6,6 +6,9 @@ enum Reminders {
     private static let tripPrefix = "trip-"
     private static let checkInPrefix = "checkin-"
 
+    /// Sample trips are there to explore the app; they never notify.
+    static func remindable(_ trips: [Trip]) -> [Trip] { trips.filter { $0.isSample != true } }
+
     /// Reschedules "starts tomorrow" reminders. Returns a short status line.
     /// With `prompt` false, it only schedules if permission was already given.
     static func sync(enabled: Bool, trips: [Trip], prompt: Bool) async -> String? {
@@ -15,7 +18,7 @@ enum Reminders {
         guard await authorize(prompt: prompt) else { return "Allow notifications in Settings" }
 
         let capacity = remainingSlots(pendingCount: await center.pendingNotificationRequests().count)
-        for trip in trips.filter({ $0.status == .upcoming }).sorted(by: { $0.start < $1.start }).prefix(min(30, capacity)) {
+        for trip in remindable(trips).filter({ $0.status == .upcoming }).sorted(by: { $0.start < $1.start }).prefix(min(30, capacity)) {
             guard let eve = trip.calendar.date(byAdding: .day, value: -1, to: trip.civilStart),
                   let fire = trip.calendar.date(bySettingHour: 18, minute: 0, second: 0, of: eve),
                   fire > .now
@@ -40,7 +43,7 @@ enum Reminders {
     static func scheduleCheckIn(enabled: Bool, time: String, trip: Trip, contacts: String, prompt: Bool) async -> Bool {
         let center = UNUserNotificationCenter.current()
         await removePending(prefix: checkInPrefix + trip.id.uuidString)
-        guard enabled else { return true }
+        guard enabled, trip.isSample != true else { return true }
         guard await authorize(prompt: prompt) else { return !prompt }
 
         let parts = time.split(separator: ":").compactMap { Int($0) }
@@ -83,7 +86,7 @@ enum Reminders {
     static func reconcile(enabled: Bool, trips: [Trip]) async {
         _ = await sync(enabled: enabled, trips: trips, prompt: false)
         await removePending(prefix: checkInPrefix)
-        for trip in trips.sorted(by: { $0.civilStart < $1.civilStart }) where trip.status != .past && trip.adventure?.checkInReminders == true {
+        for trip in remindable(trips).sorted(by: { $0.civilStart < $1.civilStart }) where trip.status != .past && trip.adventure?.checkInReminders == true {
             _ = await scheduleCheckIn(enabled: true, time: trip.adventure?.nextCheckIn ?? "16:00", trip: trip, contacts: trip.adventure?.contacts ?? "", prompt: false)
         }
     }

@@ -294,7 +294,11 @@ extension Trip {
         }
         for balance in balances where !balance.settled { net[balance.person, default: 0] += balance.amount }
         for payment in settlements ?? [] { net[payment.person, default: 0] -= payment.amount }
-        return net.filter { abs($0.value) >= 0.005 }
+        // Anything under half the currency's smallest unit is settled; amounts
+        // rounded one by one (say, after a currency change) leave such crumbs.
+        let digits = Fmt.currencyFormatter(currency).maximumFractionDigits
+        let settledBelow = 0.5 / pow(10, Double(digits))
+        return net.filter { abs($0.value) >= settledBelow }
             .map { (person: $0.key, amount: $0.value) }
             .sorted { abs($0.amount) != abs($1.amount) ? abs($0.amount) > abs($1.amount) : $0.person < $1.person }
     }
