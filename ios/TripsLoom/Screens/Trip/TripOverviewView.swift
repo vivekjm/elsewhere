@@ -87,7 +87,7 @@ struct TripOverviewView: View {
         PillSegmented(options: [(.overview, "Overview"), (.itinerary, "Itinerary"), (.budget, "Budget")], selection: $segment)
     }
 
-    /// "Today · Gangtok" or "Wed 30 · Gangtok".
+    /// "Today · Lisbon" or "Wed 30 · Lisbon".
     static func when(_ trip: Trip, _ index: Int, _ day: WeatherService.Day) -> String {
         let date = trip.date(ofDay: index)
         let label = trip.todayIndex == index ? "Today" : "\(Fmt.weekday(date, timeZone: trip.timeZone)) \(Fmt.dayNumber(date, timeZone: trip.timeZone))"

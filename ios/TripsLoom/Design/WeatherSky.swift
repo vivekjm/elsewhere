@@ -221,7 +221,7 @@ private struct BadgeShape: ViewModifier {
 
 struct HeroWeatherBadge: View {
     var day: WeatherService.Day
-    /// "Wed 30 · Gangtok"
+    /// "Wed 30 · Lisbon"
     var when: String
     @Environment(\.dynamicTypeSize) private var typeSize
 

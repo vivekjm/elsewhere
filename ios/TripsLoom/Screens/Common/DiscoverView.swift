@@ -10,7 +10,7 @@ struct DiscoverIdea: Identifiable, Hashable {
     var currency: String
     var kind: TripKind
     var category: PlanCategory
-    /// Matches trips at this place ("goa", "lisbon").
+    /// Matches trips at this place ("amalfi", "lisbon").
     var placeKeys: [String] = []
 }
 
@@ -233,7 +233,7 @@ struct DiscoverView: View {
         return Fmt.moneyShort(rounded, CurrencyService.symbol(for: home))
     }
 
-    /// Trips at the idea's place first ("Goa" → trips in Goa).
+    /// Trips at the idea's place first ("Lisbon" → trips in Lisbon).
     private func tripsFor(_ idea: DiscoverIdea) -> [Trip] {
         let keys = idea.placeKeys
         let here = store.upcoming.filter { trip in

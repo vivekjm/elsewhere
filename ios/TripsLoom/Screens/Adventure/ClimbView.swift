@@ -229,7 +229,7 @@ struct SummitEditor: View {
         .presentationBackground { SheetGlass(photo: trip.photo) }
         .onAppear {
             let summit = trip.adventure?.summit
-            // The highest named stage, else the destination ("Stok Kangri, India" → "Stok Kangri").
+            // The highest named stage, else the destination ("Gran Paradiso, Italy" → "Gran Paradiso").
             let highest = trip.stages.filter { $0.altitude > 0 }.max { $0.altitude < $1.altitude }
             peak = summit?.peak
                 ?? highest.map { $0.title.components(separatedBy: "→").last?.trimmingCharacters(in: .whitespaces) ?? "" }

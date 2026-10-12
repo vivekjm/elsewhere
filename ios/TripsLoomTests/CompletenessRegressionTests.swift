@@ -71,9 +71,9 @@ nonisolated final class CompletenessRegressionTests: XCTestCase {
     }
 
     @MainActor func testPermitNotesSurviveMarkingPaid() {
-        let paid = PermitEditor.meta(notes: "₹1,200 at Yuksom", paid: true)
-        XCTAssertEqual(paid, "₹1,200 at Yuksom · paid")
-        XCTAssertEqual(PermitEditor.notes(from: paid), "₹1,200 at Yuksom")
+        let paid = PermitEditor.meta(notes: "€60 at the refuge", paid: true)
+        XCTAssertEqual(paid, "€60 at the refuge · paid")
+        XCTAssertEqual(PermitEditor.notes(from: paid), "€60 at the refuge")
         XCTAssertEqual(PermitEditor.notes(from: "Not paid"), "")
         XCTAssertEqual(PermitEditor.meta(notes: "", paid: false), "Not paid")
         XCTAssertEqual(PermitEditor.notes(from: "Paid"), "")
@@ -402,13 +402,13 @@ nonisolated final class CompactMoneyRegressionTests: XCTestCase {
 /// Place names match as whole words, so "goals" isn't Goa and "lehenga" isn't Leh.
 nonisolated final class DestinationMatchRegressionTests: XCTestCase {
     @MainActor func testPlacesMatchWholeWordsOnly() {
-        XCTAssertEqual(Destination.match("5 days in Goa")?.place, "Goa, India")
-        XCTAssertEqual(Destination.match("Goa's beaches for a week")?.place, "Goa, India")
-        XCTAssertEqual(Destination.match("see the Taj Mahal at sunrise")?.place, "Agra, Uttar Pradesh")
-        XCTAssertEqual(Destination.match("a weekend in port blair")?.place, "Andaman Islands, India")
-        XCTAssertNil(Destination.match("a relaxed trip to work on my goals"))
-        XCTAssertNil(Destination.match("shopping for a lehenga"))
-        XCTAssertNil(Destination.match("an agrarian homestay"))
+        XCTAssertEqual(Destination.match("5 days in Rome")?.place, "Rome, Italy")
+        XCTAssertEqual(Destination.match("Rome's piazzas for a week")?.place, "Rome, Italy")
+        XCTAssertEqual(Destination.match("see the Mont Blanc massif")?.place, "Chamonix, France")
+        XCTAssertEqual(Destination.match("a weekend on the amalfi coast")?.place, "Amalfi Coast, Italy")
+        XCTAssertNil(Destination.match("a chrome-plated road trip"))
+        XCTAssertNil(Destination.match("a quick comparison of hotels"))
+        XCTAssertNil(Destination.match("a romantic cabin somewhere"))
     }
 }
 

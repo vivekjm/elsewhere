@@ -12,7 +12,7 @@ struct BudgetView: View {
 
     enum Mode: Hashable { case trip, daily }
 
-    /// "≈ ₹1,23,000 at today's rate" when the trip isn't in the phone's currency.
+    /// "≈ $1,230 at today's rate" when the trip isn't in the phone's currency.
     private var homeTotal: String? {
         guard let from = CurrencyService.code(for: trip.currency), from != CurrencyService.home,
               let rate = CurrencyService.shared.rate(from: from, to: CurrencyService.home), trip.totalPlanned > 0
@@ -390,7 +390,7 @@ struct ExpenseEditor: View {
         .presentationBackground { SheetGlass(photo: trip.photo) }
         .presentationDetents([.medium, .large])
         .onChange(of: title) { _, text in
-            // "Houseboat" is a stay, "Taxi to Munnar" is transport.
+            // "Houseboat" is a stay, "Taxi to Sintra" is transport.
             if !pickedCategory, let guess = PlanCategory.guess(from: text) { category = guess.budget }
         }
         .onAppear {
@@ -403,7 +403,7 @@ struct ExpenseEditor: View {
 
 /// Two-way converter between the trip's currency and the phone's.
 struct CurrencyConverter: View {
-    /// Small amounts keep their decimals: "€0.92", "₹8,640".
+    /// Small amounts keep their decimals: "€0.92", "¥8,640".
     private func converted(_ value: Double, _ symbol: String) -> String {
         Fmt.money(value, symbol).whole
     }

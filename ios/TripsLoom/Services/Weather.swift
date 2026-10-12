@@ -129,8 +129,8 @@ final class WeatherService {
                 spot = await Places.lookup(place)
                 if spot == nil, place != trip.place { spot = await Places.lookup(trip.place) }
             }
-            // "India" as a destination means the middle of the country; the
-            // trip's name ("Sikkim") is often the real place.
+            // "Italy" as a destination means the middle of the country; the
+            // trip's name ("Amalfi") is often the real place.
             var label = Self.shortName(place)
             if let country = spot?.country, country.caseInsensitiveCompare(Self.shortName(place)) == .orderedSame,
                let byName = await Places.lookup(trip.name), byName.country == country {

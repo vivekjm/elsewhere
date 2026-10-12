@@ -24,7 +24,7 @@ struct DraftDay: Identifiable, Hashable {
     var id = UUID()
     var title: String
     var stops: [String]
-    /// Where the day happens ("Munnar"), shown under each plan.
+    /// Where the day happens ("Belém"), shown under each plan.
     var area: String?
 }
 
@@ -69,7 +69,7 @@ enum TripDrafter {
         }
         var draft = TemplateDrafter.draft(prompt: prompt, refinements: refinements, profile: profile)
         // A place the destination list doesn't know: confirm it with Apple
-        // Maps and add the country ("Shimla" → "Shimla, India").
+        // Maps and add the country ("Bruges" → "Bruges, Belgium").
         if !draft.place.contains(","), draft.place != "Somewhere new",
            let found = await Places.lookup(draft.place), let country = found.country {
             draft.place = "\(draft.place), \(country)"
@@ -174,8 +174,7 @@ enum TemplateDrafter {
             case .climb: 180
             }
             let code = CurrencyService.code(for: facts.currency) ?? "EUR"
-            // Travelling within India costs far less than the euro guide suggests.
-            perDay = code == "INR" && (destination?.currency ?? "₹") == "₹" ? 3_500 : euros * fallbackRate(code)
+            perDay = euros * fallbackRate(code)
         }
         switch profile.budgetStyle.lowercased() {
         case let style where style.contains("budget") || style.contains("backpack"): perDay *= 0.6

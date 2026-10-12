@@ -321,7 +321,7 @@ struct TripEditSheet: View {
         for i in draft.expenses.indices where (draft.expenses[i].day ?? 0) > last {
             draft.expenses[i].day = nil
         }
-        // "5 days in Kerala" follows the new length; names people typed stay.
+        // "5 days in Lisbon" follows the new length; names people typed stay.
         if draft.dayCount != trip.dayCount, draft.name == trip.name,
            let match = trip.name.firstMatch(of: /^(\d+) days in (.+)$/), Int(match.1) == trip.dayCount {
             draft.name = draft.dayCount >= 7 && trip.dayCount < 7 ? "A week in \(match.2)" : "\(draft.dayCount) days in \(match.2)"

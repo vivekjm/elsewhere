@@ -21,7 +21,7 @@ enum TripExports {
     }
 
     /// A temporary file people will see by name when they share or save it
-    /// ("Goa with friends.ics"); its own folder keeps the name unique.
+    /// ("Amalfi with friends.ics"); its own folder keeps the name unique.
     static func exportURL(named name: String, ext: String) throws -> URL {
         let folder = URL.temporaryDirectory.appending(path: "export-\(UUID().uuidString)", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

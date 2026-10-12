@@ -3,7 +3,7 @@ import Foundation
 import MapKit
 
 /// Place names → coordinates and country, via Apple Maps. Understands
-/// regions and states ("Kerala", "Sikkim") as well as towns, and prefers
+/// regions and states ("Tuscany", "Bavaria") as well as towns, and prefers
 /// the phone's country when a name is ambiguous. Results are cached on disk.
 @MainActor
 enum Places {
@@ -50,7 +50,7 @@ enum Places {
         guard let request = MKGeocodingRequest(addressString: name),
               let items = try? await request.mapItems, !items.isEmpty
         else { return nil }
-        // Ambiguous names ("Kerala", "Georgia"): prefer a match in the phone's country.
+        // Ambiguous names ("Georgia", "Victoria"): prefer a match in the phone's country.
         let home = Locale.current.region?.identifier
         let item = items.first { $0.addressRepresentations?.region?.identifier == home } ?? items[0]
         let coordinate = item.location.coordinate

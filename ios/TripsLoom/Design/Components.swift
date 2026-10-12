@@ -14,8 +14,8 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(text)
-            .font(.sf(12, .semibold))
-            .tracking(0.6)
+            .font(.sf(11.5, .semibold))
+            .tracking(1.4)
             .textCase(.uppercase)
             .foregroundStyle(color)
             .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
@@ -32,8 +32,9 @@ struct MonoAmount: View {
     var body: some View {
         // Rendered a little under the design size: big mono numbers read
         // heavier than their point size suggests.
+        // Large totals are set in the display serif; smaller ones stay in SF.
         Text("\(Text(whole))\(Text(fraction).foregroundStyle(Color.textFaint))")
-            .font(.mono(size * 0.82, weight))
+            .font(size >= 28 ? .display(size * 0.9, weight) : .mono(size * 0.82, weight))
             .foregroundStyle(.white)
             .lineLimit(1)
             .minimumScaleFactor(0.6)
@@ -298,8 +299,9 @@ struct IconTile: View {
             .font(.system(size: size.glyph, weight: .semibold))
             .foregroundStyle(.white)
             .frame(width: size.side, height: size.side)
-            .background(shape.fill(color))
-            .overlay(TopHighlight(shape: shape, opacity: 0.22))
+            // A quiet tint of the category colour, not a solid block.
+            .background(shape.fill(color.opacity(0.26)))
+            .overlay(shape.strokeBorder(Color.white.opacity(0.06), lineWidth: 1))
             // Decorative: the row's text says what it is.
             .accessibilityHidden(true)
     }
@@ -386,7 +388,7 @@ struct GlassList<Trailing: View, Content: View>: View {
         VStack(alignment: .leading, spacing: 0) {
             if let title {
                 HStack {
-                    Text(title).font(.sf(17, .semibold)).foregroundStyle(.white)
+                    Text(title).font(.display(19)).foregroundStyle(.white)
                     Spacer(minLength: 8)
                     trailing
                 }
@@ -752,11 +754,12 @@ struct EmptyNote: View {
     var title: String
     var message: String
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(.sf(17, .semibold)).foregroundStyle(.white)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.display(22)).foregroundStyle(.white)
             Text(message).font(.sf(14)).foregroundStyle(Color.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .glassCard()
+        .glassCard(padding: 18)
     }
 }
 

@@ -149,7 +149,7 @@ struct TripsHomeView: View {
 
             cardsLayout {
                 StatCard(title: "Trip days") {
-                    Chip("\(store.upcoming.count) \(store.upcoming.count == 1 ? "trip" : "trips")", tone: .tint(.mint))
+                    Chip("\(store.upcoming.count) \(store.upcoming.count == 1 ? "trip" : "trips")", tone: .tint(.lime))
                         .padding(.top, 8)
                     MonoAmount(whole: "\(store.upcoming.reduce(0) { $0 + $1.dayCount })", fraction: " days", size: 30)
                         .padding(.top, 6)
@@ -202,7 +202,7 @@ struct TripsHomeView: View {
                 }
             }
         } else {
-            EmptyNote(title: "No trips yet", message: "Create your first trip.")
+            EmptyNote(title: "Your first trip starts here.", message: "Add one you've booked, or describe one and let the planner draft the days, stays and packing.")
             actionsLayout {
                 Button("Plan with AI") { router.plan(from: "plan-ai") }.buttonStyle(CTAStyle(kind: .glass)).zoomSource("plan-ai", radius: 28)
                 Button("New trip") { router.startNewTrip(from: "new-trip") }.buttonStyle(CTAStyle()).zoomSource("new-trip", radius: 28)
@@ -263,7 +263,7 @@ struct FeaturedTripCard: View {
                         if typeSize.isAccessibilitySize {
                             WordFittingTitle(text: trip.name, size: 20).lineLimit(4)
                         } else {
-                            Text(trip.name).font(.sf(20, .bold)).lineLimit(1)
+                            Text(trip.name).font(.display(24)).lineLimit(1)
                         }
                     }
                         .foregroundStyle(.white)

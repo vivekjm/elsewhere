@@ -114,8 +114,8 @@ struct PromptFacts {
     }
 
     /// "monaster" matches "monastery" but "art" doesn't match "party".
-    /// A place name as a whole word ("Goa", "Goa's"), not inside another
-    /// word ("goals", "lehenga").
+    /// A place name as a whole word ("Bath", "Bath's"), not inside another
+    /// word ("bathroom").
     static func namesPlace(_ text: String, _ name: String) -> Bool {
         text.range(of: "\\b" + NSRegularExpression.escapedPattern(for: name) + "(?:'s|s)?\\b", options: .regularExpression) != nil
     }
@@ -149,24 +149,22 @@ struct PromptFacts {
     // MARK: Money
 
     static func currency(in text: String) -> String {
-        if text.contains("₹") || text.contains("rupee") || text.range(of: #"\b(rs\.?|inr|lakh|lakhs)\b"#, options: .regularExpression) != nil { return "₹" }
         if text.contains("€") || text.contains("euro") { return "€" }
         if text.contains("£") || text.contains("pound") || text.contains("gbp") { return "£" }
         if text.contains("$") || text.contains("dollar") || text.contains("usd") { return "$" }
         return CurrencyService.symbol(for: CurrencyService.home)
     }
 
-    /// "budget 60000", "under ₹1.2L", "for $2k", "60k rupees".
+    /// "budget 6000", "under €1.2k", "for $2k", "3k euros".
     static func budget(in text: String) -> Double? {
-        let pattern = /(?:budget(?:\s+of)?|under|within|max|upto|up to|around|about|for)?\s*(?:₹|rs\.?|inr|\$|€|£)?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|l|lakh|lakhs|lac)?\s*(?:rupees|rs|inr|dollars|euros|pounds|usd|eur)?/
+        let pattern = /(?:budget(?:\s+of)?|under|within|max|upto|up to|around|about|for)?\s*(?:\$|€|£)?\s*(\d[\d,]*(?:\.\d+)?)\s*(k)?\s*(?:dollars|euros|pounds|usd|eur|gbp)?/
         for match in text.matches(of: pattern) {
             let whole = String(text[match.range]).trimmingCharacters(in: .whitespaces)
-            let hasMoneyWord = ["budget", "under", "within", "₹", "rs", "inr", "$", "€", "£", "rupee", "dollar", "euro", "pound", "lakh", "lac"].contains { whole.contains($0) }
+            let hasMoneyWord = ["budget", "under", "within", "$", "€", "£", "dollar", "euro", "pound"].contains { whole.contains($0) }
                 || match.2 != nil
             guard hasMoneyWord, var value = Double(match.1.replacingOccurrences(of: ",", with: "")) else { continue }
             switch match.2.map(String.init) {
             case "k": value *= 1_000
-            case "l", "lakh", "lakhs", "lac": value *= 100_000
             default: break
             }
             // "5 days" and similar never reach here; still skip tiny numbers.

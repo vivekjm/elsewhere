@@ -509,6 +509,17 @@ private struct EmailSignInSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(mode == .reset ? "Reset password" : mode == .create ? "New account" : "Welcome back").eyebrow(.lime)
+                        Text(mode == .reset ? "We'll send a link to set a new one." : mode == .create ? "Your trips, on every device." : "Pick up where you left off.")
+                            .font(.display(28))
+                            .foregroundStyle(.white)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.horizontal, 4)
+                    .padding(.top, 4)
+                    .padding(.bottom, 6)
+                    .animation(Motion.snappy, value: mode)
                     PillSegmented(options: [(.signIn, "Sign in"), (.create, "Create account")], selection: $mode)
                         .opacity(mode == .reset ? 0.4 : 1)
 

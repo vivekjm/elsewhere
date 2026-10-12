@@ -58,7 +58,9 @@ extension View {
 
 // MARK: Backgrounds
 
-/// Every screen sits on the trip photo, blurred 40px, under a dark overlay.
+/// Every screen sits on the brand's deep ink, with a faint glow in the trip
+/// photo's own colour so each trip keeps a hint of its place, and fine loom
+/// threads near the top. Still, so the many copies a screen draws stay cheap.
 struct PhotoBackdrop: View {
     var photo: Photo
     var top: Double = 0.5
@@ -66,22 +68,47 @@ struct PhotoBackdrop: View {
 
     var body: some View {
         ZStack {
-            Color(hex: 0x1A1E24)
-            Color.clear
-                .overlay {
-                    RemotePhoto(photo: photo, width: 600)
-                        .blur(radius: 40, opaque: true)
-                        .saturation(1.3)
-                        .scaleEffect(1.15)
-                }
-                .clipped()
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.45], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1],
+            ], colors: [
+                Color(hex: 0x11182A), Color(hex: 0x0B0E12), Color(hex: 0x1A1A2C),
+                Color(hex: 0x0E1621), Color(hex: 0x171E30), Color(hex: 0x0B0E12),
+                Color(hex: 0x0B0E12), Color(hex: 0x16140F), Color(hex: 0x0B0E12),
+            ])
+            RadialGradient(colors: [photo.fallback[0].opacity(0.28), .clear], center: .init(x: 0.8, y: 0.05), startRadius: 0, endRadius: 420)
+            StillThreads()
             LinearGradient(
-                colors: [Color(hex: 0x080A0E, opacity: top), Color(hex: 0x080A0E, opacity: bottom)],
+                colors: [Color(hex: 0x06080B, opacity: max(0, top - 0.35)), Color(hex: 0x06080B, opacity: max(0, bottom - 0.3))],
                 startPoint: .top,
                 endPoint: .bottom
             )
         }
         .ignoresSafeArea()
+    }
+}
+
+/// The loom threads of the welcome screen, at rest and barely there.
+private struct StillThreads: View {
+    var body: some View {
+        Canvas { context, size in
+            for i in 0..<5 {
+                let f = Double(i) / 4
+                let baseY = size.height * (0.08 + 0.3 * f)
+                let amp = 14 + 22 * sin(f * .pi)
+                var path = Path()
+                path.move(to: CGPoint(x: -4, y: baseY))
+                for step in 1...24 {
+                    let x = size.width * Double(step) / 24
+                    let y = baseY + amp * sin(x / size.width * 2.2 * .pi + f * 2.4) + 8 * sin(x / size.width * 5.1 * .pi - f)
+                    path.addLine(to: CGPoint(x: x, y: y))
+                }
+                context.stroke(path, with: .color(i == 2 ? Color.lime.opacity(0.12) : .white.opacity(0.04)), lineWidth: 1)
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 

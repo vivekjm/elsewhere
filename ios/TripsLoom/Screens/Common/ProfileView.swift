@@ -50,8 +50,8 @@ struct ProfileView: View {
                         editingName = true
                     } label: {
                         Text(store.profile.name.isEmpty ? "Add your name" : store.profile.name)
-                            .font(.sf(28, .bold))
-                            .tracking(-0.56)
+                            .font(.display(30))
+                            .tracking(-0.4)
                             .foregroundStyle(store.profile.name.isEmpty ? Color.textMuted : .white)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)

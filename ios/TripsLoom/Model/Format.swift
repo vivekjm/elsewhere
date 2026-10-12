@@ -74,7 +74,7 @@ enum Fmt {
 
     /// Strict localised amount input. Never interpret commas as decimal points
     /// in one place and thousands separators in another, or accept a prefix of
-    /// malformed input. Also supports the Indian 12,34,567 grouping pattern.
+    /// malformed input, including uncommon digit-grouping patterns.
     static func parseAmount(_ text: String, locale: Locale = .autoupdatingCurrent) -> Double? {
         let f = NumberFormatter()
         f.locale = locale; f.numberStyle = .decimal

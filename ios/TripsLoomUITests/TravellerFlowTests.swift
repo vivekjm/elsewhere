@@ -51,7 +51,7 @@ nonisolated final class TravellerFlowTests: XCTestCase {
         let name = app.textFields["Trip name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5)); name.tap(); name.typeText("QA mountain escape")
         let place = app.textFields["Destination"]
-        place.tap(); place.typeText("Sikkim")
+        place.tap(); place.typeText("Chamonix")
         app.buttons["Create trip"].tap()
         XCTAssertTrue(app.staticTexts["QA mountain escape"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.staticTexts["These are sample trips"].exists)

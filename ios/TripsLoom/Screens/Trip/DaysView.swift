@@ -131,7 +131,7 @@ struct DaysView: View {
     }
 }
 
-/// "☁ Partly cloudy · 18° / 11° · 60% rain · Gangtok"
+/// "☁ Partly cloudy · 18° / 11° · 60% rain · Lisbon"
 struct DayWeatherRow: View {
     var weather: WeatherService.Day
     @Environment(\.dynamicTypeSize) private var typeSize

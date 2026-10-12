@@ -24,7 +24,7 @@ struct GlobalShell: View {
                 NavigationStack { SearchView(tripID: nil) }
             }
         }
-        .tint(.white)
+        .tint(.lime)
         .tabBarMinimizeBehavior(.onScrollDown)
     }
 }
@@ -53,7 +53,7 @@ struct TripShell: View {
                     NavigationStack { SearchView(tripID: tripID) }
                 }
             }
-            .tint(.white)
+            .tint(.lime)
             .tripCover(trip.wrappedValue)
             .tabBarMinimizeBehavior(.onScrollDown)
             .environment(\.selectTripTab, selectAction)

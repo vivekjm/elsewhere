@@ -901,18 +901,6 @@
         }
       }
     },
-    "Add to a trip": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add to a trip"
-          }
-        }
-      }
-    },
     "Add to my trips": {
       "extractionState": "manual",
       "comment": "",
@@ -1249,18 +1237,6 @@
         }
       }
     },
-    "Book · $%lld/day": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Book · $%lld/day"
-          }
-        }
-      }
-    },
     "Booking codes, reminders": {
       "extractionState": "manual",
       "comment": "",
@@ -1281,18 +1257,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Both are optional and stay with your account."
-          }
-        }
-      }
-    },
-    "Both are optional, and stay with your account.": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Both are optional, and stay with your account."
           }
         }
       }
@@ -1389,18 +1353,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cancel"
-          }
-        }
-      }
-    },
-    "Cancel booking": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel booking"
           }
         }
       }
@@ -1573,18 +1525,6 @@
         }
       }
     },
-    "City breaks, coasts and summits. Plans, outfits, gear and safety in one place.": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "City breaks, coasts and summits. Plans, outfits, gear and safety in one place."
-          }
-        }
-      }
-    },
     "City or airport": {
       "extractionState": "manual",
       "comment": "",
@@ -1749,18 +1689,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cover"
-          }
-        }
-      }
-    },
-    "Cover %@": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cover %@"
           }
         }
       }
@@ -2689,30 +2617,6 @@
         }
       }
     },
-    "Estimated from the lunar cycle · check local tide tables before diving": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estimated from the lunar cycle · check local tide tables before diving"
-          }
-        }
-      }
-    },
-    "Every trip,\nwoven together.": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Every trip,\nwoven together."
-          }
-        }
-      }
-    },
     "Every trip, plan, packing list and wardrobe piece is removed from your account, here and on tripsloom.com.": {
       "extractionState": "manual",
       "comment": "",
@@ -2829,18 +2733,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Files aren't synced. Exported backups include your documents; keep those copies private."
-          }
-        }
-      }
-    },
-    "Files never leave this iPhone and aren't synced.": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Files never leave this iPhone and aren't synced."
           }
         }
       }
@@ -2997,6 +2889,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Go unlimited"
+          }
+        }
+      }
+    },
+    "Goal: %lld km": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal: %lld km"
           }
         }
       }
@@ -3237,18 +3141,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "It comes out of your wardrobe, outfits and packing lists."
-          }
-        }
-      }
-    },
-    "It's added to the first day as a plan with its price in the budget.": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "It's added to the first day as a plan with its price in the budget."
           }
         }
       }
@@ -3661,6 +3553,18 @@
         }
       }
     },
+    "New account": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New account"
+          }
+        }
+      }
+    },
     "New password": {
       "extractionState": "manual",
       "comment": "",
@@ -3897,6 +3801,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Note, e.g. 2 pairs"
+          }
+        }
+      }
+    },
+    "Note, e.g. rent in Chamonix": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note, e.g. rent in Chamonix"
           }
         }
       }
@@ -4285,18 +4201,6 @@
         }
       }
     },
-    "Paste or scan a booking confirmation and it's filed to the right day of %@.": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Paste or scan a booking confirmation and it's filed to the right day of %@."
-          }
-        }
-      }
-    },
     "Paste, scan or choose a booking confirmation and it's filed to the right day of %@.": {
       "extractionState": "manual",
       "comment": "",
@@ -4413,6 +4317,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pick the pieces yourself in Wardrobe, or let the stylist choose from what you own."
+          }
+        }
+      }
+    },
+    "Pick up where you left off.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick up where you left off."
           }
         }
       }
@@ -4569,18 +4485,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Porters on Himalayan and Andean treks usually carry 15–20 kg each; a pack you carry yourself is often 8–12 kg."
-          }
-        }
-      }
-    },
-    "Prices are guides. Booking links arrive with partner integrations.": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prices are guides. Booking links arrive with partner integrations."
           }
         }
       }
@@ -4965,18 +4869,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Route map"
-          }
-        }
-      }
-    },
-    "Route map, %lld percent complete": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Route map, %lld percent complete"
           }
         }
       }
@@ -5493,18 +5385,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sign in"
-          }
-        }
-      }
-    },
-    "Sign in from Profile to send feedback.": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sign in from Profile to send feedback."
           }
         }
       }
@@ -6541,6 +6421,18 @@
         }
       }
     },
+    "We'll send a link to set a new one.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll send a link to set a new one."
+          }
+        }
+      }
+    },
     "Website": {
       "extractionState": "manual",
       "comment": "",
@@ -6561,6 +6453,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Weekend in Lisbon"
+          }
+        }
+      }
+    },
+    "Welcome back": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome back"
           }
         }
       }
@@ -6817,14 +6721,14 @@
         }
       }
     },
-    "Your trips stay on this iPhone.": {
+    "Your trips, on every device.": {
       "extractionState": "manual",
       "comment": "",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your trips stay on this iPhone."
+            "value": "Your trips, on every device."
           }
         }
       }
@@ -6933,18 +6837,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "● %@ %@"
-          }
-        }
-      }
-    },
-    "★ %@ · %lld treks · licensed": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "★ %@ · %lld treks · licensed"
           }
         }
       }

@@ -345,7 +345,7 @@ final class TripStore {
     // MARK: Profile stats
 
     /// Countries of trips you've been on, from the geocoded place (so
-    /// "Kodagu, Karnataka" counts as India, not "Karnataka").
+    /// "Bruges, Flanders" counts as Belgium, not "Flanders").
     @MainActor
     var countriesVisited: Int {
         Set(trips.filter { $0.status == .past || $0.status == .active }.compactMap { trip in

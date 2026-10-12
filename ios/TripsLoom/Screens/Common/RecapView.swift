@@ -131,7 +131,7 @@ struct RecapStat: View {
     var label: String
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(value).font(.mono(22, .semibold)).foregroundStyle(.white).lineLimit(1).minimumScaleFactor(0.7)
+            Text(value).font(.display(24)).foregroundStyle(.white).lineLimit(1).minimumScaleFactor(0.7)
             Text(label).font(.sf(13)).foregroundStyle(Color.textMuted)
         }
         .glassCard(padding: 14)

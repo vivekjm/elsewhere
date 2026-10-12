@@ -184,7 +184,7 @@ struct GearEditor: View {
                 }
                 Section {
                     NumberRow("Rent per day (\(trip.currency))", value: rentRate, decimals: false)
-                    TextField("Note, e.g. rent in Yuksom", text: $item.note)
+                    TextField("Note, e.g. rent in Chamonix", text: $item.note)
                 } footer: {
                     Text("Rented gear counts toward the trip budget for every day of the trip.")
                 }
