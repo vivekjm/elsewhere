@@ -41,6 +41,11 @@ struct HelpView: View {
                             try await FeedbackAPI.send(kind: kind, message: message)
                             message = ""
                             result = "Your feedback was received. Thank you for helping improve Trips Loom."
+                        } catch let error as BackendError where error.message == BackendError.offline.message {
+                            // Offline: keep it and send with the next sync.
+                            FeedbackAPI.queue(kind: kind, message: message)
+                            message = ""
+                            result = "You're offline. Your feedback is saved on this iPhone and sent when you're back online."
                         } catch { result = error.localizedDescription }
                     }
                 }

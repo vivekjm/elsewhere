@@ -285,6 +285,7 @@ final class SyncEngine {
         }
         var trips: [Trip] = []
         var localTripIDs = Set<UUID>()
+        var arrivedWithoutZone: [UUID] = []
         for trip in imported.trips {
             let id = key(trip.id)
             if let local = localTrips[id] {
@@ -304,6 +305,7 @@ final class SyncEngine {
                 }
             } else if !state.syncedTrips.contains(id) {
                 trips.append(trip)          // new elsewhere
+                if trip.timeZoneID == nil { arrivedWithoutZone.append(trip.id) }
             }                               // else: deleted on this phone
         }
         for (id, trip) in localTrips where !remoteTrips.contains(id) {
@@ -369,6 +371,8 @@ final class SyncEngine {
         store.wardrobe = wardrobe
         applyingRemote = false
         if let open = store.openTripID, store.trip(open) == nil { store.openTripID = nil }
+        // Trips made on the website have dates but no time zone; find the destination's.
+        for id in arrivedWithoutZone { store.adoptDestinationTimeZone(id) }
 
         state.base = try JSONSerialization.data(withJSONObject: workspace)
         state.revision = revision
