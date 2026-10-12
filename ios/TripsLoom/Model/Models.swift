@@ -315,6 +315,13 @@ extension Trip {
             .sorted { abs($0.amount) != abs($1.amount) ? abs($0.amount) > abs($1.amount) : $0.person < $1.person }
     }
 
+    /// Whether someone paid for, shares or settled any cost on this trip.
+    func hasSharedCosts(with person: String) -> Bool {
+        expenses.contains { $0.paidBy == person || $0.splitWith?.contains(person) == true }
+            || balances.contains { $0.person == person && !$0.settled }
+            || (settlements ?? []).contains { $0.person == person }
+    }
+
     /// Whether anything on this trip is shared at all.
     var hasSplits: Bool { expenses.contains { $0.splitWith?.isEmpty == false } || !balances.isEmpty }
 

@@ -125,6 +125,7 @@ struct TripEditSheet: View {
     @State private var draft: Trip
     @State private var confirmShorten = false
     @State private var convertAmounts = true
+    @State private var keepPerson: String?
     @State private var newPerson = ""
     @FocusState private var personFocused: Bool
     @State private var coverItem: PhotosPickerItem?
@@ -138,7 +139,7 @@ struct TripEditSheet: View {
         guard !name.isEmpty, name != Trip.me, !draft.companions.contains(where: { $0.name == name }) else { return }
         let palette: [UInt32] = [0xC77A12, 0x2E8B4A, 0x7A2FA0, 0x127C8C, 0xC0392B, 0x4636E8, 0x8A6A3E]
         draft.companions.append(Person(name: name, color: palette[draft.companions.count % palette.count]))
-        draft.travellers = max(draft.travellers, draft.companions.count + 1)
+        draft.travellers = min(max(draft.travellers, draft.companions.count + 1), 20)
         newPerson = ""
     }
 
@@ -174,7 +175,8 @@ struct TripEditSheet: View {
                     DatePicker("Starts", selection: $draft.start, displayedComponents: .date).environment(\.timeZone, draft.timeZone)
                     Button("Time zone: \(draft.timeZoneID ?? TimeZone.current.identifier)") { choosingTimeZone = true }
                     Stepper("\(draft.dayCount) days", value: $draft.dayCount, in: 1...60)
-                    Stepper("\(draft.travellers) \(draft.travellers == 1 ? "traveller" : "travellers")", value: $draft.travellers, in: 1...20)
+                    // At least everyone named on the trip, you included.
+                    Stepper("\(draft.travellers) \(draft.travellers == 1 ? "traveller" : "travellers")", value: $draft.travellers, in: min(draft.companions.count + 1, 20)...20)
                 }
                 Section {
                     ForEach(draft.companions) { person in
@@ -183,7 +185,13 @@ struct TripEditSheet: View {
                             Text(person.name)
                         }
                     }
-                    .onDelete { draft.companions.remove(atOffsets: $0) }
+                    .onDelete { offsets in
+                        // Removing someone who still shares costs would quietly change
+                        // everyone's split; ask for those expenses to be changed first.
+                        let blocked = offsets.map { draft.companions[$0].name }.filter { draft.hasSharedCosts(with: $0) }
+                        if let name = blocked.first { keepPerson = name; return }
+                        draft.companions.remove(atOffsets: offsets)
+                    }
                     HStack {
                         TextField("Add someone by name", text: $newPerson)
                             .focused($personFocused)
@@ -284,6 +292,11 @@ struct TripEditSheet: View {
                 }
                 coverItem = nil
             }
+        }
+        .alert("\(keepPerson ?? "") shares costs on this trip", isPresented: Binding(get: { keepPerson != nil }, set: { if !$0 { keepPerson = nil } })) {
+            Button("OK") { keepPerson = nil }
+        } message: {
+            Text("Change or delete the expenses they paid for or share, and settle up in Shared, before removing them.")
         }
         .sheet(isPresented: $choosingTimeZone) {
             TimeZonePicker(identifier: Binding(get: { draft.timeZoneID ?? TimeZone.current.identifier }, set: { draft.setTimeZone($0) }))

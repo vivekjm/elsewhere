@@ -466,3 +466,16 @@ nonisolated final class PermitFeeRegressionTests: XCTestCase {
         XCTAssertEqual(back.trips.first?.permitFees, 5_000)
     }
 }
+
+/// People who paid for, share or settled costs are kept on the trip.
+nonisolated final class SharedCostPersonRegressionTests: XCTestCase {
+    @MainActor func testPeopleWithCostsAreDetected() {
+        var trip = Trip(name: "Paris", place: "Paris", kind: .city, start: .now, dayCount: 2, photo: .lisbon)
+        trip.companions = [Person(name: "Alex", color: 0), Person(name: "Zoë", color: 0), Person(name: "Sam", color: 0)]
+        trip.expenses = [Expense(title: "Dinner", category: .food, amount: 60, paidBy: "Alex", splitWith: [Trip.me, "Alex"])]
+        trip.settlements = [Settlement(person: "Zoë", amount: 10)]
+        XCTAssertTrue(trip.hasSharedCosts(with: "Alex"))
+        XCTAssertTrue(trip.hasSharedCosts(with: "Zoë"))
+        XCTAssertFalse(trip.hasSharedCosts(with: "Sam"))
+    }
+}

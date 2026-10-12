@@ -59,7 +59,8 @@ nonisolated final class PowerUserRecoveryFlowTests: PowerUserScenarioCase {
         tap(app, app.buttons.matching(NSPredicate(format: "label CONTAINS 'QA museum ticket'")).firstMatch)
         // iOS 26 Quick Look opens photos full screen with its controls hidden; a tap shows them.
         let close = app.buttons["QLOverlayDoneButtonAccessibilityIdentifier"]
-        if !close.waitForExistence(timeout: 3) { app.tap() }
+        // The first tap can land while the viewer is still opening; try again.
+        for _ in 0..<3 where !close.waitForExistence(timeout: 3) { app.tap() }
         XCTAssertTrue(close.waitForExistence(timeout: 8))
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'QA museum ticket'")).firstMatch.waitForExistence(timeout: 5),
                       "The viewer is titled with the document's name: \(app.buttons.allElementsBoundByIndex.prefix(4).map(\.label))")
