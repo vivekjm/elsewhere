@@ -156,7 +156,9 @@ nonisolated final class PowerUserCityFlowTests: PowerUserScenarioCase {
         }
         shot(app, "04-wardrobe-with-photo")
         tap(app, app.buttons["AI stylist"])
-        tap(app, app.buttons["Build a capsule for me"])
+        // The persistent QA workspace may already hold a capsule from an earlier run.
+        let build = app.buttons["Build a capsule for me"]
+        if build.waitForExistence(timeout: 3) { tap(app, build) }
         tap(app, app.buttons["Restyle"])
         shot(app, "05-generated-capsule-outfits")
         app.navigationBars.buttons.firstMatch.tap()

@@ -8,7 +8,7 @@ struct PromptFacts {
     var start: Date?
     var travellers: Int?
     var budget: Double?
-    /// Symbol, e.g. "₹". From the prompt, else the phone's currency.
+    /// Symbol, e.g. "€". From the prompt, else the phone's currency.
     var currency: String
     var interests: [String]
 

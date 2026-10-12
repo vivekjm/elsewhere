@@ -107,6 +107,8 @@ Start the native local backend in a separate terminal:
 
 Use a dedicated QA simulator; never erase the user's simulator or run the destructive test backend against production:
 
+Run the unit tests on a different simulator from the scenario suite: they execute inside the app's container and rewrite the cover-photo folder, which leaves the persistent QA workspace pointing at missing files. The scenario classes depend on each other (City creates the Paris trip; Edge sets its cover), so run them one class at a time in order: City, Adventure, Account, Booking, BackupExport, Edge, Preferences, Purchase, then the accessibility audits.
+
 ```sh
 xcodebuild test -project ios/TripsLoom.xcodeproj -scheme TripsLoom \
   -destination 'platform=iOS Simulator,name=Trips Loom Product QA' \

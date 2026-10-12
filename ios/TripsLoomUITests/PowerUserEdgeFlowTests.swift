@@ -38,12 +38,15 @@ nonisolated final class PowerUserEdgeFlowTests: PowerUserScenarioCase {
         shot(app, "42-valid-decimal-plan-after-rejected-values")
         tap(app, app.buttons["Save"])
         let plan = app.staticTexts["Montmartre sunset walk"].firstMatch
-        XCTAssertTrue(plan.waitForExistence(timeout: 5)); plan.press(forDuration: 1.2)
+        XCTAssertTrue(plan.waitForExistence(timeout: 5))
+        // Relative counts: a rerun on the persistent QA workspace starts with one already there.
+        let before = app.staticTexts.matching(identifier: "Montmartre sunset walk").count
+        plan.press(forDuration: 1.2)
         tap(app, app.buttons["Duplicate"].firstMatch)
-        XCTAssertEqual(app.staticTexts.matching(identifier: "Montmartre sunset walk").count, 2)
+        XCTAssertEqual(app.staticTexts.matching(identifier: "Montmartre sunset walk").count, before + 1)
         app.staticTexts["Montmartre sunset walk"].firstMatch.press(forDuration: 1.2)
         tap(app, app.buttons["Delete"].firstMatch)
-        XCTAssertEqual(app.staticTexts.matching(identifier: "Montmartre sunset walk").count, 1)
+        XCTAssertEqual(app.staticTexts.matching(identifier: "Montmartre sunset walk").count, before)
         shot(app, "43-context-plan-duplicate-and-delete")
         tab(app, "Packing")
         tap(app, app.buttons["Add item"])
