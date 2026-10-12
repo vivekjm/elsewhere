@@ -24,7 +24,7 @@ struct RecapView: View {
                 ListRow(trip.stayName ?? "Your stay", meta: "Your stay") {
                     PhotoThumb(photo: trip.photo).tripCover(trip)
                 } trailing: {
-                    StarRating(rating: Binding(get: { trip.stayRating ?? 0 }, set: { trip.stayRating = $0 }))
+                    StarRating(rating: Binding(get: { trip.stayRating ?? 0 }, set: { trip.stayRating = $0 == 0 ? nil : $0 }))
                 }
             }
         }
@@ -145,12 +145,16 @@ struct StarRating: View {
         HStack(spacing: 2) {
             ForEach(1...5, id: \.self) { star in
                 Button {
-                    withAnimation(Motion.quick) { rating = star }
+                    // Tapping the current rating again clears it.
+                    withAnimation(Motion.quick) { rating = rating == star ? 0 : star }
                 } label: {
                     Image(systemName: "star")
                         .symbolVariant(star <= rating ? .fill : .none)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(star <= rating ? Color.lime : Color.white.opacity(0.3))
+                        // A 44 pt tall target that shares the row's width.
+                        .frame(minWidth: 22, minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }

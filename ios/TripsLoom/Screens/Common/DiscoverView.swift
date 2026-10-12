@@ -264,8 +264,10 @@ struct DiscoverView: View {
         } else {
             cost *= Double(max(trip.travellers, 1))
         }
+        // A plan on a day the trip doesn't have would never show anywhere.
+        let day = min(max(day, 0), max(trip.dayCount - 1, 0))
         store.update(trip.id) { t in
-            t.plans.append(Plan(day: day, time: time, title: idea.title, meta: meta, category: idea.category, cost: cost, addedAt: .now))
+            t.plans.append(Plan(day: day, time: time, title: idea.title, meta: meta, category: idea.category, cost: Fmt.roundedCurrency(cost, t.currency), addedAt: .now))
         }
         toast("Added \(idea.title) to day \(day + 1) of \(trip.name).")
     }

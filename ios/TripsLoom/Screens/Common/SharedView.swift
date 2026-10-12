@@ -219,9 +219,9 @@ struct PollEditor: View {
         _options = State(initialValue: poll?.options ?? [PollOption(title: "", votes: 0), PollOption(title: "", votes: 0)])
     }
 
-    private var filled: [PollOption] {
-        options.filter { !$0.title.trimmingCharacters(in: .whitespaces).isEmpty }
-    }
+    /// Options with text, each choice once: "Le Comptoir" and "le comptoir "
+    /// would otherwise split the vote between two copies.
+    private var filled: [PollOption] { Poll.distinctOptions(options) }
 
     var body: some View {
         NavigationStack {
@@ -269,7 +269,7 @@ struct PollEditor: View {
                         save(result)
                         dismiss()
                     }
-                    .disabled(question.trimmingCharacters(in: .whitespaces).isEmpty || filled.count < 2)
+                    .disabled(question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || filled.count < 2)
                 }
             }
         }

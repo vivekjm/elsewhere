@@ -51,6 +51,7 @@ final class TripStore {
     /// Where to land when a trip opens from a deep link (search, home cards).
     @ObservationIgnored var pendingTab: TripTab?
     @ObservationIgnored var pendingBudget = false
+    @ObservationIgnored var pendingDocuments = false
     /// The card the trip was opened from, for the zoom transition.
     @ObservationIgnored var openSource: String?
 
@@ -224,9 +225,10 @@ final class TripStore {
 
     /// Opens a trip's tab bar, optionally on a given tab or straight into
     /// its budget.
-    func open(_ id: UUID, tab: TripTab? = nil, budget: Bool = false, from source: String? = nil) {
+    func open(_ id: UUID, tab: TripTab? = nil, budget: Bool = false, documents: Bool = false, from source: String? = nil) {
         pendingTab = tab
         pendingBudget = budget
+        pendingDocuments = documents
         openSource = source
         openTripID = id
     }

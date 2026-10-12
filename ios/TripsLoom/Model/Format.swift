@@ -145,10 +145,14 @@ enum Fmt {
 
     /// "€1.2k" for tight spaces.
     static func moneyCompact(_ amount: Double, _ currency: String) -> String {
-        if amount >= 1000 {
-            return "\(currency)\(String(format: "%.1f", amount / 1000))k"
-        }
-        return moneyShort(amount, currency)
+        guard amount >= 1000 else { return moneyShort(amount, currency) }
+        // The currency's own symbol and placement ("$1.2k", "1.2k €"), never the stored code.
+        let f = currencyFormatter(currency)
+        f.maximumFractionDigits = 0
+        let symbol = f.currencySymbol ?? currency
+        let number = String(format: "%.1f", amount / 1000) + "k"
+        let sample = f.string(from: 1) ?? "\(symbol)1"
+        return sample.hasPrefix(symbol) || !sample.hasSuffix(symbol) ? "\(symbol)\(number)" : "\(number) \(symbol)"
     }
 
     /// "1 stage", "3 stages"

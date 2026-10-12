@@ -119,7 +119,7 @@ struct BudgetView: View {
             return PillBar(
                 id: day,
                 value: value,
-                label: value >= 1000 ? Fmt.moneyCompact(value, trip.currency) : "\(trip.currency) \(Int(value.rounded()))",
+                label: Fmt.moneyCompact(value, trip.currency),
                 badge: Fmt.weekdayLetter(trip.date(ofDay: day), timeZone: trip.timeZone),
                 style: isTop ? .highlight : .normal,
                 callout: isTop ? "\(place.isEmpty ? Fmt.weekday(trip.date(ofDay: day), timeZone: trip.timeZone) : place) · \(Fmt.moneyShort(value, trip.currency))" : nil
@@ -258,6 +258,15 @@ struct ExpenseEditor: View {
     @State private var pickedCategory = false
     private var existing: Expense?
 
+    /// Who shares the cost, or nil when nobody owes anyone: one person paying
+    /// for themselves. Paying for just one other person ("Alex paid for my
+    /// ticket") is still a debt.
+    static func splitGroup(_ split: Set<String>, paidBy: String, people: [String]) -> [String]? {
+        let group = people.filter(split.contains)
+        guard !group.isEmpty, group != [paidBy] else { return nil }
+        return group
+    }
+
     init(trip: Binding<Trip>, expense: Expense? = nil) {
         _trip = trip
         existing = expense
@@ -276,7 +285,7 @@ struct ExpenseEditor: View {
     /// Split notes are written by the editor; anything else (a booking
     /// reference from an import) is kept.
     private static func isSplitNote(_ meta: String) -> Bool {
-        meta.contains(" paid · split ") && meta.hasSuffix(" ways")
+        (meta.contains(" paid · split ") && meta.hasSuffix(" ways")) || meta.contains(" paid · for ")
     }
 
     var body: some View {
@@ -318,7 +327,7 @@ struct ExpenseEditor: View {
                     } header: {
                         Text("Split equally")
                     } footer: {
-                        Text(split.count <= 1 ? "Not split: it counts toward the trip budget only." : "Balances update in the Shared tab.")
+                        Text(Self.splitGroup(split, paidBy: paidBy, people: trip.people) == nil ? "Not split: it counts toward the trip budget only." : "Balances update in the Shared tab.")
                     }
                 } else if trip.travellers > 1 {
                     Section {
@@ -345,10 +354,11 @@ struct ExpenseEditor: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(existing == nil ? "Add" : "Save") {
                         let value = Fmt.parseAmount(amount) ?? 0
-                        let group = split.count > 1 ? trip.people.filter(split.contains) : nil
+                        let group = Self.splitGroup(split, paidBy: paidBy, people: trip.people)
                         var meta = existing.map { Self.isSplitNote($0.meta) ? "" : $0.meta } ?? ""
                         if let group {
-                            meta = "\(paidBy == Trip.me ? "You paid" : "\(paidBy) paid") · split \(group.count) ways"
+                            let payer = paidBy == Trip.me ? "You paid" : "\(paidBy) paid"
+                            meta = group.count == 1 ? "\(payer) · for \(group[0] == Trip.me ? "you" : group[0])" : "\(payer) · split \(group.count) ways"
                         }
                         var expense = Expense(title: title.trimmingCharacters(in: .whitespacesAndNewlines), meta: meta, category: category, amount: value, day: day, addedAt: .now,
                                               paidBy: paidBy == Trip.me ? nil : paidBy, splitWith: group)

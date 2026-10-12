@@ -17,15 +17,16 @@ enum Stylist {
         var lastYear = false
     }
 
+    /// Every day of the trip, for dressing each one; the strip shows the first week.
     @MainActor
-    static func weather(for trip: Trip) -> [DayWeather] {
-        estimate(for: trip).map { day in
+    static func weather(for trip: Trip, days limit: Int = 7) -> [DayWeather] {
+        estimate(for: trip, days: limit).map { day in
             guard let real = WeatherService.shared.day(trip, day.id) else { return day }
             return DayWeather(id: day.id, date: day.date, sky: real.sky, high: real.high, live: real.typical != true, lastYear: real.typical == true)
         }
     }
 
-    private static func estimate(for trip: Trip) -> [DayWeather] {
+    private static func estimate(for trip: Trip, days limit: Int) -> [DayWeather] {
         var generator = SeededGenerator(seed: trip.id.uuidString.utf8.reduce(UInt64(5381)) { ($0 &* 33) &+ UInt64($1) })
         let month = Calendar.current.component(.month, from: trip.start)
         let base: Int = switch trip.kind {
@@ -33,7 +34,7 @@ enum Stylist {
         case .trek, .climb, .camp: 8
         default: [3, 5, 6, 8, 3, 1].contains(month) ? 14 : (6...9).contains(month) ? 26 : 22
         }
-        return trip.dayIndices.prefix(7).map { day in
+        return trip.dayIndices.prefix(limit).map { day in
             let roll = Int.random(in: 0..<10, using: &generator)
             let sky: Sky = roll < 6 ? .sun : roll < 8 ? .cloud : .rain
             let high = base + Int.random(in: -3...3, using: &generator) - (sky == .rain ? 4 : 0)
@@ -49,7 +50,7 @@ enum Stylist {
         let dresses = capsule.filter { $0.category == .dresses }
         let shoes = capsule.filter { $0.category == .shoes }
         let layers = capsule.filter { $0.category == .layers }
-        let weather = weather(for: trip)
+        let weather = weather(for: trip, days: trip.dayCount)
 
         return trip.dayIndices.map { day in
             let i = day + shuffle

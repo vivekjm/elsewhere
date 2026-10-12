@@ -9,6 +9,7 @@ struct TripOverviewView: View {
     @Environment(\.selectTripTab) private var selectTab
     @Environment(TripStore.self) private var store
     @State private var showBudget = false
+    @State private var showDocuments = false
     @Environment(\.openURL) private var openURL
     @State private var segment: Segment = .overview
     /// The section on screen. Follows `segment` without animation, so the pill
@@ -67,10 +68,14 @@ struct TripOverviewView: View {
         .navigationDestination(for: BudgetRoute.self) { _ in BudgetView(trip: $trip) }
         .navigationDestination(for: DocumentsRoute.self) { _ in DocumentsView(trip: $trip) }
         .navigationDestination(isPresented: $showBudget) { BudgetView(trip: $trip) }
+        .navigationDestination(isPresented: $showDocuments) { DocumentsView(trip: $trip) }
         .onAppear {
             if store.pendingBudget {
                 store.pendingBudget = false
                 showBudget = true
+            } else if store.pendingDocuments {
+                store.pendingDocuments = false
+                showDocuments = true
             }
         }
         .sheet(item: $addingPlanDay) { route in PlanEditor(trip: $trip, planID: nil, defaultDay: route.id) }

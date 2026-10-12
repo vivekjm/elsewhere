@@ -15,7 +15,7 @@ struct Destination {
 
     static func match(_ prompt: String) -> Destination? {
         let text = prompt.lowercased()
-        return all.first { dest in dest.keys.contains { PromptFacts.startsWord(text, $0) } }
+        return all.first { dest in dest.keys.contains { PromptFacts.namesPlace(text, $0) } }
     }
 
     private static func day(_ title: String, _ area: String, _ stops: [String]) -> DraftDay {

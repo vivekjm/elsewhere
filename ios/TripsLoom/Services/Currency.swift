@@ -60,8 +60,11 @@ final class CurrencyService {
         guard let url = URL(string: "https://open.er-api.com/v6/latest/\(base)"),
               let (data, _) = try? await URLSession.shared.data(from: url),
               let response = try? JSONDecoder().decode(Response.self, from: data),
-              response.result == "success", let rates = response.rates
+              response.result == "success", let raw = response.rates
         else { return }
+        // A zero or nonsense rate would wipe every amount on a currency change.
+        let rates = raw.filter { $0.value.isFinite && $0.value > 0 }
+        guard !rates.isEmpty else { return }
         cache[base] = Cached(fetched: .now, rates: rates)
         if let data = try? JSONEncoder().encode(cache) {
             UserDefaults.standard.set(data, forKey: "currency.cache")

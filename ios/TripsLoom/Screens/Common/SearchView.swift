@@ -27,7 +27,7 @@ struct SearchView: View {
                         }
                     }
                 }
-                Text(tripID == nil ? "Search plans, packing, expenses and your wardrobe across every trip." : "Search this trip's plans, packing, gear and expenses.")
+                Text(tripID == nil ? "Search plans, packing, expenses, documents and your wardrobe across every trip." : "Search this trip's plans, packing, gear, expenses and documents.")
                     .font(.sf(14))
                     .foregroundStyle(Color.textMuted)
                     .padding(.horizontal, 4)
@@ -49,8 +49,11 @@ struct SearchView: View {
         let expenses = trips.flatMap { trip in trip.expenses.filter { has($0.title) || has($0.meta) }.map { (trip, $0) } }
         let stops = trips.flatMap { trip in trip.stops.filter { has($0.name) || has($0.meta) }.map { (trip, $0) } }
         let wardrobe = tripID == nil ? store.wardrobe.filter { has($0.name) } : []
+        // Titles only; opening one goes through the trip's Documents screen,
+        // so its Face ID lock still applies.
+        let documents = trips.flatMap { trip in TripDocuments.shared.documents(for: trip.id).filter { has($0.title) }.map { (trip, $0) } }
 
-        if matchingTrips.isEmpty && plans.isEmpty && packing.isEmpty && gear.isEmpty && expenses.isEmpty && stops.isEmpty && wardrobe.isEmpty {
+        if matchingTrips.isEmpty && plans.isEmpty && packing.isEmpty && gear.isEmpty && expenses.isEmpty && stops.isEmpty && wardrobe.isEmpty && documents.isEmpty {
             EmptyNote(title: "No results", message: "Nothing matches \u{201C}\(query)\u{201D}.")
         }
         if !matchingTrips.isEmpty {
@@ -111,11 +114,23 @@ struct SearchView: View {
         if !expenses.isEmpty {
             GlassList("Expenses") {
                 ForEach(expenses.prefix(20), id: \.1.id) { trip, expense in
-                    Button { open(trip, tab: .trip) } label: {
+                    Button { openBudget(trip) } label: {
                         ListRow(expense.title, meta: "\(trip.name) · \(expense.day.map { "Day \($0 + 1)" } ?? "Whole trip")") {
                             IconTile(symbol: expense.category.symbol, color: expense.category.tile, size: .medium)
                         } trailing: {
                             Text(Fmt.moneyShort(expense.amount, trip.currency)).font(.mono(15, .semibold)).foregroundStyle(.white)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        if !documents.isEmpty {
+            GlassList("Documents") {
+                ForEach(documents.prefix(20), id: \.1.id) { trip, doc in
+                    Button { openDocuments(trip) } label: {
+                        ListRow(doc.title, meta: "\(trip.name) · \(doc.kind.title)") {
+                            IconTile(symbol: doc.kind.symbol, color: Tile.bronze, size: .medium)
                         }
                     }
                     .buttonStyle(.plain)
@@ -131,6 +146,14 @@ struct SearchView: View {
                 }
             }
         }
+    }
+
+    private func openBudget(_ trip: Trip) {
+        if tripID == trip.id { selectTripTab(.trip); store.pendingBudget = true } else { store.open(trip.id, budget: true) }
+    }
+
+    private func openDocuments(_ trip: Trip) {
+        if tripID == trip.id { selectTripTab(.trip); store.pendingDocuments = true } else { store.open(trip.id, documents: true) }
     }
 
     private func open(_ trip: Trip, tab: TripTab) {

@@ -259,3 +259,164 @@ nonisolated final class EveningReminderRegressionTests: XCTestCase {
         XCTAssertEqual(tokyo.dateComponents([.day], from: tokyo.startOfDay(for: fire), to: tokyo.startOfDay(for: trip.civilStart)).day, 1)
     }
 }
+
+/// "5 days in Kyoto" gives five days, whatever length the model returns.
+nonisolated final class DraftLengthRegressionTests: XCTestCase {
+    @MainActor func testDraftFollowsTheRequestedLength() {
+        let seven = (1...7).map { DraftDay(title: "Day \($0)", stops: ["Stop"]) }
+        XCTAssertEqual(TripDrafter.fitted(seven, to: 5).map(\.title), ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5"])
+        let three = Array(seven.prefix(3))
+        let padded = TripDrafter.fitted(three, to: 5)
+        XCTAssertEqual(padded.count, 5)
+        XCTAssertEqual(padded.last?.title, "Free day")
+        XCTAssertEqual(TripDrafter.fitted(three, to: nil).count, 3)
+    }
+}
+
+/// A shared trip keeps everyone's balances straight: what the organiser sees
+/// before sending matches what the friend sees after joining, settlements included.
+nonisolated final class InviteBalanceRegressionTests: XCTestCase {
+    @MainActor func testJoinerSeesTheMirrorOfTheSendersBalances() throws {
+        var trip = Trip(name: "Paris", place: "Paris, France", kind: .city, start: .now.addingTimeInterval(14 * 86_400), dayCount: 4, photo: .lisbon)
+        trip.companions = [Person(name: "Alex", color: 0x127C8C), Person(name: "Zoë", color: 0x2E8B4A)]
+        trip.expenses = [
+            Expense(title: "Apartment", category: .stay, amount: 420, splitWith: [Trip.me, "Alex", "Zoë"]),
+            Expense(title: "Dinner", category: .food, amount: 90, paidBy: "Alex", splitWith: [Trip.me, "Alex", "Zoë"]),
+        ]
+        // Sender's view: Alex owes 140, sender owes Alex 30 → net Alex owes 110 (negative = they owe you).
+        XCTAssertEqual(trip.ledger.first { $0.person == "Alex" }?.amount ?? 0, -110, accuracy: 0.001)
+        trip.settlements = [Settlement(person: "Alex", amount: -50)]
+        XCTAssertEqual(trip.ledger.first { $0.person == "Alex" }?.amount ?? 0, -60, accuracy: 0.001)
+
+        let data = try XCTUnwrap(TripInvite.make(trip, senderName: "Jamie").encoded())
+        let invite = try XCTUnwrap(TripInvite.decode(data))
+        let joined = invite.tripForJoining(as: "Alex", existing: nil)
+        // Alex's view: Alex owes Jamie the same 60, and Zoë owes Alex her
+        // 30 share of the dinner Alex paid for.
+        XCTAssertEqual(joined.ledger.first { $0.person == "Jamie" }?.amount ?? 0, 60, accuracy: 0.001)
+        XCTAssertEqual(joined.ledger.first { $0.person == "Zoë" }?.amount ?? 0, -30, accuracy: 0.001, "\(joined.ledger)")
+        XCTAssertEqual(joined.isSample, nil)
+    }
+}
+
+/// The same choice typed twice is one option, so votes aren't split.
+nonisolated final class PollOptionRegressionTests: XCTestCase {
+    @MainActor func testDuplicateAndBlankOptionsAreDropped() {
+        let options = ["Le Comptoir", "le comptoir ", "Café Flore", "Cafe flore", "  ", "\n", "Bistro"].map { PollOption(title: $0, votes: 0) }
+        XCTAssertEqual(Poll.distinctOptions(options).map(\.title), ["Le Comptoir", "Café Flore", "Bistro"])
+    }
+}
+
+/// Outfits cover every day of a long trip, not just the first week.
+nonisolated final class StylistLengthRegressionTests: XCTestCase {
+    @MainActor func testLongTripsGetWeatherForEveryOutfitDay() {
+        let trip = Trip(name: "Long trip", place: "Lisbon, Portugal", kind: .city, start: .now.addingTimeInterval(30 * 86_400), dayCount: 12, photo: .lisbon)
+        XCTAssertEqual(Stylist.weather(for: trip).count, 7, "The weather strip shows a week")
+        XCTAssertEqual(Stylist.weather(for: trip, days: trip.dayCount).count, 12)
+        let wardrobe = [WardrobeItem(name: "Tee", category: .tops, color: 0xFFFFFF), WardrobeItem(name: "Jeans", category: .bottoms, color: 0x1F2A44),
+                        WardrobeItem(name: "Rain jacket", category: .layers, color: 0x222222), WardrobeItem(name: "Trainers", category: .shoes, color: 0xEEEEEE)]
+        let outfits = Stylist.outfits(for: trip, wardrobe: wardrobe)
+        XCTAssertEqual(outfits.count, 12)
+        XCTAssertTrue(outfits.allSatisfy { !$0.items.isEmpty })
+    }
+}
+
+/// A new traveller with no wardrobe still gets clothes on the list, and beach
+/// trips don't list sunscreen twice.
+nonisolated final class PackingSuggestionRegressionTests: XCTestCase {
+    @MainActor func testEmptyWardrobeStillGetsClothes() {
+        let items = PackingSuggestions.items(for: .city, days: 4, wardrobe: [])
+        let clothes = items.filter { $0.section == "Clothes" }.map(\.name)
+        XCTAssertTrue(clothes.contains("T-shirts × 3"), "\(clothes)")
+        XCTAssertTrue(clothes.contains("Trousers × 2"), "\(clothes)")
+        XCTAssertTrue(clothes.contains("Walking shoes"), "\(clothes)")
+    }
+
+    @MainActor func testOwnedPiecesReplaceSuggestions() {
+        let tee = WardrobeItem(name: "Linen shirt", category: .tops, color: 0xFFFFFF)
+        let names = PackingSuggestions.items(for: .city, days: 4, wardrobe: [tee]).map(\.name)
+        XCTAssertTrue(names.contains("Linen shirt"))
+        XCTAssertFalse(names.contains { $0.hasPrefix("T-shirts") })
+    }
+
+    @MainActor func testBeachTripsListSunscreenOnce() {
+        let names = PackingSuggestions.items(for: .beach, days: 3, wardrobe: []).map(\.name)
+        XCTAssertEqual(names.filter { $0.localizedCaseInsensitiveContains("sunscreen") }.count, 1, "\(names)")
+    }
+}
+
+/// Shortening a trip and choosing "Move to the last day" keeps everything it
+/// counted: plans, route stages and one outfit.
+nonisolated final class ShortenTripRegressionTests: XCTestCase {
+    @MainActor func testMovingKeepsLaterItemsOnTheLastDay() {
+        var trip = Trip(name: "Trek", place: "Lukla, Nepal", kind: .trek, start: .now, dayCount: 3, photo: .himalaya)
+        trip.plans = [Plan(day: 4, time: "09:00", title: "Lodge", meta: "", category: .stay)]
+        trip.stages = [Stage(day: 1, title: "A", meta: "", km: 5, ascent: 100, altitude: 3_000),
+                       Stage(day: 5, title: "E", meta: "", km: 6, ascent: 200, altitude: 3_400)]
+        trip.outfits = [Outfit(day: 4, title: "Day 5", items: [])]
+        var moved = trip
+        moved.fitToLength(movingLaterDays: true)
+        XCTAssertEqual(moved.plans.map(\.day), [2])
+        XCTAssertEqual(moved.stages.map(\.day), [1, 3])
+        XCTAssertEqual(moved.outfits.map(\.day), [2])
+
+        var cut = trip
+        cut.fitToLength(movingLaterDays: false)
+        XCTAssertTrue(cut.plans.isEmpty)
+        XCTAssertEqual(cut.stages.map(\.title), ["A"])
+        XCTAssertTrue(cut.outfits.isEmpty)
+    }
+}
+
+/// "Alex paid for my ticket" is a debt even though only one person shares it;
+/// paying for yourself is not.
+nonisolated final class SplitGroupRegressionTests: XCTestCase {
+    @MainActor func testOnePersonSplitPaidBySomeoneElseCounts() {
+        let people = [Trip.me, "Alex", "Zoë"]
+        XCTAssertEqual(ExpenseEditor.splitGroup([Trip.me], paidBy: "Alex", people: people), [Trip.me])
+        XCTAssertNil(ExpenseEditor.splitGroup([Trip.me], paidBy: Trip.me, people: people))
+        XCTAssertNil(ExpenseEditor.splitGroup([], paidBy: Trip.me, people: people))
+        XCTAssertEqual(ExpenseEditor.splitGroup(["Zoë", Trip.me], paidBy: Trip.me, people: people), [Trip.me, "Zoë"])
+
+        var trip = Trip(name: "Paris", place: "Paris", kind: .city, start: .now, dayCount: 2, photo: .lisbon)
+        trip.companions = [Person(name: "Alex", color: 0)]
+        trip.expenses = [Expense(title: "Ticket", category: .activities, amount: 40, paidBy: "Alex", splitWith: [Trip.me])]
+        XCTAssertEqual(trip.ledger.first { $0.person == "Alex" }?.amount ?? 0, 40, accuracy: 0.001)
+    }
+}
+
+/// Compact amounts use the currency's symbol, whether the trip stores a
+/// symbol ("$") or a code ("USD").
+nonisolated final class CompactMoneyRegressionTests: XCTestCase {
+    @MainActor func testCompactAmountsUseTheSymbol() {
+        for currency in ["$", "USD"] {
+            let small = Fmt.moneyCompact(160, currency), large = Fmt.moneyCompact(1_234, currency)
+            XCTAssertFalse(small.contains("USD"), small)
+            XCTAssertFalse(large.contains("USD"), large)
+            XCTAssertTrue(small.contains("160"), small)
+            XCTAssertTrue(large.contains("1.2k"), large)
+        }
+    }
+}
+
+/// Place names match as whole words, so "goals" isn't Goa and "lehenga" isn't Leh.
+nonisolated final class DestinationMatchRegressionTests: XCTestCase {
+    @MainActor func testPlacesMatchWholeWordsOnly() {
+        XCTAssertEqual(Destination.match("5 days in Goa")?.place, "Goa, India")
+        XCTAssertEqual(Destination.match("Goa's beaches for a week")?.place, "Goa, India")
+        XCTAssertEqual(Destination.match("see the Taj Mahal at sunrise")?.place, "Agra, Uttar Pradesh")
+        XCTAssertEqual(Destination.match("a weekend in port blair")?.place, "Andaman Islands, India")
+        XCTAssertNil(Destination.match("a relaxed trip to work on my goals"))
+        XCTAssertNil(Destination.match("shopping for a lehenga"))
+        XCTAssertNil(Destination.match("an agrarian homestay"))
+    }
+}
+
+/// "into" and "auto" aren't "in" and "to": the template reads the real place.
+nonisolated final class PlaceExtractionRegressionTests: XCTestCase {
+    @MainActor func testPlaceWordsMatchWholeWords() {
+        XCTAssertEqual(TemplateDrafter.place(in: "4 days in Hobart"), "Hobart")
+        XCTAssertEqual(TemplateDrafter.place(in: "a trip to hobart by auto rickshaw"), "Hobart")
+        XCTAssertEqual(TemplateDrafter.place(in: "settle into a slow week in shimla"), "Shimla")
+    }
+}

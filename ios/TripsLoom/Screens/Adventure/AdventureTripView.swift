@@ -9,6 +9,7 @@ struct AdventureTripView: View {
     @Environment(\.selectTripTab) private var selectTab
     @Environment(TripStore.self) private var store
     @State private var showBudget = false
+    @State private var showDocuments = false
     @State private var chartMode: ElevationChart.Mode = .stages
 
     var body: some View {
@@ -119,11 +120,15 @@ struct AdventureTripView: View {
         .navigationDestination(for: BudgetRoute.self) { _ in BudgetView(trip: $trip) }
         .navigationDestination(for: DocumentsRoute.self) { _ in DocumentsView(trip: $trip) }
         .navigationDestination(isPresented: $showBudget) { BudgetView(trip: $trip) }
+        .navigationDestination(isPresented: $showDocuments) { DocumentsView(trip: $trip) }
         .navigationDestination(isPresented: $routePushed) { RouteView(trip: $trip).toolbar(.hidden, for: .tabBar) }
         .onAppear {
             if store.pendingBudget {
                 store.pendingBudget = false
                 showBudget = true
+            } else if store.pendingDocuments {
+                store.pendingDocuments = false
+                showDocuments = true
             }
         }
     }

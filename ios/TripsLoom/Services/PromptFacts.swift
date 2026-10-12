@@ -114,6 +114,12 @@ struct PromptFacts {
     }
 
     /// "monaster" matches "monastery" but "art" doesn't match "party".
+    /// A place name as a whole word ("Goa", "Goa's"), not inside another
+    /// word ("goals", "lehenga").
+    static func namesPlace(_ text: String, _ name: String) -> Bool {
+        text.range(of: "\\b" + NSRegularExpression.escapedPattern(for: name) + "(?:'s|s)?\\b", options: .regularExpression) != nil
+    }
+
     static func startsWord(_ text: String, _ word: String) -> Bool {
         text.range(of: "\\b" + NSRegularExpression.escapedPattern(for: word), options: .regularExpression) != nil
     }

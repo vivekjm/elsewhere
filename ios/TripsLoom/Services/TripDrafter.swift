@@ -94,6 +94,14 @@ enum TripDrafter {
     restaurants, trails or transport. Keep titles short, in sentence case, without emoji or exclamation marks.
     """
 
+    /// Trims or pads a drafted itinerary to the length the person asked for.
+    static func fitted(_ days: [DraftDay], to requested: Int?) -> [DraftDay] {
+        guard let requested, requested > 0, requested != days.count else { return days }
+        if days.count > requested { return Array(days.prefix(requested)) }
+        let free = (days.count..<requested).map { _ in DraftDay(title: "Free day", stops: ["Explore at your own pace"]) }
+        return days + free
+    }
+
     private static func modelDraft(prompt: String, profile: Profile, refinements: [String]) async throws -> ItineraryDraft {
         let session = LanguageModelSession(instructions: instructions)
         var request = "Plan this trip: \(prompt)\nTraveller preferences: \(profile.budgetStyle), \(profile.diet), \(profile.pace). Home base \(profile.homeAirport)."
@@ -102,10 +110,12 @@ enum TripDrafter {
         }
         let response = try await session.respond(to: request, generating: GeneratedTrip.self)
         let trip = response.content
-        let days = trip.days.prefix(21).map { DraftDay(title: $0.title, stops: Array($0.stops.prefix(3))) }
+        var days = trip.days.prefix(21).map { DraftDay(title: $0.title, stops: Array($0.stops.prefix(3))) }
         guard !days.isEmpty else { throw CancellationError() }
-        // What the person said outright wins over the model's guesses.
+        // What the person said outright wins over the model's guesses,
+        // including how long the trip is.
         let facts = PromptFacts.parse(prompt)
+        days = Self.fitted(days, to: facts.days)
         let kind = TripKind(rawValue: trip.kind) ?? .city
         var estimate = Double(max(trip.estimateEuros, 0))
         if let code = CurrencyService.code(for: facts.currency), code != "EUR" {
@@ -261,12 +271,12 @@ enum TemplateDrafter {
 
     static func place(in prompt: String) -> String {
         // Capitalised names after "in", "to", …, then any capitalised name.
-        for match in prompt.matches(of: /(?:in|to|through|around|from|visit|visiting|explore|exploring)\s+(?:the\s+)?([A-Z][\p{L}'-]+(?:\s+[A-Z][\p{L}'-]+)*)/)
+        for match in prompt.matches(of: /\b(?:in|to|through|around|from|visit|visiting|explore|exploring)\s+(?:the\s+)?([A-Z][\p{L}'-]+(?:\s+[A-Z][\p{L}'-]+)*)/)
         where !notPlaces.contains(match.1.lowercased()) {
             return String(match.1)
         }
         // Typed in lower case: "3 days in shimla".
-        for match in prompt.lowercased().matches(of: /(?:in|to|through|around|visit|visiting|explore|exploring)\s+(?:the\s+)?([\p{L}'-]{3,}(?:\s+[\p{L}'-]{3,})?)/) {
+        for match in prompt.lowercased().matches(of: /\b(?:in|to|through|around|visit|visiting|explore|exploring)\s+(?:the\s+)?([\p{L}'-]{3,}(?:\s+[\p{L}'-]{3,})?)/) {
             var words = match.1.split(separator: " ").map(String.init)
             if words.count == 2, notPlaces.contains(words[1]) || PromptFacts.startsWord(words[1], "with") { words.removeLast() }
             guard let first = words.first, !notPlaces.contains(first) else { continue }

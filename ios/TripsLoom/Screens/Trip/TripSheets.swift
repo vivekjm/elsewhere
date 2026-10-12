@@ -217,6 +217,12 @@ struct TripEditSheet: View {
                                 .font(.sf(13))
                                 .foregroundStyle(Color.textMuted)
                         }
+                    } else if currencyChanged {
+                        // Without a rate the amounts can't be converted; say so
+                        // rather than quietly relabelling €100 as ¥100.
+                        Text("Today's rate isn't available yet, so amounts keep their numbers in \(draft.currency). Connect to the internet to convert them.")
+                            .font(.sf(13))
+                            .foregroundStyle(Color.coral)
                     }
                 } header: {
                     Text("Budget")
@@ -298,16 +304,7 @@ struct TripEditSheet: View {
         let last = draft.dayCount - 1
         draft.start = draft.calendar.startOfDay(for: draft.start)
         draft.startDayKey = TravelDates.key(draft.start, in: draft.timeZone)
-        if moveToLastDay {
-            for i in draft.plans.indices where draft.plans[i].day > last { draft.plans[i].day = last }
-            for i in draft.stops.indices where draft.stops[i].day > last { draft.stops[i].day = last }
-            for i in draft.dives.indices where draft.dives[i].day > last { draft.dives[i].day = last }
-        }
-        draft.plans.removeAll { $0.day > last }
-        draft.outfits.removeAll { $0.day > last }
-        draft.stops.removeAll { $0.day > last }
-        draft.dives.removeAll { $0.day > last }
-        draft.stages.removeAll { $0.day > draft.dayCount }
+        draft.fitToLength(movingLaterDays: moveToLastDay)
         for i in draft.expenses.indices where (draft.expenses[i].day ?? 0) > last {
             draft.expenses[i].day = nil
         }

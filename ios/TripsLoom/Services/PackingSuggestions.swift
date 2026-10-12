@@ -3,13 +3,22 @@ import Foundation
 /// Rule-based starting lists by trip type and length. Wardrobe pieces are
 /// matched by category so the list uses what you own.
 enum PackingSuggestions {
+    private static let generic: [GarmentCategory: (name: String, grams: Int)] = [
+        .tops: ("T-shirts", 150), .bottoms: ("Trousers", 450), .shoes: ("Walking shoes", 700), .layers: ("Light jacket", 400),
+    ]
+
     static func items(for kind: TripKind, days: Int, wardrobe: [WardrobeItem]) -> [PackItem] {
         var items: [PackItem] = []
 
+        /// Pieces you own, or a plain suggestion when the wardrobe has none.
         func fromWardrobe(_ category: GarmentCategory, count: Int) {
-            for piece in wardrobe.filter({ $0.category == category }).prefix(count) {
+            let owned = wardrobe.filter { $0.category == category }.prefix(count)
+            for piece in owned {
                 items.append(PackItem(name: piece.name, section: "Clothes", meta: "\(category.title) · from wardrobe", grams: piece.grams, wardrobeID: piece.id))
             }
+            guard owned.isEmpty, count > 0, let generic = generic[category] else { return }
+            let name = count > 1 ? "\(generic.name) × \(count)" : generic.name
+            items.append(PackItem(name: name, section: "Clothes", meta: category.title, grams: generic.grams * count))
         }
 
         switch kind {
@@ -36,7 +45,8 @@ enum PackingSuggestions {
         items.append(PackItem(name: "Phone charger", section: "Essentials", meta: "Tech", grams: 90))
         items.append(PackItem(name: "Power bank", section: "Essentials", meta: "Tech", grams: 220))
         items.append(PackItem(name: "Toothbrush and paste", section: "Toiletries", meta: "Wash bag", grams: 120))
-        items.append(PackItem(name: "Sunscreen", section: "Toiletries", meta: "Wash bag", grams: 150))
+        // Beach trips already pack reef-safe sunscreen.
+        if kind != .beach { items.append(PackItem(name: "Sunscreen", section: "Toiletries", meta: "Wash bag", grams: 150)) }
         return items
     }
 

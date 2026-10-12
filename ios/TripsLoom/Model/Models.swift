@@ -555,6 +555,31 @@ struct Poll: Codable, Hashable, Sendable {
     var votesBy: [String: UUID]?
 }
 
+extension Trip {
+    /// Fits day-based items to `dayCount` after the trip got shorter. Moving
+    /// puts later plans, stops, dives and stages on the last day, plus one
+    /// outfit if the last day has none; otherwise they're removed.
+    mutating func fitToLength(movingLaterDays: Bool) {
+        let last = dayCount - 1
+        if movingLaterDays {
+            for i in plans.indices where plans[i].day > last { plans[i].day = last }
+            for i in stops.indices where stops[i].day > last { stops[i].day = last }
+            for i in dives.indices where dives[i].day > last { dives[i].day = last }
+            // Stage days count from 1.
+            for i in stages.indices where stages[i].day > dayCount { stages[i].day = dayCount }
+            if !outfits.contains(where: { $0.day == last }),
+               let latest = outfits.indices.filter({ outfits[$0].day > last }).max(by: { outfits[$0].day < outfits[$1].day }) {
+                outfits[latest].day = last
+            }
+        }
+        plans.removeAll { $0.day > last }
+        outfits.removeAll { $0.day > last }
+        stops.removeAll { $0.day > last }
+        dives.removeAll { $0.day > last }
+        stages.removeAll { $0.day > dayCount }
+    }
+}
+
 extension Poll {
     /// Votes for an option: anonymous counts, named votes and yours.
     func count(_ id: UUID) -> Int {
@@ -589,6 +614,19 @@ struct PollOption: Identifiable, Codable, Hashable, Sendable {
 }
 
 /// A payment between you and one person. Positive: you paid them.
+extension Poll {
+    /// Non-empty options, the first of each choice kept when two differ only
+    /// in case, accents or surrounding spaces.
+    static func distinctOptions(_ options: [PollOption]) -> [PollOption] {
+        var seen = Set<String>()
+        return options.filter { option in
+            let key = option.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+            return !key.isEmpty && seen.insert(key).inserted
+        }
+    }
+}
+
 struct Settlement: Identifiable, Codable, Hashable, Sendable {
     var id = UUID()
     var person: String
