@@ -127,7 +127,7 @@ struct PillBarChart: View {
 
 /// Diagonal stripes marking the unfilled part of a bar.
 struct StripeTrack: View {
-    var radius: CGFloat = 20
+    var radius: CGFloat = 4
     var opacity: Double = 0.04
 
     var body: some View {

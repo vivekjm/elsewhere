@@ -29,17 +29,17 @@ struct Destination {
             day("Uluwatu", "Uluwatu", ["Padang Padang beach", "Uluwatu Temple", "Kecak dance at sunset"]),
             day("Seminyak", "Seminyak", ["Beach morning", "Spa", "Sunset at a beach club"]),
         ]),
-        Destination(keys: ["bangkok", "thailand"], place: "Bangkok, Thailand", kind: .city, photo: .aurora, perDay: 80, currency: "$", days: [
+        Destination(keys: ["bangkok", "thailand"], place: "Bangkok, Thailand", kind: .city, photo: .tram, perDay: 80, currency: "$", days: [
             day("Old Bangkok", "Rattanakosin", ["Grand Palace", "Wat Pho", "Wat Arun at sunset"]),
             day("Markets and canals", "Bangkok", ["Long-tail boat on the canals", "Chatuchak Weekend Market", "Yaowarat street food"]),
             day("Modern Bangkok", "Sukhumvit", ["Jim Thompson House", "Siam malls", "Rooftop bar"]),
         ]),
-        Destination(keys: ["dubai"], place: "Dubai, UAE", kind: .city, photo: .aurora, perDay: 150, currency: "$", days: [
+        Destination(keys: ["dubai"], place: "Dubai, UAE", kind: .city, photo: .tram, perDay: 150, currency: "$", days: [
             day("Old Dubai", "Deira", ["Abra across Dubai Creek", "Gold and spice souks", "Al Fahidi district"]),
             day("Downtown", "Downtown", ["Burj Khalifa", "Dubai Mall", "Dubai Fountain show"]),
             day("Desert", "Desert", ["Beach morning", "Desert safari", "Dinner in the dunes"]),
         ]),
-        Destination(keys: ["singapore"], place: "Singapore", kind: .city, photo: .aurora, perDay: 150, currency: "$", days: [
+        Destination(keys: ["singapore"], place: "Singapore", kind: .city, photo: .tram, perDay: 150, currency: "$", days: [
             day("Marina Bay", "Marina Bay", ["Gardens by the Bay", "Marina Bay Sands", "Supertree light show"]),
             day("Neighbourhoods", "Chinatown", ["Chinatown", "Maxwell hawker centre lunch", "Little India"]),
             day("Sentosa", "Sentosa", ["Cable car to Sentosa", "Beach afternoon", "Dinner at Clarke Quay"]),
@@ -54,7 +54,7 @@ struct Destination {
             day("Museums", "Bloomsbury", ["British Museum", "Covent Garden", "Dinner in Soho"]),
             day("The City", "The City", ["Tower of London", "Borough Market lunch", "Sunset from Sky Garden"]),
         ]),
-        Destination(keys: ["tokyo", "japan"], place: "Tokyo, Japan", kind: .city, photo: .aurora, perDay: 150, currency: "$", days: [
+        Destination(keys: ["tokyo", "japan"], place: "Tokyo, Japan", kind: .city, photo: .tram, perDay: 150, currency: "$", days: [
             day("Old Tokyo", "Asakusa", ["Senso-ji Temple", "Nakamise street snacks", "Sumida river walk"]),
             day("Shibuya and Harajuku", "Shibuya", ["Meiji Shrine", "Harajuku", "Shibuya crossing at night"]),
             day("Markets", "Tsukiji", ["Tsukiji Outer Market", "teamLab", "Izakaya dinner"]),
@@ -81,13 +81,13 @@ struct Destination {
             day("Museums", "Museumplein", ["Rijksmuseum", "Van Gogh Museum", "Vondelpark bikes"]),
             day("By bike", "Noord", ["Ferry to Noord", "NDSM wharf", "Brouwerij 't IJ"]),
         ]),
-        Destination(keys: ["new york", "nyc", "manhattan", "brooklyn"], place: "New York, USA", kind: .city, photo: .aurora, perDay: 220, currency: "$", days: [
+        Destination(keys: ["new york", "nyc", "manhattan", "brooklyn"], place: "New York, USA", kind: .city, photo: .tram, perDay: 220, currency: "$", days: [
             day("Midtown", "Midtown", ["Central Park walk", "The Met", "Top of the Rock at dusk"]),
             day("Downtown", "Lower Manhattan", ["Staten Island Ferry", "9/11 Memorial", "Dinner in the West Village"]),
             day("Brooklyn", "Williamsburg", ["Walk the Brooklyn Bridge", "DUMBO", "Williamsburg bars"]),
             day("Museums and the High Line", "Chelsea", ["Whitney Museum", "The High Line", "Chelsea Market"]),
         ]),
-        Destination(keys: ["kyoto"], place: "Kyoto, Japan", kind: .city, photo: .aurora, perDay: 18_000, currency: "¥", days: [
+        Destination(keys: ["kyoto"], place: "Kyoto, Japan", kind: .city, photo: .tram, perDay: 18_000, currency: "¥", days: [
             day("Eastern hills", "Higashiyama", ["Kiyomizu-dera", "Sannenzaka lanes", "Evening in Gion"]),
             day("Bamboo and temples", "Arashiyama", ["Bamboo grove early", "Tenryu-ji", "Riverside tea"]),
             day("Shrines", "Fushimi", ["Fushimi Inari at dawn", "Nishiki Market lunch", "Kaiseki dinner"]),
@@ -147,12 +147,12 @@ struct Destination {
             day("Bondi to Coogee", "Bondi", ["Bondi to Coogee coastal walk", "Beach afternoon", "Dinner in Surry Hills"]),
             day("Blue Mountains", "Katoomba", ["Train to Katoomba", "Three Sisters", "Back to Sydney"]),
         ]),
-        Destination(keys: ["marrakech", "morocco", "marrakesh"], place: "Marrakech, Morocco", kind: .city, photo: .aurora, perDay: 70, currency: "€", days: [
+        Destination(keys: ["marrakech", "morocco", "marrakesh"], place: "Marrakech, Morocco", kind: .city, photo: .tram, perDay: 70, currency: "€", days: [
             day("The medina", "Medina", ["Bahia Palace", "Souks", "Jemaa el-Fnaa at dusk"]),
             day("Gardens", "Gueliz", ["Jardin Majorelle", "YSL Museum", "Rooftop dinner"]),
             day("Atlas foothills", "Imlil", ["Day trip to Imlil", "Village walk", "Tagine lunch"]),
         ]),
-        Destination(keys: ["istanbul", "turkey", "türkiye"], place: "Istanbul, Türkiye", kind: .city, photo: .aurora, perDay: 80, currency: "€", days: [
+        Destination(keys: ["istanbul", "turkey", "türkiye"], place: "Istanbul, Türkiye", kind: .city, photo: .tram, perDay: 80, currency: "€", days: [
             day("Sultanahmet", "Sultanahmet", ["Hagia Sophia", "Blue Mosque", "Basilica Cistern"]),
             day("Bazaars and the Bosphorus", "Eminönü", ["Grand Bazaar", "Spice Bazaar", "Bosphorus ferry at sunset"]),
             day("Beyoğlu", "Karaköy", ["Galata Tower", "Istiklal Street", "Meze dinner in Karaköy"]),
@@ -162,7 +162,7 @@ struct Destination {
             day("The Cape", "Cape Point", ["Chapman's Peak Drive", "Cape of Good Hope", "Penguins at Boulders Beach"]),
             day("Winelands", "Stellenbosch", ["Stellenbosch tasting", "Franschhoek lunch", "Sunset at Camps Bay"]),
         ]),
-        Destination(keys: ["mexico city", "cdmx"], place: "Mexico City, Mexico", kind: .city, photo: .aurora, perDay: 70, currency: "$", days: [
+        Destination(keys: ["mexico city", "cdmx"], place: "Mexico City, Mexico", kind: .city, photo: .tram, perDay: 70, currency: "$", days: [
             day("Centro", "Centro Histórico", ["Zócalo and the cathedral", "Palacio de Bellas Artes", "Dinner in Roma Norte"]),
             day("Coyoacán", "Coyoacán", ["Frida Kahlo Museum", "Coyoacán market lunch", "Mezcal in Condesa"]),
             day("Pyramids", "Teotihuacán", ["Teotihuacán early", "Back for Chapultepec", "Anthropology Museum"]),

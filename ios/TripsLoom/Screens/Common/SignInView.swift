@@ -191,16 +191,29 @@ private struct IntroPageView: View {
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Spacer(minLength: 8)
-            if !typeSize.isAccessibilitySize {
+        // At accessibility sizes the copy scrolls instead of pushing into the
+        // wordmark above.
+        if typeSize.isAccessibilitySize {
+            ScrollView { words(size: 28) }
+                .scrollBounceBehavior(.basedOnSize)
+                .accessibilityElement(children: .combine)
+        } else {
+            VStack(alignment: .leading, spacing: 14) {
+                Spacer(minLength: 8)
                 GlimpseStack(glimpse: page.glimpse)
                     .frame(maxWidth: .infinity)
                     .padding(.bottom, 10)
                     .accessibilityHidden(true)
                 Spacer(minLength: 0)
+                words(size: 40)
             }
-            WordFittingTitle(text: page.title, size: 40, tracking: -0.8)
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    private func words(size: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            WordFittingTitle(text: page.title, size: size, tracking: -0.8)
                 .foregroundStyle(.white)
                 .fixedSize(horizontal: false, vertical: true)
             Text(page.body)
@@ -212,7 +225,6 @@ private struct IntroPageView: View {
         .padding(.horizontal, 24)
         .padding(.bottom, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
     }
 }
 
@@ -227,6 +239,8 @@ struct Wordmark: View {
                 .font(.display(21, .semibold))
                 .tracking(-0.2)
                 .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
                 .accessibilityAddTraits(.isHeader)
             Spacer()
         }

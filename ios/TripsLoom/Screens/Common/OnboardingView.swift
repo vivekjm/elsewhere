@@ -109,6 +109,7 @@ struct OnboardingView: View {
             // Content fades out under the button rather than being cut.
             LinearGradient(colors: [Color(hex: 0x06080B, opacity: 0), Color(hex: 0x06080B, opacity: 0.92)], startPoint: .top, endPoint: .center)
                 .ignoresSafeArea()
+                .allowsHitTesting(false)
         }
     }
 

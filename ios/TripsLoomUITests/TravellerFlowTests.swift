@@ -103,8 +103,12 @@ nonisolated final class TravellerFlowTests: XCTestCase {
             if step == 0 {
                 let looking = app.buttons["Just looking for now"]
                 XCTAssertTrue(looking.waitForExistence(timeout: 5))
-                if !looking.isHittable { app.swipeUp() }
-                looking.tap()
+                // At the largest text size the row starts under the bottom bar.
+                for _ in 0..<4 where !looking.isSelected {
+                    if !looking.isHittable { app.swipeUp() }
+                    looking.tap()
+                }
+                XCTAssertTrue(looking.isSelected, "Could not choose the exploring intent")
             }
         }
         let save = app.buttons["save-travel-preferences"]

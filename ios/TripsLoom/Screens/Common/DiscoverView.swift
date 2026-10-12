@@ -180,30 +180,12 @@ struct DiscoverView: View {
     }
 
     private var featuredCard: some View {
-        // The photo sits behind a stacked layout, so large text makes the card
-        // taller instead of running the title into the chip.
+        // The photograph stands alone; the words and the action sit beneath it.
         let large = typeSize.isAccessibilitySize
-        return VStack(alignment: .leading, spacing: 0) {
-            Chip(featured.chip, tone: .onPhoto(.lime)).padding(12)
-            Spacer(minLength: 24)
-            (large ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(spacing: 12))) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(featured.title).font(.sf(21, .bold)).foregroundStyle(.white)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(featured.meta).metaStyle()
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Button("Plan") { router.plan(featured.prompt, from: "discover-featured") }
-                    .buttonStyle(LimePillStyle(height: 40))
-                    .font(.sf(15, .bold))
-            }
-            .padding(14)
-            .glass(22, fill: Color(hex: 0x12141A, opacity: 0.5))
-            .padding(10)
-        }
-        .frame(maxWidth: .infinity, minHeight: 300, alignment: .leading)
-        .background {
+        return VStack(alignment: .leading, spacing: 12) {
             Color.photoPlaceholder
+                .frame(maxWidth: .infinity)
+                .frame(height: 210)
                 .overlay {
                     // Cross-fades when the filter changes the featured idea.
                     RemotePhoto(photo: featured.photo, width: 900)
@@ -213,9 +195,22 @@ struct DiscoverView: View {
                         .parallax(0.1, limit: 28)
                 }
                 .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: Radius.media, style: .continuous))
+                .overlay(alignment: .topLeading) { Chip(featured.chip, tone: .onPhoto(.lime)).padding(12) }
+            (large ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(alignment: .top, spacing: 12))) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(featured.title).font(.display(26)).foregroundStyle(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(featured.meta).metaStyle()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Button("Plan") { router.plan(featured.prompt, from: "discover-featured") }
+                    .buttonStyle(LimePillStyle(height: 40))
+                    .font(.sf(15, .bold))
+            }
+            .padding(.horizontal, 2)
         }
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.white.opacity(0.1), lineWidth: 1))
+        .frame(maxWidth: .infinity, alignment: .leading)
             .zoomSource("discover-featured")
             .contentTransition(.opacity)
             .animation(.smooth(duration: 0.45), value: filter)
