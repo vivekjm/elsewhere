@@ -43,3 +43,19 @@ Run these once before the first App Store submission.
 ## 5. Supabase (when on a paid plan)
 
 - Auth → Passwords → turn on leaked-password protection.
+
+## 6. Social sign-in (Supabase dashboard)
+
+Release builds show the Apple and Google buttons only once the provider is
+switched on in Supabase, so the app ships safely before this is done.
+
+1. Auth → URL Configuration: add `tripsloom://auth/callback` to the
+   redirect URLs.
+2. Google: in Google Cloud, create an OAuth client (Web application) with the
+   redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`. Paste
+   its client ID and secret into Auth → Providers → Google and enable it.
+3. Apple (company account): turn on Sign in with Apple for
+   `com.tripsloom.ios` in the developer portal, then in Auth → Providers →
+   Apple add `com.tripsloom.ios` to the client IDs and enable it.
+4. On the phone: Continue with Google and Continue with Apple each land in
+   onboarding with the name filled in, and the account appears on the web.
