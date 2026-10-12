@@ -437,7 +437,8 @@ struct PermitEditor: View {
             Form {
                 TextField("Permit name", text: $permit.name)
                     .focused($firstFieldFocused)
-                TextField("Cost, office or reference", text: $notes, axis: .vertical)
+                NumberRow("Fee (\(trip.currency))", value: Binding(get: { permit.fee ?? 0 }, set: { permit.fee = $0 > 0 ? $0 : nil }))
+                TextField("Office or reference", text: $notes, axis: .vertical)
                 Toggle("Paid", isOn: $permit.paid)
                 if !isNew {
                     Button("Delete permit", role: .destructive) {
@@ -464,7 +465,8 @@ struct PermitEditor: View {
                         }
                         dismiss()
                     }
-                    .disabled(permit.name.trimmingCharacters(in: .whitespaces).isEmpty || permit.name.count > 200 || notes.count > 500)
+                    .disabled(permit.name.trimmingCharacters(in: .whitespaces).isEmpty || permit.name.count > 200 || notes.count > 500
+                              || !(permit.fee ?? 0).isFinite || !(0...10_000_000).contains(permit.fee ?? 0))
                 }
             }
         }

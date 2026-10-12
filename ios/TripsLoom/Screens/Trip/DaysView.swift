@@ -210,10 +210,10 @@ struct WeekStrip: View {
             withAnimation(.spring(duration: 0.45, bounce: 0.2)) { selection = day }
         } label: {
             VStack(spacing: 3) {
-                Text(Fmt.weekdayLetter(date))
+                Text(Fmt.weekdayLetter(date, timeZone: trip.timeZone))
                     .font(.mono(11))
                     .foregroundStyle(selected ? Color.ink : Color.textMuted)
-                Text(Fmt.dayNumber(date))
+                Text(Fmt.dayNumber(date, timeZone: trip.timeZone))
                     .font(.sf(19, .bold))
                     .foregroundStyle(selected ? Color.ink : .white)
                     .lineLimit(1)
@@ -244,7 +244,7 @@ struct WeekStrip: View {
         }
         .buttonStyle(.card)
         .id(day)
-        .accessibilityLabel(Fmt.dayTitle(date))
+        .accessibilityLabel(Fmt.dayTitle(date, timeZone: trip.timeZone))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }

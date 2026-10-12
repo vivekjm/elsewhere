@@ -187,6 +187,13 @@ struct BudgetView: View {
                     Text(Fmt.moneyShort(trip.guideCost, trip.currency)).font(.mono(16, .semibold)).foregroundStyle(.white)
                 }
             }
+            if trip.permitFees > 0 {
+                ListRow("Permits", meta: "Whole trip · \(Fmt.count((trip.adventure?.permits ?? []).filter { ($0.fee ?? 0) > 0 }.count, "permit"))") {
+                    IconTile(symbol: "checkmark.seal.fill", color: BudgetCategory.other.tile)
+                } trailing: {
+                    Text(Fmt.moneyShort(trip.permitFees, trip.currency)).font(.mono(16, .semibold)).foregroundStyle(.white)
+                }
+            }
             if trip.gearRental > 0 {
                 ListRow("Gear rental", meta: "Whole trip · \(Fmt.count(trip.gear.filter { $0.status == .rent }.count, "item"))") {
                     IconTile(symbol: "backpack.fill", color: BudgetCategory.other.tile)
@@ -200,8 +207,12 @@ struct BudgetView: View {
     private func meta(for category: BudgetCategory) -> String {
         let expenses = trip.expenses.filter { $0.category == category }
         let plans = trip.plans.filter { $0.category.budget == category && $0.cost > 0 }
-        let rental = (category == .other && trip.gearRental > 0) || (category == .activities && trip.guideCost > 0) ? 1 : 0
-        if expenses.count + plans.count + rental == 1 { return expenses.first?.title ?? plans.first?.title ?? (category == .other ? "Gear rental" : "Guide") }
+        var extras: [String] = []
+        if category == .other, trip.gearRental > 0 { extras.append("Gear rental") }
+        if category == .other, trip.permitFees > 0 { extras.append("Permits") }
+        if category == .activities, trip.guideCost > 0 { extras.append("Guide") }
+        let rental = extras.count
+        if expenses.count + plans.count + rental == 1 { return expenses.first?.title ?? plans.first?.title ?? extras[0] }
         let count = expenses.count + plans.count + rental
         return "\(count) \(count == 1 ? "item" : "items")"
     }

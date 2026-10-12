@@ -90,7 +90,7 @@ struct TripOverviewView: View {
     /// "Today · Gangtok" or "Wed 30 · Gangtok".
     static func when(_ trip: Trip, _ index: Int, _ day: WeatherService.Day) -> String {
         let date = trip.date(ofDay: index)
-        let label = trip.todayIndex == index ? "Today" : "\(Fmt.weekday(date)) \(Fmt.dayNumber(date))"
+        let label = trip.todayIndex == index ? "Today" : "\(Fmt.weekday(date, timeZone: trip.timeZone)) \(Fmt.dayNumber(date, timeZone: trip.timeZone))"
         return day.place.isEmpty ? label : "\(label) · \(day.place)"
     }
 

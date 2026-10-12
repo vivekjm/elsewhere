@@ -27,7 +27,7 @@ struct StylistView: View {
                 HStack {
                     ForEach(weather) { day in
                         VStack(spacing: 6) {
-                            Text(Fmt.weekdayLetter(day.date)).font(.mono(11)).foregroundStyle(Color.textMuted)
+                            Text(Fmt.weekdayLetter(day.date, timeZone: trip.timeZone)).font(.mono(11)).foregroundStyle(Color.textMuted)
                             Image(systemName: symbol(day.sky))
                                 .font(.system(size: 18))
                                 .foregroundStyle(color(day.sky))

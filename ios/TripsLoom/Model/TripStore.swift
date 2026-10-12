@@ -216,6 +216,23 @@ final class TripStore {
 
     func add(_ trip: Trip) {
         trips.append(trip)
+        adoptDestinationTimeZone(trip.id)
+    }
+
+    /// New trips start on the phone's time zone. Once the destination is
+    /// found, they move to its zone, keeping the same calendar days, unless
+    /// someone has already picked a zone.
+    func adoptDestinationTimeZone(_ id: UUID) {
+        guard let trip = trip(id), trip.isSample != true else { return }
+        let phoneZone = TimeZone.current.identifier
+        guard trip.timeZoneID == nil || trip.timeZoneID == phoneZone else { return }
+        let place = trip.place
+        Task { @MainActor in
+            guard let zone = await Places.lookup(place)?.timeZone, zone != phoneZone, TimeZone(identifier: zone) != nil,
+                  let current = self.trip(id), current.timeZoneID == nil || current.timeZoneID == phoneZone
+            else { return }
+            update(id) { $0.setTimeZone(zone) }
+        }
     }
 
     func delete(_ id: UUID) {

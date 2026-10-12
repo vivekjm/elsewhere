@@ -420,3 +420,49 @@ nonisolated final class PlaceExtractionRegressionTests: XCTestCase {
         XCTAssertEqual(TemplateDrafter.place(in: "settle into a slow week in shimla"), "Shimla")
     }
 }
+
+/// A headache with a Lake Louise total of 3 or more is AMS: rest, don't go higher.
+nonisolated final class AltitudeAdviceRegressionTests: XCTestCase {
+    @MainActor func testMildAMSIsCaution() {
+        func check(_ symptoms: [Int], spo2: Int = 92) -> AltitudeCheckIn.Advice {
+            AltitudeCheckIn(altitude: 4_200, spo2: spo2, heartRate: 90, symptoms: symptoms).advice
+        }
+        XCTAssertEqual(check([1, 1, 1, 0, 0]), .caution, "Headache plus a total of 3 is mild AMS")
+        XCTAssertEqual(check([0, 1, 1, 1, 0]), .safe, "No headache: not AMS by Lake Louise")
+        XCTAssertEqual(check([1, 0, 0, 0, 0]), .safe)
+        XCTAssertEqual(check([3, 0, 0, 0, 0]), .descend, "Severe headache")
+        XCTAssertEqual(check([0, 0, 0, 0, 0], spo2: 78), .descend)
+        XCTAssertEqual(check([2, 2, 2, 1, 0]), .descend, "Total 7")
+    }
+}
+
+/// On a rest day with no stage, "today's stage" stays on the last one walked,
+/// rather than jumping to tomorrow's.
+nonisolated final class CurrentStageRegressionTests: XCTestCase {
+    @MainActor func testRestDayKeepsYesterdaysStage() {
+        // Day 3 of 5 today.
+        var trip = Trip(name: "Trek", place: "Lukla, Nepal", kind: .trek, start: .now.addingTimeInterval(-2 * 86_400), dayCount: 5, photo: .himalaya)
+        trip.stages = [1, 2, 4].map { Stage(day: $0, title: "Day \($0)", meta: "", km: 5, ascent: 100, altitude: 3_000 + $0 * 100) }
+        XCTAssertEqual(trip.todayIndex, 2)
+        XCTAssertEqual(trip.stages[trip.currentStageIndex].day, 2)
+    }
+}
+
+/// Permit fees count toward the trip budget, like the guide and gear rental.
+nonisolated final class PermitFeeRegressionTests: XCTestCase {
+    @MainActor func testPermitFeesAreInTheBudget() throws {
+        var trip = Trip(name: "EBC", place: "Lukla, Nepal", kind: .trek, start: .now, dayCount: 12, photo: .himalaya)
+        trip.adventure = Adventure()
+        trip.adventure?.permits = [Permit(name: "Sagarmatha NP", meta: "", paid: true, fee: 3_000),
+                                   Permit(name: "Khumbu", meta: "", paid: false, fee: 2_000),
+                                   Permit(name: "TIMS", meta: "", paid: false)]
+        XCTAssertEqual(trip.permitFees, 5_000)
+        XCTAssertEqual(trip.totalPlanned, 5_000)
+        XCTAssertEqual(trip.spendByCategory[.other], 5_000)
+        XCTAssertEqual(trip.dayIndices.reduce(0) { $0 + trip.spend(onDay: $1) }, 5_000, accuracy: 0.01)
+        // Survives a backup round trip.
+        let data = try DataPortability.encode(trips: [trip], wardrobe: [], profile: Profile())
+        let back = try DataPortability.decode(data)
+        XCTAssertEqual(back.trips.first?.permitFees, 5_000)
+    }
+}

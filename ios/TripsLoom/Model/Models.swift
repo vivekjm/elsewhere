@@ -263,6 +263,7 @@ extension Trip {
         for expense in expenses { totals[expense.category, default: 0] += expense.amount }
         if gearRental > 0 { totals[.other, default: 0] += gearRental }
         if guideCost > 0 { totals[.activities, default: 0] += guideCost }
+        if permitFees > 0 { totals[.other, default: 0] += permitFees }
         return totals
     }
 
@@ -270,6 +271,11 @@ extension Trip {
     var guideCost: Double {
         guard let guide = adventure?.guide, guide.booked else { return 0 }
         return Double(max(guide.dayRate, 0)) * Double(max(dayCount, 1))
+    }
+
+    /// Permit fees entered as amounts.
+    var permitFees: Double {
+        (adventure?.permits ?? []).reduce(0) { $0 + max($1.fee ?? 0, 0) }
     }
 
     /// Gear marked Rent, at its daily rate for every day of the trip.
@@ -315,7 +321,7 @@ extension Trip {
     /// Plans and expenses on that day, plus an even share of whole-trip
     /// expenses (like a stay booked for all nights).
     func spend(onDay day: Int) -> Double {
-        let wholeTrip = expenses.filter { $0.day == nil }.reduce(0) { $0 + $1.amount } + gearRental + guideCost
+        let wholeTrip = expenses.filter { $0.day == nil }.reduce(0) { $0 + $1.amount } + gearRental + guideCost + permitFees
         return plans(on: day).reduce(0) { $0 + $1.cost }
             + expenses.filter { $0.day == day }.reduce(0) { $0 + $1.amount }
             + wholeTrip / Double(max(dayCount, 1))
@@ -333,9 +339,11 @@ extension Trip {
     var totalKm: Double { stages.reduce(0) { $0 + $1.km } }
     var totalAscent: Int { stages.reduce(0) { $0 + $1.ascent } }
     var maxAltitude: Int { stages.map(\.altitude).max() ?? 0 }
+    /// Today's stage: the latest one on or before today (stage days count
+    /// from 1), so rest days without a stage keep showing where you are.
     var currentStageIndex: Int {
         guard let today = todayIndex else { return status == .past ? max(stages.count - 1, 0) : 0 }
-        return min(today, max(stages.count - 1, 0))
+        return stages.lastIndex { $0.day <= today + 1 } ?? 0
     }
 }
 
@@ -745,6 +753,8 @@ struct Permit: Identifiable, Codable, Hashable, Sendable {
     var name: String
     var meta: String
     var paid: Bool
+    /// Fee in the trip's currency, counted in the budget; nil when unknown.
+    var fee: Double?
 }
 
 struct Guide: Codable, Hashable, Sendable {
@@ -791,7 +801,10 @@ struct AltitudeCheckIn: Identifiable, Codable, Hashable, Sendable {
 
     var advice: Advice {
         if spo2 < 80 || score >= 7 || symptoms.first ?? 0 >= 3 { return .descend }
-        if spo2 < 85 || score >= 5 { return .caution }
+        // Lake Louise: a headache with a total of 3 or more is acute mountain
+        // sickness, and the standard advice is not to go higher.
+        let headache = symptoms.first ?? 0
+        if spo2 < 85 || score >= 5 || (headache >= 1 && score >= 3) { return .caution }
         return .safe
     }
 

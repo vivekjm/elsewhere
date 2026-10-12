@@ -80,6 +80,7 @@ enum DataPortability {
                   trip.stops.allSatisfy({ trip.dayIndices.contains($0.day) && $0.name.count <= 200 }),
                   trip.dives.allSatisfy({ trip.dayIndices.contains($0.day) && (0...500).contains($0.depthM) && (0...1440).contains($0.minutes) }),
                   trip.settlements?.allSatisfy({ $0.amount.isFinite && abs($0.amount) <= 10_000_000 }) ?? true,
+                  trip.adventure?.permits.allSatisfy({ $0.fee.map { $0.isFinite && (0...10_000_000).contains($0) } ?? true }) ?? true,
                   trip.adventure?.checkIns.allSatisfy({ $0.symptoms.count == AltitudeCheckIn.symptomNames.count && $0.symptoms.allSatisfy({ (0...3).contains($0) }) && (0...100).contains($0.spo2) }) ?? true else {
                 throw BackendError(message: "This backup contains invalid dates, amounts or missing wardrobe items. Nothing has been changed.")
             }

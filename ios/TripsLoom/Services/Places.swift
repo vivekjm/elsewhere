@@ -11,6 +11,8 @@ enum Places {
         var latitude: Double
         var longitude: Double
         var country: String?
+        /// IANA zone ("Asia/Tokyo"); missing on places cached by older versions.
+        var timeZone: String?
     }
 
     private static var cache: [String: Place] = {
@@ -26,7 +28,8 @@ enum Places {
     static func lookup(_ name: String) async -> Place? {
         let k = key(name)
         guard !k.isEmpty else { return nil }
-        if let hit = cache[k] { return hit }
+        // Older cache entries lack a time zone; look those up again once.
+        if let hit = cache[k], hit.timeZone != nil { return hit }
         if misses.contains(k) { return nil }
         var found = await appleMaps(name)
         if found == nil { found = await openMeteo(name) }
@@ -51,7 +54,8 @@ enum Places {
         let home = Locale.current.region?.identifier
         let item = items.first { $0.addressRepresentations?.region?.identifier == home } ?? items[0]
         let coordinate = item.location.coordinate
-        return Place(latitude: coordinate.latitude, longitude: coordinate.longitude, country: item.addressRepresentations?.regionName)
+        return Place(latitude: coordinate.latitude, longitude: coordinate.longitude, country: item.addressRepresentations?.regionName,
+                     timeZone: item.timeZone?.identifier)
     }
 
     /// Fallback when Apple Maps has no answer: Open-Meteo's gazetteer, keeping
@@ -70,6 +74,7 @@ enum Places {
                 var country_code: String?
                 var admin1: String?
                 var population: Int?
+                var timezone: String?
             }
             var results: [Result]?
         }
@@ -87,6 +92,6 @@ enum Places {
             return s
         }
         guard let best = results.max(by: { score($0) < score($1) }) else { return nil }
-        return Place(latitude: best.latitude, longitude: best.longitude, country: best.country)
+        return Place(latitude: best.latitude, longitude: best.longitude, country: best.country, timeZone: best.timezone)
     }
 }

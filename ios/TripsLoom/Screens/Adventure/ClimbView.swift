@@ -59,9 +59,13 @@ struct ClimbView: View {
         let top = trip.stages.filter { $0.altitude > 0 }.max { $0.altitude < $1.altitude }
             ?? trip.stages.last { $0.title.localizedCaseInsensitiveContains("summit") }
         let center = top.map { $0.day - 1 } ?? max(trip.dayCount - 2, 0)
-        let from = trip.date(ofDay: max(center - 3, 0))
-        let to = trip.date(ofDay: min(center + 3, trip.dayCount - 1))
-        return calendar.startOfDay(for: from)...calendar.startOfDay(for: to)
+        // Forecast days are calendar dates at the phone's midnight; match the
+        // trip's dates the same way, whatever the destination's time zone.
+        func local(_ day: Int) -> Date {
+            TravelDates.date(trip.dayKey(day), in: .current) ?? calendar.startOfDay(for: trip.date(ofDay: day))
+        }
+        let from = local(max(center - 3, 0)), to = local(min(center + 3, trip.dayCount - 1))
+        return from...max(from, to)
     }
 
     private var isLive: Bool { trip.adventure?.summit?.updated != nil }

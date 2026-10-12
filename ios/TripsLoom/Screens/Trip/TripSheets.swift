@@ -323,6 +323,9 @@ struct TripEditSheet: View {
             }
             for i in draft.gear.indices { draft.gear[i].rentPerDay = draft.gear[i].rentPerDay.map { Int((Double($0) * rate).rounded()) } }
             if let dayRate = draft.adventure?.guide?.dayRate { draft.adventure?.guide?.dayRate = Int((Double(dayRate) * rate).rounded()) }
+            if let permits = draft.adventure?.permits {
+                draft.adventure?.permits = permits.map { var p = $0; p.fee = p.fee.map { Fmt.roundedCurrency($0 * rate, draft.currency) }; return p }
+            }
         }
         if let newCover, let file = CoverStore.shared.save(newCover, for: draft.id) {
             draft.coverFile = file
