@@ -69,8 +69,8 @@ struct GarmentCard: View {
         VStack(alignment: .leading, spacing: 8) {
             GarmentImage(item: item)
                 .frame(height: 130)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
                 .overlay(alignment: .topTrailing) {
                     CornerArrow()
                         .background(Circle().fill(Color.ink.opacity(item.isLight && item.imageFile == nil ? 0.35 : 0)))
@@ -88,7 +88,7 @@ struct GarmentCard: View {
         }
         .padding(8)
         .glass(24)
-        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
@@ -128,7 +128,7 @@ struct GarmentSheet: View {
                     VStack(alignment: .leading, spacing: 12) {
                         GarmentImage(item: item)
                             .frame(height: 220)
-                            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         GlassList {
                             Toggle(isOn: Binding(get: { trip.capsule.contains(itemID) }, set: { setPacked($0, item: item) })) {
                                 ListRow("Pack for \(trip.name)", meta: "Adds it to the packing list")

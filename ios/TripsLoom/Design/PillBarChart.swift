@@ -55,8 +55,8 @@ struct PillBarChart: View {
                             .fixedSize()
                             .padding(.horizontal, 10)
                             .padding(.vertical, 8)
-                            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color(hex: 0x0A0C10, opacity: 0.85)))
-                            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+                            .background(RoundedRectangle(cornerRadius: 4, style: .continuous).fill(Color(hex: 0x0A0C10, opacity: 0.85)))
+                            .overlay(RoundedRectangle(cornerRadius: 4, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
                             .offset(y: -(min(barHeight, height) + 10))
                             .transition(.scale(scale: 0.85, anchor: .bottom).combined(with: .opacity))
                             .id(callout)
@@ -78,7 +78,7 @@ struct PillBarChart: View {
 
     @ViewBuilder
     private func barBody(_ bar: PillBar, height: CGFloat) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 20, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: 4, style: .continuous)
         VStack {
             // The sideways label needs room above the badge; empty days
             // don't need one.

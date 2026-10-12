@@ -141,7 +141,7 @@ struct SharedTripCard: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .glass(28)
     }
 }

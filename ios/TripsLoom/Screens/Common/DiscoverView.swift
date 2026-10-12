@@ -214,8 +214,8 @@ struct DiscoverView: View {
                 }
                 .clipped()
         }
-            .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).strokeBorder(Color.white.opacity(0.1), lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.white.opacity(0.1), lineWidth: 1))
             .zoomSource("discover-featured")
             .contentTransition(.opacity)
             .animation(.smooth(duration: 0.45), value: filter)

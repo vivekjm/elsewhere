@@ -99,7 +99,7 @@ struct AltitudeCheckInView: View {
                                 Button {
                                     withAnimation(Motion.quick) { entry.symptoms[i] = current == level ? level - 1 : level }
                                 } label: {
-                                    Capsule()
+                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
                                         .fill(level <= current ? levelColor(current) : Color.white.opacity(0.1))
                                         .frame(height: 10)
                                         .frame(maxWidth: .infinity)
@@ -148,7 +148,7 @@ struct AltitudeCheckInView: View {
         .padding(.trailing, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(alignment: .leading) { CategoryBar(color: color, inset: 16) }
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .glass(24)
     }
 
@@ -221,6 +221,6 @@ private struct MiniStepper: View {
         .foregroundStyle(.white)
         .padding(.horizontal, 10)
         .padding(.vertical, 4).frame(minHeight: 30)
-        .background(Capsule().fill(Color.white.opacity(0.1)))
+        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.1)))
     }
 }

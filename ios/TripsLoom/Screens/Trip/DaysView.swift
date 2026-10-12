@@ -212,14 +212,14 @@ struct WeekStrip: View {
             VStack(spacing: 3) {
                 Text(Fmt.weekdayLetter(date, timeZone: trip.timeZone))
                     .font(.mono(11))
-                    .foregroundStyle(selected ? Color.ink : Color.textMuted)
+                    .foregroundStyle(selected ? Color.lime : Color.textMuted)
                 Text(Fmt.dayNumber(date, timeZone: trip.timeZone))
-                    .font(.sf(19, .bold))
-                    .foregroundStyle(selected ? Color.ink : .white)
+                    .font(.display(22))
+                    .foregroundStyle(selected ? Color.lime : .white)
                     .lineLimit(1)
                     .fixedSize()
                 Circle()
-                    .fill(hasPlans ? (selected ? Color.ink : Color.lime) : .clear)
+                    .fill(hasPlans ? Color.lime : .clear)
                     .frame(width: 4, height: 4)
             }
             .padding(.horizontal, typeSize.isAccessibilitySize ? 12 : 0)
@@ -228,19 +228,14 @@ struct WeekStrip: View {
             // Grows with the text size so the weekday letter stays inside.
             .padding(.vertical, 6)
             .frame(minHeight: 66)
-            .background {
-                // One lime pill slides between days.
-                ZStack {
-                    Color.clear.glass(22)
-                    if selected {
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .fill(Color.lime)
-                            .shadow(color: .lime.opacity(0.25), radius: 10, y: 8)
-                            .matchedGeometryEffect(id: "selected-day", in: ns)
-                    }
+            // One gold rule slides between days; the section rule below is the baseline.
+            .overlay(alignment: .bottom) {
+                if selected {
+                    Rectangle().fill(Color.lime).frame(height: 2)
+                        .matchedGeometryEffect(id: "selected-day", in: ns)
                 }
             }
-            .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.card)
         .id(day)
@@ -299,9 +294,9 @@ struct PlanCard: View {
         .padding(.leading, 18)
         .padding(.trailing, 16)
         .overlay(alignment: .leading) { CategoryBar(color: plan.category.color) }
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .glass(24)
-        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityHint("Edit plan")
     }

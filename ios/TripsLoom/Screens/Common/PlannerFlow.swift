@@ -69,7 +69,7 @@ struct PlannerFlow: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 4).frame(minHeight: 36)
-                                .background(Capsule().fill(Color.white.opacity(0.12)))
+                                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.12)))
                         }
                     }
 
@@ -175,7 +175,7 @@ struct PlannerFlow: View {
         .padding(.trailing, 7)
         .padding(.vertical, 7)
         .glass(32, fill: Color(hex: 0x14161C, opacity: 0.6))
-        .overlay(RoundedRectangle(cornerRadius: 32, style: .continuous).strokeBorder(Color.lime.opacity(0.5), lineWidth: 1.5))
+        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.lime.opacity(0.5), lineWidth: 1.5))
         .shadow(color: .lime.opacity(0.14), radius: 12)
         .padding(.horizontal, Metrics.gutter)
         .padding(.bottom, 8)
@@ -377,8 +377,8 @@ private struct DraftingPlaceholder: View {
                     HStack(spacing: 12) {
                         Circle().fill(Color.white.opacity(index == 0 ? 0.3 : 0.1)).frame(width: 32, height: 32)
                         VStack(alignment: .leading, spacing: 6) {
-                            Capsule().fill(Color.white.opacity(0.16)).frame(width: 150 + CGFloat(index * 17 % 60), height: 12)
-                            Capsule().fill(Color.white.opacity(0.08)).frame(width: 210 - CGFloat(index * 23 % 70), height: 9)
+                            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.16)).frame(width: 150 + CGFloat(index * 17 % 60), height: 12)
+                            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.08)).frame(width: 210 - CGFloat(index * 23 % 70), height: 9)
                         }
                         Spacer()
                     }
@@ -389,7 +389,7 @@ private struct DraftingPlaceholder: View {
             .padding(.horizontal, 16)
             .glass(28)
             .shimmer()
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Drafting your trip")

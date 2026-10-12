@@ -95,7 +95,7 @@ struct SignInView: View {
                 }
                 .signInWithAppleButtonStyle(.white)
                 .frame(height: 56)
-                .clipShape(Capsule())
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .disabled(working != nil)
             }
             if offers("google") {
@@ -261,9 +261,9 @@ private struct GlimpseStack: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.media, style: .continuous)
                 .fill(Color(hex: 0x141922, opacity: 0.55))
-                .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(.white.opacity(0.07), lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: Radius.media, style: .continuous).strokeBorder(.white.opacity(0.07), lineWidth: 1))
                 .frame(width: 272 * 0.92, height: 150)
                 .offset(y: risen || reduceMotion ? -22 : -8)
             GlimpseCard(glimpse: glimpse)
@@ -290,7 +290,8 @@ private struct GlimpseCard: View {
         }
         .padding(16)
         .frame(width: 272, alignment: .leading)
-        .glass(24, fill: Color(hex: 0x141922, opacity: 0.78))
+        .background(RoundedRectangle(cornerRadius: Radius.media, style: .continuous).fill(Color(hex: 0x141922, opacity: 0.88)))
+        .overlay(RoundedRectangle(cornerRadius: Radius.media, style: .continuous).strokeBorder(Color.rule, lineWidth: 1))
     }
 
     private func header(_ eyebrow: String, _ trailing: String? = nil) -> some View {
@@ -375,7 +376,7 @@ private struct PageDots: View {
     var body: some View {
         HStack(spacing: 6) {
             ForEach(0..<count, id: \.self) { i in
-                Capsule()
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(i == current ? Color.lime : Color.white.opacity(0.22))
                     .frame(width: i == current ? 22 : 6, height: 6)
             }

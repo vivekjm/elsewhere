@@ -90,14 +90,14 @@ struct GearView: View {
             GeometryReader { geo in
                 HStack(spacing: 3) {
                     ForEach(shown) { group in
-                        Capsule()
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(group.color)
                             .frame(width: max(4, (geo.size.width - CGFloat(shown.count) * 3) * CGFloat(byGroup[group] ?? 0) / 1000 / max(limit, total)))
                     }
                     if !over {
                         StripeTrack(radius: 5, opacity: 0.12)
-                            .background(Capsule().fill(Color.white.opacity(0.04)))
-                            .clipShape(Capsule())
+                            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.04)))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                 }
             }

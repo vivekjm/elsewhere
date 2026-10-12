@@ -175,6 +175,7 @@ struct TripsHomeView: View {
                 .onTapGesture { store.open(next.id, budget: true, from: "budget-\(next.id)") }
                 .accessibilityAddTraits(.isButton)
             }
+            .modifier(RuledSection())
 
             GlassList("Up next") {
                 Menu {
@@ -204,8 +205,8 @@ struct TripsHomeView: View {
         } else {
             EmptyNote(title: "Your first trip starts here.", message: "Add one you've booked, or describe one and let the planner draft the days, stays and packing.")
             actionsLayout {
-                Button("Plan with AI") { router.plan(from: "plan-ai") }.buttonStyle(CTAStyle(kind: .glass)).zoomSource("plan-ai", radius: 28)
-                Button("New trip") { router.startNewTrip(from: "new-trip") }.buttonStyle(CTAStyle()).zoomSource("new-trip", radius: 28)
+                Button("Plan with AI") { router.plan(from: "plan-ai") }.buttonStyle(CTAStyle(kind: .glass)).zoomSource("plan-ai", radius: 12)
+                Button("New trip") { router.startNewTrip(from: "new-trip") }.buttonStyle(CTAStyle()).zoomSource("new-trip", radius: 12)
             }
         }
     }
@@ -246,24 +247,23 @@ struct FeaturedTripCard: View {
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        // The photo sits behind a stacked layout, so large text makes the card
-        // taller instead of overlapping the chip or truncating the name.
-        VStack(spacing: 0) {
-            HStack {
-                Chip(trip.countdownLabel, tone: .onPhoto(.lime))
-                Spacer()
-                CornerArrow()
-            }
-            .padding(12)
-            Spacer(minLength: 24)
+        // The photograph stands alone; the words sit beneath it like a caption.
+        VStack(alignment: .leading, spacing: 12) {
+            Color.photoPlaceholder
+                .frame(maxWidth: .infinity)
+                .frame(height: height)
+                .overlay { RemotePhoto(photo: trip.photo, width: 900).scaleEffect(1.25).parallax().tripCover(trip) }
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: Radius.media, style: .continuous))
+                .overlay(alignment: .topLeading) { Chip(trip.countdownLabel, tone: .onPhoto(.lime)).padding(12) }
             // At accessibility sizes the ring drops below so the name gets the full width.
-            (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(spacing: 12))) {
-                VStack(alignment: .leading, spacing: 3) {
+            (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(alignment: .top, spacing: 12))) {
+                VStack(alignment: .leading, spacing: 4) {
                     Group {
                         if typeSize.isAccessibilitySize {
-                            WordFittingTitle(text: trip.name, size: 20).lineLimit(4)
+                            WordFittingTitle(text: trip.name, size: 24).lineLimit(4)
                         } else {
-                            Text(trip.name).font(.display(24)).lineLimit(1)
+                            Text(trip.name).font(.display(28)).lineLimit(2)
                         }
                     }
                         .foregroundStyle(.white)
@@ -273,23 +273,12 @@ struct FeaturedTripCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .layoutPriority(1)
-                ProgressRing(progress: trip.readiness, size: 48, text: "\(Int(trip.readiness * 100))%", fontSize: 12)
+                ProgressRing(progress: trip.readiness, size: 44, text: "\(Int(trip.readiness * 100))%", fontSize: 11)
                     .accessibilityLabel("\(Int(trip.readiness * 100)) percent ready")
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .glass(22, fill: Color(hex: 0x12141A, opacity: 0.5))
-            .padding(10)
+            .padding(.horizontal, 2)
         }
-        .frame(maxWidth: .infinity, minHeight: height)
-        .background {
-            Color.photoPlaceholder
-                .overlay { RemotePhoto(photo: trip.photo, width: 900).scaleEffect(1.25).parallax().tripCover(trip) }
-                .clipped()
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).strokeBorder(Color.white.opacity(0.1), lineWidth: 1))
-        .contentShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+        .contentShape(Rectangle())
     }
 }
 
@@ -300,13 +289,15 @@ struct StatCard<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text(title).font(.sf(15, .semibold)).foregroundStyle(.white)
+                Text(title).eyebrow()
                 Spacer()
                 CornerArrow().accessibilityHidden(true)
             }
             content
         }
-        .glassCard(padding: 14)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
         // One element: "Planned, $0.00, No budget set".
         .accessibilityElement(children: .combine)

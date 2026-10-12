@@ -148,7 +148,7 @@ struct PaywallView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .glass(24)
             .overlay {
-                if selected { RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(Color.lime, lineWidth: 2) }
+                if selected { RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.lime, lineWidth: 2) }
             }
             .overlay(alignment: .topTrailing) {
                 if option == .yearly, let saving = savingPercent { Chip("Save \(saving)%", tone: .solid).offset(x: -12, y: -12) }

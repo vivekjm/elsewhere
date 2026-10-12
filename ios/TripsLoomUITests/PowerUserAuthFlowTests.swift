@@ -63,7 +63,7 @@ nonisolated final class PowerUserAuthFlowTests: PowerUserScenarioCase {
         tap(app, app.buttons["Continue"])
         tap(app, app.buttons["Budget and shared costs"])
         tap(app, app.buttons["Continue"])
-        tap(app, app.buttons["Imperial"])
+        tap(app, app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Imperial'")).firstMatch)
         shot(app, "95-onboarding-units-and-currency")
         tap(app, app.buttons["save-travel-preferences"])
         XCTAssertTrue(app.buttons["New trip"].waitForExistence(timeout: 10))

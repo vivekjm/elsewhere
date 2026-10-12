@@ -111,7 +111,7 @@ struct Chip: View {
             .padding(.horizontal, 9)
             .padding(.vertical, 4).frame(minHeight: 24)
             .foregroundStyle(foreground)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(background))
+            .background(RoundedRectangle(cornerRadius: Radius.chip, style: .continuous).fill(background))
     }
 
     private var foreground: Color {
@@ -156,9 +156,9 @@ struct GlassPillStyle: ButtonStyle {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .frame(minHeight: max(height, 44))
-            .background(Capsule().fill(Color.white.opacity(configuration.isPressed ? 0.18 : 0.12)))
-            .overlay(TopHighlight(shape: Capsule(), opacity: 0.12))
-            .contentShape(Capsule())
+            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(configuration.isPressed ? 0.12 : 0.06)))
+            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.rule, lineWidth: 1))
+            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             .modifier(PressScale(pressed: configuration.isPressed))
     }
 }
@@ -176,8 +176,8 @@ struct LimePillStyle: ButtonStyle {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .frame(minHeight: max(height, 44))
-            .background(Capsule().fill(Color.lime))
-            .contentShape(Capsule())
+            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.lime))
+            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             .modifier(PressScale(pressed: configuration.isPressed))
     }
 }
@@ -192,8 +192,8 @@ struct OutlinePillStyle: ButtonStyle {
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
             .frame(minHeight: 44)
-            .background(Capsule().strokeBorder(Color.white.opacity(0.24), lineWidth: 1))
-            .contentShape(Capsule())
+            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.white.opacity(0.28), lineWidth: 1))
+            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             .modifier(PressScale(pressed: configuration.isPressed))
     }
 }
@@ -208,31 +208,28 @@ struct OutlinePlusLabel: View {
     }
 }
 
-/// 56pt call to action. Lime is the one thing to do next.
+/// 56pt call to action. Gold is the one thing to do next.
 struct CTAStyle: ButtonStyle {
     enum Kind { case lime, glass, white }
     var kind: Kind = .lime
     var height: CGFloat = 56
 
     func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
         configuration.label
-            .font(.sf(17, kind == .glass ? .semibold : .bold))
+            .font(.sf(17, .semibold))
             .foregroundStyle(kind == .glass ? Color.white : Color.ink)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
             .frame(minHeight: max(height, 44))
             .background {
                 switch kind {
-                case .lime:
-                    Capsule().fill(Color.lime)
-                        .shadow(color: .lime.opacity(0.25), radius: 16, y: 12)
-                case .white:
-                    Capsule().fill(Color.white)
-                case .glass:
-                    Capsule().fill(Color.clear).glassCapsule()
+                case .lime: shape.fill(Color.lime)
+                case .white: shape.fill(Color.white)
+                case .glass: shape.fill(Color.white.opacity(0.04)).overlay(shape.strokeBorder(Color.white.opacity(0.3), lineWidth: 1))
                 }
             }
-            .contentShape(Capsule())
+            .contentShape(shape)
             .opacity(configuration.isPressed ? 0.9 : 1)
             .modifier(PressScale(pressed: configuration.isPressed))
     }
@@ -242,11 +239,9 @@ struct CTAStyle: ButtonStyle {
 struct CornerArrow: View {
     var body: some View {
         Image(systemName: "arrow.up.right")
-            .font(.system(size: 13, weight: .bold))
-            .foregroundStyle(.white)
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(Color.textMuted)
             .frame(width: 34, height: 34)
-            .background(Circle().fill(Color.white.opacity(0.08)))
-            .overlay(Circle().strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
     }
 }
 
@@ -285,7 +280,7 @@ struct IconTile: View {
     enum Size {
         case large, medium, small
         var side: CGFloat { switch self { case .large: 40; case .medium: 36; case .small: 28 } }
-        var radius: CGFloat { switch self { case .large: 13; case .medium: 12; case .small: 9 } }
+        var radius: CGFloat { switch self { case .large: 8; case .medium: 8; case .small: 6 } }
         var glyph: CGFloat { switch self { case .large: 17; case .medium: 15; case .small: 12 } }
     }
 
@@ -388,11 +383,13 @@ struct GlassList<Trailing: View, Content: View>: View {
         VStack(alignment: .leading, spacing: 0) {
             if let title {
                 HStack {
-                    Text(title).font(.display(19)).foregroundStyle(.white)
+                    Text(title).font(.display(21)).foregroundStyle(.white)
                     Spacer(minLength: 8)
                     trailing
                 }
-                .frame(minHeight: 36)
+                .frame(minHeight: 40)
+                .padding(.bottom, 4)
+                Rectangle().fill(Color.rule).frame(height: 1)
             }
             Group(subviews: content) { rows in
                 ForEach(rows) { row in
@@ -403,11 +400,11 @@ struct GlassList<Trailing: View, Content: View>: View {
                 }
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, title == nil ? 2 : 14)
+        .padding(.horizontal, 2)
+        .padding(.top, title == nil ? 2 : 10)
         .padding(.bottom, 2)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glass(28)
+        .modifier(RuledSection(top: title == nil))
     }
 }
 
@@ -532,37 +529,35 @@ struct PillSegmented<T: Hashable>: View {
         }
     }
 
+    /// Underlined tabs on a hairline: the selected one carries a gold rule.
     private var pills: some View {
         HStack(spacing: 0) {
             ForEach(options, id: \.0) { value, label in
                 let selected = value == selection
                 Button {
-                    withAnimation(.spring(duration: 0.4, bounce: 0.25)) { selection = value }
+                    withAnimation(.spring(duration: 0.4, bounce: 0.15)) { selection = value }
                 } label: {
                     Text(label)
-                        .font(.sf(14, selected ? .semibold : .regular))
+                        .font(.sf(15, selected ? .semibold : .regular))
                         .foregroundStyle(selected ? Color.white : Color.textMuted)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                         .padding(.horizontal, 8)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background {
+                        .overlay(alignment: .bottom) {
                             if selected {
-                                Capsule().fill(Color.white.opacity(0.16))
-                                    .overlay(TopHighlight(shape: Capsule()))
+                                Rectangle().fill(Color.lime).frame(height: 2)
                                     .matchedGeometryEffect(id: "pill", in: ns)
                             }
                         }
-                        .contentShape(Capsule())
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
-        .padding(3)
-        .frame(height: height)
-        .background(Capsule().fill(Color.white.opacity(0.07)))
-        .overlay(Capsule().strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
+        .frame(height: max(height, 40))
+        .overlay(alignment: .bottom) { Rectangle().fill(Color.rule).frame(height: 1).allowsHitTesting(false) }
         .sensoryFeedback(.selection, trigger: selection)
     }
 }
@@ -593,14 +588,14 @@ struct FilterPills<T: Hashable>: View {
                                 .padding(.vertical, 4).frame(minHeight: 36)
                                 .background {
                                     if selected {
-                                        Capsule().fill(Color.lime)
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.lime)
                                             .matchedGeometryEffect(id: "filter", in: ns)
                                     } else {
-                                        Capsule().fill(Color.white.opacity(0.12))
-                                            .overlay(TopHighlight(shape: Capsule(), opacity: 0.12))
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.12))
+                                            .overlay(TopHighlight(shape: RoundedRectangle(cornerRadius: 8, style: .continuous), opacity: 0.12))
                                     }
                                 }
-                                .contentShape(Capsule())
+                                .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
                         .buttonStyle(.card)
                         .id(value)
@@ -759,7 +754,7 @@ struct EmptyNote: View {
             Text(message).font(.sf(14)).foregroundStyle(Color.textMuted)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .glassCard(padding: 18)
+        .glassCard(padding: 20)
     }
 }
 

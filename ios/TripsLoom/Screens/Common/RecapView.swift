@@ -103,7 +103,7 @@ struct RecapView: View {
             .frame(width: 150)
         }
         .frame(height: 266)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private func crop(scale: CGFloat, anchor: UnitPoint) -> some View {
@@ -123,6 +123,7 @@ struct RecapStatRow<Content: View>: View {
         (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(alignment: .top, spacing: 10))) {
             content
         }
+        .modifier(RuledSection())
     }
 }
 
@@ -134,7 +135,9 @@ struct RecapStat: View {
             Text(value).font(.display(24)).foregroundStyle(.white).lineLimit(1).minimumScaleFactor(0.7)
             Text(label).font(.sf(13)).foregroundStyle(Color.textMuted)
         }
-        .glassCard(padding: 14)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -199,7 +202,7 @@ private struct RecapStoryCard: View {
                         }
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(.white.opacity(0.14)))
+                        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.white.opacity(0.14)))
                     }
                 }
                 .padding(.top, 8)

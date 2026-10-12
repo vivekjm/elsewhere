@@ -73,7 +73,7 @@ struct OnboardingView: View {
             .accessibilityLabel("Back")
             HStack(spacing: 5) {
                 ForEach(0..<steps, id: \.self) { i in
-                    Capsule()
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(i <= step ? Color.lime : Color.white.opacity(0.16))
                         .frame(height: 3)
                 }
@@ -118,12 +118,12 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 24) {
             heading("Welcome", name.isEmpty ? "Let's set things up." : "Good to have you, \(firstName).",
                     "Two details, so plans, packing lists and suggestions are made for you.")
-            field("Your name", "First name is fine", text: $name, icon: "person")
+            field("Your name", "First name is fine", text: $name, icon: "person", focused: field == .name)
                 .textContentType(.name)
                 .focused($field, equals: .name)
                 .submitLabel(.next)
                 .onSubmit { field = .base }
-            field("Home base", "City or airport, like London or LHR", text: $base, icon: "house")
+            field("Home base", "City or airport, like London or LHR", text: $base, icon: "house", focused: field == .base)
                 .textInputAutocapitalization(.words)
                 .focused($field, equals: .base)
                 .submitLabel(.done)
@@ -138,13 +138,14 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 24) {
             heading("Your next trip", "What brings you here?",
                     "We'll take you straight to the right place when you finish.")
-            VStack(spacing: 10) {
+            VStack(spacing: 0) {
                 ForEach(PreferenceOptions.Intent.allCases, id: \.self) { option in
                     ChoiceCard(title: option.title, detail: option.detail, symbol: option.symbol, selected: intent == option) {
                         withAnimation(Motion.snappy) { intent = option }
                     }
                 }
             }
+            .modifier(RuledSection())
         }
     }
 
@@ -152,7 +153,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 24) {
             heading("What matters", "What should every trip get right?",
                     "Choose as many as you like. Suggestions lead with these.")
-            VStack(spacing: 10) {
+            VStack(spacing: 0) {
                 ForEach(PreferenceOptions.focuses) { option in
                     ChoiceCard(title: option.title, detail: option.detail, symbol: option.symbol, selected: focus.contains(option.id), multiple: true) {
                         withAnimation(Motion.snappy) {
@@ -161,6 +162,7 @@ struct OnboardingView: View {
                     }
                 }
             }
+            .modifier(RuledSection())
         }
     }
 
@@ -169,10 +171,7 @@ struct OnboardingView: View {
             heading("Almost there", "How should we count?",
                     "Used for distances, pack weights and every budget. Change them any time in Profile.")
             section("Units") {
-                HStack(spacing: 10) {
-                    UnitChoice(title: "Metric", detail: "km · kg · °C", selected: metric) { withAnimation(Motion.snappy) { metric = true } }
-                    UnitChoice(title: "Imperial", detail: "mi · lb · °F", selected: !metric) { withAnimation(Motion.snappy) { metric = false } }
-                }
+                PillSegmented(options: [(true, "Metric · km, kg, °C"), (false, "Imperial · mi, lb, °F")], selection: $metric, height: 44)
             }
             section("Currency") {
                 Menu {
@@ -201,10 +200,10 @@ struct OnboardingView: View {
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(Color.textMuted)
                     }
-                    .padding(.horizontal, 14)
-                    .frame(minHeight: 64)
-                    .glass(20)
-                    .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .padding(.horizontal, 2)
+                    .frame(minHeight: 60)
+                    .overlay(alignment: .bottom) { Rectangle().fill(Color.rule).frame(height: 1) }
+                    .contentShape(Rectangle())
                 }
                 .accessibilityLabel("Currency, \(CurrencyService.name(for: currency))")
             }
@@ -247,9 +246,9 @@ struct OnboardingView: View {
         }
     }
 
-    private func field(_ label: String, _ prompt: String, text: Binding<String>, icon: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(label).eyebrow()
+    private func field(_ label: String, _ prompt: String, text: Binding<String>, icon: String, focused: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label).eyebrow(focused ? .lime : .textMuted)
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.system(size: 15, weight: .medium))
@@ -262,9 +261,10 @@ struct OnboardingView: View {
                     .accessibilityLabel(label)
                     .accessibilityIdentifier(label)
             }
-            .padding(.horizontal, 18)
-            .frame(minHeight: 56)
-            .glass(18)
+            .padding(.horizontal, 2)
+            .frame(minHeight: 48)
+            .overlay(alignment: .bottom) { Rectangle().fill(focused ? Color.lime : Color.rule).frame(height: focused ? 1.5 : 1) }
+            .animation(Motion.quick, value: focused)
         }
     }
 
@@ -316,8 +316,8 @@ private extension PreferenceOptions.Intent {
     }
 }
 
-/// A full-width choice with an icon, title and one line of detail. Gold
-/// when chosen; a tick for multiple-choice lists, a dot otherwise.
+/// A choice row: icon, title and one line of detail, with a hairline below.
+/// The chosen one carries gold.
 private struct ChoiceCard: View {
     var title: String
     var detail: String
@@ -331,74 +331,33 @@ private struct ChoiceCard: View {
             HStack(spacing: 14) {
                 Image(systemName: symbol)
                     .font(.system(size: 17, weight: .medium))
-                    .foregroundStyle(selected ? Color.ink : .white)
-                    .frame(width: 42, height: 42)
-                    .background(Circle().fill(selected ? Color.ink.opacity(0.1) : Color.white.opacity(0.08)))
+                    .foregroundStyle(selected ? Color.lime : Color.textMuted)
+                    .frame(width: 28)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
                         .font(.sf(16, .semibold))
-                        .foregroundStyle(selected ? Color.ink : .white)
+                        .foregroundStyle(selected ? Color.lime : .white)
                     Text(detail)
                         .font(.sf(13))
-                        .foregroundStyle(selected ? Color.ink.opacity(0.7) : Color.textMuted)
+                        .foregroundStyle(Color.textMuted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .multilineTextAlignment(.leading)
                 Spacer(minLength: 8)
                 Image(systemName: multiple ? (selected ? "checkmark.circle.fill" : "circle") : (selected ? "largecircle.fill.circle" : "circle"))
                     .font(.system(size: 20, weight: .regular))
-                    .foregroundStyle(selected ? Color.ink : Color.white.opacity(0.3))
+                    .foregroundStyle(selected ? Color.lime : Color.white.opacity(0.3))
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 2)
+            .padding(.vertical, 14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background {
-                if selected {
-                    RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Color.lime)
-                } else {
-                    RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Color.clear).glass(22)
-                }
-            }
-            .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .overlay(alignment: .bottom) { Rectangle().fill(Color.hairline).frame(height: 1) }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityLabel(title)
         .accessibilityHint(detail)
-    }
-}
-
-private struct UnitChoice: View {
-    var title: String
-    var detail: String
-    var selected: Bool
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.sf(16, .semibold))
-                    .foregroundStyle(selected ? Color.ink : .white)
-                Text(detail)
-                    .font(.sf(13))
-                    .foregroundStyle(selected ? Color.ink.opacity(0.7) : Color.textMuted)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .frame(minHeight: 64)
-            .background {
-                if selected {
-                    RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Color.lime)
-                } else {
-                    RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Color.clear).glass(20)
-                }
-            }
-            .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(selected ? .isSelected : [])
-        .accessibilityLabel(title)
     }
 }
 

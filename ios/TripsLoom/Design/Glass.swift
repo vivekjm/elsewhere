@@ -1,58 +1,63 @@
 import SwiftUI
 
-// Frosted surfaces: rgba(255,255,255,.07) over a 30px blur, a 1px white/.09 edge
-// and a brighter top highlight.
+// Surfaces are flat. A section is content on the backdrop with a hairline
+// rule above it; a control is a small-radius rectangle with a hairline edge.
+// Nothing is boxed inside a box.
 
+/// A control surface: faint fill, hairline edge, small radius.
 struct GlassSurface<S: InsettableShape>: ViewModifier {
     var shape: S
-    var fill: Color = .white.opacity(0.07)
-    var edge: Double = 0.09
-    var highlight: Double = 0.14
-    var blur = true
+    var fill: Color = .white.opacity(0.05)
+    var edge: Double = 0.12
+    var highlight: Double = 0
+    var blur = false
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.colorSchemeContrast) private var contrast
 
     func body(content: Content) -> some View {
-        content.background {
-            ZStack {
-                if reduceTransparency { shape.fill(Color(hex: 0x242A32)) }
-                if blur && !reduceTransparency {
-                    shape.fill(.ultraThinMaterial).opacity(0.5)
-                }
-                shape.fill(fill)
+        content
+            .background(shape.fill(reduceTransparency ? Color(hex: 0x1A1F27) : fill))
+            .overlay(shape.strokeBorder(Color.white.opacity(contrast == .increased ? max(edge, 0.35) : edge), lineWidth: 1))
+    }
+}
+
+/// A section: a hairline rule along the top, nothing else.
+struct RuledSection: ViewModifier {
+    var top = true
+
+    func body(content: Content) -> some View {
+        content
+            // Flat sections have no fill; buttons built from them must still
+            // take a tap anywhere inside.
+            .contentShape(Rectangle())
+            .overlay(alignment: .top) {
+                if top { Rectangle().fill(Color.rule).frame(height: 1).allowsHitTesting(false) }
             }
-            .overlay { shape.strokeBorder(Color.white.opacity(contrast == .increased ? max(edge, 0.35) : edge), lineWidth: 1) }
-            .overlay {
-                shape.strokeBorder(
-                    LinearGradient(
-                        stops: [
-                            .init(color: .white.opacity(highlight), location: 0),
-                            .init(color: .white.opacity(0), location: 0.12),
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 1
-                )
-            }
-        }
     }
 }
 
 extension View {
-    func glass(_ radius: CGFloat = 28, fill: Color = .white.opacity(0.07), blur: Bool = true) -> some View {
-        modifier(GlassSurface(shape: RoundedRectangle(cornerRadius: radius, style: .continuous), fill: fill, blur: blur))
+    /// Large radii mean "a section" and draw as a ruled section; small radii
+    /// mean "a control" and draw as a flat rectangle with a hairline edge.
+    @ViewBuilder
+    func glass(_ radius: CGFloat = 28, fill: Color = .white.opacity(0.05), blur: Bool = true) -> some View {
+        if radius >= 20 {
+            modifier(RuledSection())
+        } else {
+            modifier(GlassSurface(shape: RoundedRectangle(cornerRadius: min(radius, Radius.control), style: .continuous), fill: fill))
+        }
     }
 
-    func glassCapsule(fill: Color = .white.opacity(0.07)) -> some View {
-        modifier(GlassSurface(shape: Capsule(), fill: fill))
+    func glassCapsule(fill: Color = .white.opacity(0.05)) -> some View {
+        modifier(GlassSurface(shape: RoundedRectangle(cornerRadius: 8, style: .continuous), fill: fill))
     }
 
-    /// Standard glass card: 28 radius, 16 padding.
+    /// Standard section: ruled above, 16pt of air, content flush with the gutter.
     func glassCard(radius: CGFloat = 28, padding: CGFloat = 16) -> some View {
-        self.padding(padding)
+        self.padding(.vertical, padding)
+            .padding(.horizontal, 2)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .glass(radius)
+            .modifier(RuledSection())
     }
 }
 

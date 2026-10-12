@@ -19,7 +19,7 @@ extension EnvironmentValues {
 
 extension View {
     /// Marks this view as where a zoom transition starts and ends.
-    func zoomSource(_ id: String, radius: CGFloat = 30) -> some View {
+    func zoomSource(_ id: String, radius: CGFloat = 12) -> some View {
         modifier(ZoomSource(id: id, radius: radius))
     }
 

@@ -143,7 +143,7 @@ struct ClimbView: View {
                         .foregroundStyle(Color.lime)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 4).frame(minHeight: 36)
-                        .background(Capsule().fill(Color.lime.opacity(0.14)))
+                        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.lime.opacity(0.14)))
                 }
             }
         }

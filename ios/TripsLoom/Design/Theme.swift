@@ -1,7 +1,10 @@
 import SwiftUI
 import UIKit
 
-// Nightglass tokens. Values come from `Trips Loom iOS Nightglass.dc.html`.
+// Design tokens. The system is editorial and flat: deep ink backdrop, the
+// display serif for titles, a champagne-gold accent, content separated by
+// hairline rules rather than boxed in cards, and small radii only on
+// controls and media.
 
 extension Color {
     init(hex: UInt32, opacity: Double = 1) {
@@ -31,6 +34,8 @@ extension Color {
     static let apricot = Color(hex: 0xFFB86B)
     static let photoPlaceholder = Color(hex: 0x2A2E36)
 
+    /// Hairline rules that separate sections and rows.
+    static let rule = Color.white.opacity(0.12)
     static let textMuted = Color.white.opacity(0.62)
     static let textFaint = Color.white.opacity(0.45)
     static let hairline = Color.white.opacity(0.07)
@@ -114,6 +119,13 @@ extension View {
 enum Motion {
     static let snappy = Animation.timingCurve(0.2, 0.8, 0.2, 1, duration: 0.24)
     static let quick = Animation.timingCurve(0.2, 0.8, 0.2, 1, duration: 0.16)
+}
+
+/// Corner radii. Surfaces are flat and ruled; only controls and media round.
+enum Radius {
+    static let control: CGFloat = 10
+    static let media: CGFloat = 12
+    static let chip: CGFloat = 4
 }
 
 enum Metrics {

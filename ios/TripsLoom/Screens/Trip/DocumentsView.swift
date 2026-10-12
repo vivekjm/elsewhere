@@ -208,7 +208,7 @@ struct DocumentsView: View {
                         } label: {
                             Text("Add").font(.sf(15, .semibold)).foregroundStyle(.white)
                                 .padding(.horizontal, 14).padding(.vertical, 4).frame(minHeight: 36)
-                                .background(Capsule().fill(Color.white.opacity(0.12)))
+                                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.12)))
                         }
                     }
                 }

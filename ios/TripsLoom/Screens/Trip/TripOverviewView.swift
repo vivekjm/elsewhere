@@ -167,7 +167,6 @@ struct TripOverviewView: View {
             .padding(.vertical, 12)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity)
-            .glass(22)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(label): \(value) of \(total)")
@@ -182,7 +181,6 @@ struct TripOverviewView: View {
             .padding(.vertical, 12)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity)
-            .glass(22)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(label): \(Int(value * 100)) percent")

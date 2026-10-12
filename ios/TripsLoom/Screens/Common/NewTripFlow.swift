@@ -82,7 +82,7 @@ private struct KindCard: View {
         .glass(24)
         .overlay {
             if selected {
-                RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(Color.lime, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.lime, lineWidth: 2)
             }
         }
         .overlay(alignment: .topTrailing) {
@@ -90,7 +90,7 @@ private struct KindCard: View {
                 CheckCircle(isOn: true).padding(12)
             }
         }
-        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
@@ -111,7 +111,7 @@ struct TabPreview: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background {
                         if index == 0 {
-                            Capsule().fill(Color.white.opacity(0.15)).overlay(TopHighlight(shape: Capsule()))
+                            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.15)).overlay(TopHighlight(shape: RoundedRectangle(cornerRadius: 8, style: .continuous)))
                         }
                     }
                 }
@@ -367,11 +367,11 @@ private struct CoverTile<Content: View>: View {
         content
             .frame(height: 76)
             .frame(maxWidth: .infinity)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .padding(2)
             .overlay {
                 if selected {
-                    RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(Color.lime, lineWidth: 2)
+                    RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.lime, lineWidth: 2)
                 }
             }
             .contentShape(Rectangle())

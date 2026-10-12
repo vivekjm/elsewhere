@@ -42,8 +42,8 @@ struct SafetyView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     TrailMap(trip: trip, online: connection.isOnline)
                         .frame(height: 200)
-                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).strokeBorder(Color.white.opacity(0.09), lineWidth: 1))
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.white.opacity(0.09), lineWidth: 1))
                         .overlay(alignment: .topLeading) {
                             if !large { mapLabel(routeLabel).padding(12) }
                         }
@@ -55,7 +55,7 @@ struct SafetyView: View {
                         if let next = nextStage { mapLabel(Text(nextLabel(next))) }
                     }
                 }
-                    .contentShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .onTapGesture { showingMap = true }
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("Route map")
@@ -157,11 +157,11 @@ struct SafetyView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 64)
                     .background {
-                        Capsule()
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(LinearGradient(colors: [Color(hex: 0xFF7A7A), Color(hex: 0xE0393E)], startPoint: .top, endPoint: .bottom))
                             .shadow(color: Color(hex: 0xFF5050, opacity: 0.45), radius: 20, y: 14)
                     }
-                    .overlay(TopHighlight(shape: Capsule(), opacity: 0.3))
+                    .overlay(TopHighlight(shape: RoundedRectangle(cornerRadius: 8, style: .continuous), opacity: 0.3))
             }
             .buttonStyle(.plain)
         }
