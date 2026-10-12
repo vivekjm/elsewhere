@@ -243,3 +243,19 @@ nonisolated final class PackingProgressRegressionTests: XCTestCase {
         XCTAssertEqual(city.packingProgress.total, 2)
     }
 }
+
+/// "Starts tomorrow" fires at 6 pm the evening before, in the destination's
+/// time zone, whatever zone the phone is in.
+nonisolated final class EveningReminderRegressionTests: XCTestCase {
+    @MainActor func testEveningReminderUsesDestinationTime() throws {
+        var trip = Trip(name: "Kyoto", place: "Kyoto, Japan", kind: .city, start: .now.addingTimeInterval(20 * 86_400), dayCount: 3, photo: .lisbon)
+        trip.setTimeZone("Asia/Tokyo")
+        let fire = try XCTUnwrap(Reminders.eveningBefore(trip))
+        var tokyo = Calendar(identifier: .gregorian)
+        tokyo.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Tokyo"))
+        let parts = tokyo.dateComponents([.hour, .minute], from: fire)
+        XCTAssertEqual(parts.hour, 18)
+        XCTAssertEqual(parts.minute, 0)
+        XCTAssertEqual(tokyo.dateComponents([.day], from: tokyo.startOfDay(for: fire), to: tokyo.startOfDay(for: trip.civilStart)).day, 1)
+    }
+}

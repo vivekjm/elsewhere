@@ -14,12 +14,17 @@ nonisolated final class PowerUserAuthFlowTests: PowerUserScenarioCase {
         input(app, "Your name", "Casey — authentication QA")
         input(app, "Email", "signup@tripsloom.test")
         let password = app.secureTextFields["Password"]
-        tap(app, password); password.typeText("seven77")
+        tap(app, password)
+        password.typeText("seven77")
         let submit = app.buttons.matching(identifier: "Create account").allElementsBoundByIndex.last!
         XCTAssertFalse(submit.isEnabled)
-        password.typeText("8")
+        // Typed into the focused field: an element-level typeText can refocus a
+        // secure field when iOS shows password AutoFill, and refocusing clears it.
+        app.typeText("8")
+        XCTAssertTrue(submit.isEnabled, "Create account stayed disabled; password field holds \((password.value as? String)?.count ?? 0) characters")
         tap(app, submit)
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'link to confirm your account'")).firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'link to confirm your account'")).firstMatch.waitForExistence(timeout: 8),
+                      "No confirmation. On screen: \(app.staticTexts.allElementsBoundByIndex.map(\.label)) alerts: \(app.alerts.staticTexts.allElementsBoundByIndex.map(\.label))")
         shot(app, "90-create-account-confirmation-and-password-policy")
         tap(app, app.buttons["Forgot password?"])
         tap(app, app.buttons["Send reset link"])

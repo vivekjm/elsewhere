@@ -165,6 +165,15 @@ private struct EmailSignInSheet: View {
         email.trimmingCharacters(in: .whitespaces).wholeMatch(of: /[^@\s]+@[^@\s]+\.[^@\s]{2,}/) != nil
     }
 
+    /// UI tests type their own password; iOS's Automatic Strong Password would
+    /// otherwise take the field over mid-test. Real installs always get it.
+    private static var newPasswordType: UITextContentType {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["TRIPSLOOM_UI_TEST_ID"] != nil { return .password }
+        #endif
+        return .newPassword
+    }
+
     private var canSubmit: Bool {
         guard emailIsValid, !working else { return false }
         switch mode {
@@ -193,7 +202,7 @@ private struct EmailSignInSheet: View {
                             .autocorrectionDisabled()
                         if mode != .reset {
                             SecureField("Password", text: $password)
-                                .textContentType(mode == .create ? .newPassword : .password)
+                                .textContentType(mode == .create ? Self.newPasswordType : .password)
                                 .font(.sf(16, .semibold))
                                 .padding(.vertical, 14)
                                 .focused($focus, equals: .password)

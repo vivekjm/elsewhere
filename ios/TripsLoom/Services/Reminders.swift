@@ -19,10 +19,7 @@ enum Reminders {
 
         let capacity = remainingSlots(pendingCount: await center.pendingNotificationRequests().count)
         for trip in remindable(trips).filter({ $0.status == .upcoming }).sorted(by: { $0.start < $1.start }).prefix(min(30, capacity)) {
-            guard let eve = trip.calendar.date(byAdding: .day, value: -1, to: trip.civilStart),
-                  let fire = trip.calendar.date(bySettingHour: 18, minute: 0, second: 0, of: eve),
-                  fire > .now
-            else { continue }
+            guard let fire = eveningBefore(trip), fire > .now else { continue }
             let content = UNMutableNotificationContent()
             content.title = "\(trip.name) starts tomorrow"
             let progress = trip.packingProgress
@@ -38,6 +35,12 @@ enum Reminders {
             try? await center.add(UNNotificationRequest(identifier: tripPrefix + trip.id.uuidString, content: content, trigger: trigger))
         }
         return "Evening before each trip"
+    }
+
+    /// 6 pm the day before the trip starts, at the destination.
+    static func eveningBefore(_ trip: Trip) -> Date? {
+        guard let eve = trip.calendar.date(byAdding: .day, value: -1, to: trip.civilStart) else { return nil }
+        return trip.calendar.date(bySettingHour: 18, minute: 0, second: 0, of: eve)
     }
 
     /// Daily reminder at a check-in time ("16:00") while on the trail.
