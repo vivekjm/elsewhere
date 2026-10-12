@@ -22,6 +22,7 @@ const state = {
   log: [],
   failNext: null,           // { path, status } to inject one failure
   tokenTTL: 3600,
+  oauthUsers: new Map(),    // id -> { email, metadata } for "Continue with Google"
 };
 
 function mint(userId, ttl = state.tokenTTL) {
@@ -29,7 +30,13 @@ function mint(userId, ttl = state.tokenTTL) {
   state.tokens.set(access, { userId, expiresAt: Date.now() + ttl * 1000 });
   state.refresh.set(refresh, userId);
   return { access_token: access, refresh_token: refresh, expires_in: ttl, token_type: "bearer",
-    user: { id: userId, email: USER.email, user_metadata: state.metadata } };
+    user: { id: userId, ...account(userId) } };
+}
+
+// The fixed password user, or a user made by the OAuth stand-in.
+function account(userId) {
+  const o = state.oauthUsers.get(userId);
+  return o ? { email: o.email, user_metadata: o.metadata } : { email: USER.email, user_metadata: state.metadata };
 }
 
 function userFor(req) {
@@ -58,7 +65,7 @@ async function handle(req, res) {
     const cmd = path.slice(9);
     if (cmd === "reset") {
       state.workspaces.clear(); state.profiles.clear(); state.extras.clear(); state.images.clear();
-      state.feedback = [];
+      state.oauthUsers.clear(); state.feedback = [];
       state.offline = false; state.failNext = null; state.delayNext = null; state.editBeforePut = null; state.log = [];
       return send(200, {});
     }
@@ -161,10 +168,22 @@ async function handle(req, res) {
   }
 
   // ---- Supabase ----
+  // Stands in for Google: the browser opens this without an API key, and it
+  // returns straight to the app with a session for a new user, as Supabase
+  // does after the provider's consent screen.
+  if (path === "/auth/v1/authorize") {
+    const provider = url.searchParams.get("provider"), back = url.searchParams.get("redirect_to") || "";
+    if (provider !== "google" || !back.startsWith("tripsloom://")) return send(400, { error: "unsupported provider" });
+    const id = randomUUID(), short = id.slice(0, 8);
+    state.oauthUsers.set(id, { email: `google-${short}@tripsloom.test`, metadata: { full_name: "Gia Google", provider: "google" } });
+    const s = mint(id);
+    const target = `${back}#access_token=${s.access_token}&refresh_token=${s.refresh_token}&expires_in=${s.expires_in}&token_type=bearer`;
+    entry.status = 302; res.writeHead(302, { Location: target }); return res.end();
+  }
   if (path.startsWith("/auth/") || path.startsWith("/rest/")) {
     if (req.headers.apikey !== KEY) return send(401, { message: "Invalid API key" });
   }
-  if (path === "/auth/v1/settings") return send(200, { external: { email: true, apple: false }, mailer_autoconfirm: false });
+  if (path === "/auth/v1/settings") return send(200, { external: { email: true, apple: false, google: true }, mailer_autoconfirm: false });
   if (path === "/auth/v1/signup" && method === "POST") {
     const b = JSON.parse(body.toString() || "{}");
     if (!b.email?.endsWith("@tripsloom.test") || typeof b.password !== "string" || b.password.length < 8)
@@ -186,8 +205,8 @@ async function handle(req, res) {
   if (path === "/auth/v1/user") {
     const uid = userFor(req);
     if (!uid) return send(401, { code: 401, msg: "invalid JWT" });
-    if (method === "PUT") { const b = JSON.parse(body.toString() || "{}"); if (b.data) Object.assign(state.metadata, b.data); }
-    return send(200, { id: uid, email: USER.email, user_metadata: state.metadata });
+    if (method === "PUT") { const b = JSON.parse(body.toString() || "{}"); if (b.data) Object.assign(account(uid).user_metadata, b.data); }
+    return send(200, { id: uid, ...account(uid) });
   }
   if (path === "/auth/v1/logout") {
     const m = (req.headers.authorization || "").match(/^Bearer\s+(.+)$/i);

@@ -28,10 +28,6 @@ nonisolated final class PowerUserBackupExportFlowTests: PowerUserScenarioCase {
 nonisolated final class PowerUserRecoveryFlowTests: PowerUserScenarioCase {
     @MainActor func testFreshInstallationRejectsBadFileAndRestoresTravelBundle() {
         let app = launch()
-        if app.buttons["Continue as guest"].waitForExistence(timeout: 5) {
-            app.buttons["Continue as guest"].tap()
-            tap(app, app.buttons["Set up later"])
-        }
         tab(app, "Profile")
         tap(app, app.buttons.matching(NSPredicate(format: "label CONTAINS 'Data & privacy'")).firstMatch)
         tap(app, app.buttons["Restore a backup"])

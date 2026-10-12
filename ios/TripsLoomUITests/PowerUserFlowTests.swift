@@ -9,6 +9,8 @@ nonisolated class PowerUserScenarioCase: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchEnvironment["TRIPSLOOM_UI_TEST_ID"] = Self.storeID
+        // Starts signed in (without tokens) so feature flows skip the welcome screen.
+        app.launchEnvironment["TRIPSLOOM_UI_TEST_SIGNED_IN"] = "1"
         app.launchArguments = ["-backend-url", "http://127.0.0.1:8787", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"] + extraArguments
         // A freshly erased simulator can raise iOS's "Keyboard Detected"
         // prompt in the middle of typing; dismiss it so the flow carries on.
@@ -22,10 +24,7 @@ nonisolated class PowerUserScenarioCase: XCTestCase {
             return true
         }
         app.launch()
-        if app.buttons["Continue as guest"].waitForExistence(timeout: 1) {
-            app.buttons["Continue as guest"].tap()
-            if app.buttons["Set up later"].waitForExistence(timeout: 1) { app.buttons["Set up later"].tap() }
-        }
+        if app.buttons["Set up later"].waitForExistence(timeout: 3) { app.buttons["Set up later"].tap() }
         return app
     }
     /// The system share sheet is up. On iOS 26 its actions are cells, not buttons.
@@ -70,7 +69,10 @@ nonisolated class PowerUserScenarioCase: XCTestCase {
         control.tap()
     }
     @MainActor func input(_ app: XCUIApplication, _ label: String, _ value: String) {
-        let e = app.textFields[label].exists ? app.textFields[label] : app.textViews[label]
+        // Sheets may still be animating in; wait for the field before picking its kind.
+        let field = app.textFields[label], view = app.textViews[label]
+        for _ in 0..<10 where !field.exists && !view.exists { _ = field.waitForExistence(timeout: 0.5) }
+        let e = field.exists ? field : view
         if (e.value as? String) == value { return }
         tap(app, e)
         if let old = e.value as? String, old != label, old != (e.placeholderValue ?? ""), !old.isEmpty {
@@ -123,9 +125,6 @@ nonisolated class PowerUserScenarioCase: XCTestCase {
 nonisolated final class PowerUserCityFlowTests: PowerUserScenarioCase {
     @MainActor func test01CityTripWardrobePhotosPackingBudgetAndDocuments() {
         let app = launch()
-        if app.buttons["Continue as guest"].waitForExistence(timeout: 5) {
-            app.buttons["Continue as guest"].tap(); tap(app, app.buttons["Set up later"])
-        }
         XCTAssertTrue(app.tabBars.buttons["Trips"].waitForExistence(timeout: 10))
         let existing = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Paris — cafés, art & friends'")).firstMatch
         if existing.waitForExistence(timeout: 2) { existing.tap() }

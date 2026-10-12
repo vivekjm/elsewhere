@@ -39,7 +39,7 @@ Test accounts, fault injection and destructive deletion tests used isolated **lo
 | Check | Evidence and scope |
 | --- | --- |
 | Native unit/integration | The initial audit passed 32 tests. The follow-up power-user sweep adds photo/document recovery, wardrobe conflict, input overflow and booking-import regressions; see the current [power-user report](power-user/POWER_USER_QA.md) for final counts. |
-| Simulator UI | 5 flows: guest/onboarding/profile/help; trek creation without samples; city creation/activity/packing; immediate draft close; largest accessibility text size with a reachable New trip action. |
+| Simulator UI | 5 flows: onboarding/profile/help; trek creation without samples; city creation/activity/packing; immediate draft close; largest accessibility text size with a reachable New trip action. |
 | Web tests | 109 tests, including account cleanup ordering/isolation, deletion-marker SQL and streaming request bounds. |
 | Real local Worker smoke | Guest isolation, valid saves, stale-revision conflict, invalid input, origin guards, photo upload and ownership. Separate authenticated mock-Auth test covers deletion failure/retry, blocked stale writes/uploads, account isolation and oversized/malformed requests. |
 | Build checks | Web typecheck, lint and production bundle; unsigned native Release build for generic iOS. Signing and distribution were not tested. |

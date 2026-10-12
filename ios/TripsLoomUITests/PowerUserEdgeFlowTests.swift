@@ -4,7 +4,12 @@ import UIKit
 nonisolated final class PowerUserEdgeFlowTests: PowerUserScenarioCase {
     @MainActor func test01EditsNumericEdgeCasesAndNativeExports() {
         let app = launch()
-        if app.buttons["Continue as guest"].waitForExistence(timeout: 2) { app.buttons["Continue as guest"].tap() }
+        // This test ends by switching to imperial; start every run in metric
+        // so the field labels below ("Weight (g)", "On foot (km)") match.
+        tab(app, "Profile")
+        tap(app, app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Units'")).firstMatch)
+        tap(app, app.buttons["Metric"].firstMatch)
+        tab(app, "Trips")
         tap(app, app.buttons.matching(NSPredicate(format: "label CONTAINS 'Paris — cafés, art & friends'")).firstMatch)
         tab(app, "Wardrobe")
         let garment = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Cream linen shirt'")).firstMatch
@@ -66,7 +71,7 @@ nonisolated final class PowerUserEdgeFlowTests: PowerUserScenarioCase {
         shot(app, "46-native-calendar-export")
         tap(app, app.buttons["Close"].firstMatch)
         tap(app, app.buttons["Trip options"]); tap(app, app.buttons["Invite people"])
-        // A guest without a name is asked for one first, so the invite says who sent it.
+        // Someone without a name is asked for one first, so the invite says who sent it.
         if app.textFields["Your name"].waitForExistence(timeout: 3) {
             input(app, "Your name", "Jamie")
             tap(app, app.buttons["Next"])

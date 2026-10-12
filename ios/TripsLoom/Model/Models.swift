@@ -973,5 +973,10 @@ struct Profile: Codable, Hashable, Sendable {
 }
 
 enum Session: String, Codable, Sendable {
-    case signedOut, guest, apple, email
+    /// `guest` is only read from older installs; it's moved to `signedOut`
+    /// on launch, keeping the trips so they join the account after sign-in.
+    case signedOut, guest, apple, email, google
+
+    /// Signed in with an account (the session may still need refreshing).
+    var isAccount: Bool { self == .email || self == .apple || self == .google }
 }

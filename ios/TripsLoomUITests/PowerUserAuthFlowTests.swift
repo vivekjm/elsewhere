@@ -1,7 +1,8 @@
 import XCTest
 
 /// Runs on the separate recovery simulator and isolated local Auth harness.
-/// Provider email delivery and Sign in with Apple require a signed device.
+/// Provider email delivery and Sign in with Apple require a signed device;
+/// the harness stands in for Google's consent screen.
 nonisolated final class PowerUserAuthFlowTests: PowerUserScenarioCase {
     @MainActor func testCreateAccountPasswordPolicyAndResetRequest() {
         continueAfterFailure = false
@@ -32,6 +33,47 @@ nonisolated final class PowerUserAuthFlowTests: PowerUserScenarioCase {
         shot(app, "91-password-reset-request-acknowledged")
         tap(app, app.buttons["Back to sign in"])
         tap(app, app.buttons["Close"].firstMatch)
-        XCTAssertTrue(app.buttons["Continue as guest"].waitForExistence(timeout: 8))
+        // There is no guest mode: closing returns to the account choices.
+        XCTAssertTrue(app.buttons["Continue with Email"].waitForExistence(timeout: 8))
+        XCTAssertFalse(app.buttons["Continue as guest"].exists)
+    }
+
+    @MainActor func testGoogleSignInRunsOnboardingAndKeepsPreferences() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["TRIPSLOOM_UI_TEST_ID"] = UUID().uuidString
+        app.launchArguments = ["-backend-url", "http://127.0.0.1:8788", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["trips loom"].waitForExistence(timeout: 10))
+        shot(app, "92-welcome")
+        tap(app, app.buttons["Continue with Google"])
+        // iOS asks before a web sign-in; the alert belongs to SpringBoard.
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let allow = springboard.buttons["Continue"]
+        XCTAssertTrue(allow.waitForExistence(timeout: 15), "No web sign-in prompt")
+        allow.tap()
+        // The harness returns Google's name, which onboarding greets and keeps.
+        XCTAssertTrue(app.staticTexts["Hi, Gia."].waitForExistence(timeout: 15))
+        XCTAssertEqual(app.textFields["Your name"].value as? String, "Gia Google")
+        shot(app, "93-onboarding-about-you")
+        tap(app, app.buttons["Next"])
+        tap(app, app.buttons["Trek and climb"])
+        tap(app, app.buttons["Relaxed"])
+        shot(app, "94-onboarding-travel-style")
+        tap(app, app.buttons["Next"])
+        tap(app, app.buttons["Vegetarian"])
+        tap(app, app.buttons["Imperial"])
+        tap(app, app.buttons["save-travel-preferences"])
+        XCTAssertTrue(app.buttons["New trip"].waitForExistence(timeout: 10))
+        tab(app, "Profile")
+        let account = app.buttons.matching(NSPredicate(format: "label CONTAINS 'google-'")).firstMatch
+        XCTAssertTrue(account.waitForExistence(timeout: 15), "Google account not shown after sync")
+        tap(app, app.buttons.matching(NSPredicate(format: "label CONTAINS 'Travel preferences'")).firstMatch)
+        let shows = { (text: String) in
+            app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", text, text)).firstMatch
+        }
+        XCTAssertTrue(shows("Trek and climb").waitForExistence(timeout: 5))
+        XCTAssertTrue(shows("Relaxed").exists && shows("Vegetarian").exists && shows("Imperial").exists)
+        shot(app, "95-preferences-kept")
     }
 }

@@ -35,7 +35,7 @@ enum FeedbackAPI {
         _ = try await HTTP.send(request)
     }
 
-    // Guests' feedback waits on this iPhone and goes out after sign-in.
+    // Feedback written while signed out waits on this iPhone and goes out after sign-in.
     private struct Pending: Codable { var kind: String; var message: String }
     private static let pendingKey = "feedback.pending"
 

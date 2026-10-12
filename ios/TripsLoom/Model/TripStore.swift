@@ -41,7 +41,7 @@ final class TripStore {
             }
         }
     }
-    /// Account sync with tripsloom.com; idle for guests.
+    /// Account sync with tripsloom.com; idle while signed out.
     let sync = SyncEngine()
     var session: Session { didSet { scheduleSave() } }
     private(set) var storageError: String?
@@ -93,7 +93,12 @@ final class TripStore {
                 }
                 wardrobe = snapshot.wardrobe
                 profile = snapshot.profile
-                session = snapshot.session
+                // Guest mode is gone: older guests sign in, and the trips on
+                // this iPhone are added to their account on first sync.
+                session = snapshot.session == .guest ? .signedOut : snapshot.session
+                #if DEBUG
+                Self.applyUITestSession(&session)
+                #endif
                 Fmt.metric = profile.metric
                 return
             } catch {
@@ -113,10 +118,22 @@ final class TripStore {
         wardrobe = []
         profile = Profile()
         session = .signedOut
+        #if DEBUG
+        Self.applyUITestSession(&session)
+        #endif
         storageError = recoveryError
         savingBlocked = blockSaving
         Fmt.metric = profile.metric
     }
+
+    #if DEBUG
+    /// UI tests of features (not of sign-in) start as an account on this
+    /// iPhone without a server session, like one whose session has lapsed.
+    private static func applyUITestSession(_ session: inout Session) {
+        guard ProcessInfo.processInfo.environment["TRIPSLOOM_UI_TEST_SIGNED_IN"] == "1", session == .signedOut else { return }
+        session = .email
+    }
+    #endif
 
     /// "-<id>" while a UI test runs with its own store, so its sync state
     /// and session don't leak into another test's store. Empty otherwise.
@@ -277,11 +294,10 @@ final class TripStore {
         profile.sampleNoticeDismissed = true
     }
 
-    /// Signing out of an account removes its trips from this phone; a guest
-    /// keeps theirs.
+    /// Signing out of an account removes its trips from this phone.
     func signOut() {
         openTripID = nil
-        if session == .email || session == .apple {
+        if session.isAccount {
             AuthClient.shared.signOut()
             sync.didSignOut()
             trips = []
@@ -308,7 +324,7 @@ final class TripStore {
         WardrobePhotos.delete(item.imageFile)
     }
 
-    var hasAccount: Bool { session == .email || session == .apple }
+    var hasAccount: Bool { session.isAccount }
 
     /// With an account, deleting reaches every device and the website.
     var deleteTripMessage: String {

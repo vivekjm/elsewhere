@@ -32,7 +32,7 @@ struct ProfileView: View {
         }
         .buttonStyle(.plain)
     }
-    private var isAccount: Bool { store.session == .email || store.session == .apple }
+    private var isAccount: Bool { store.session.isAccount }
 
     var body: some View {
         @Bindable var store = store
@@ -170,7 +170,7 @@ struct ProfileView: View {
             Button {
                 confirmSignOut = true
             } label: {
-                Text(isAccount ? "Sign out" : "Leave guest mode")
+                Text("Sign out")
                     .font(.sf(16, .semibold))
                     .foregroundStyle(Color.coral)
                     .frame(maxWidth: .infinity)
@@ -186,7 +186,7 @@ struct ProfileView: View {
                         editingName = true
                     }
                     Button("Start fresh", systemImage: "sparkles") { confirmClear = true }
-                    Button(isAccount ? "Sign out" : "Leave guest mode", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) { confirmSignOut = true }
+                    Button("Sign out", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) { confirmSignOut = true }
                 } label: {
                     Image(systemName: "ellipsis")
                 }
@@ -219,8 +219,8 @@ struct ProfileView: View {
                  ? "Every trip, plan, packing list and wardrobe piece is removed from your account, here and on tripsloom.com."
                  : "Every trip, plan, packing list and wardrobe piece on this iPhone is removed.")
         }
-        .confirmationDialog(isAccount ? "Sign out?" : "Leave guest mode?", isPresented: $confirmSignOut, titleVisibility: .visible) {
-            Button(isAccount ? "Sign out" : "Leave guest mode", role: .destructive) {
+        .confirmationDialog("Sign out?", isPresented: $confirmSignOut, titleVisibility: .visible) {
+            Button("Sign out", role: .destructive) {
                 Task {
                     // Send any last edits before they leave this iPhone.
                     if isAccount, store.sync.pendingChanges { await store.sync.sync() }
@@ -232,9 +232,7 @@ struct ProfileView: View {
                 }
             }
         } message: {
-            if !isAccount {
-                Text("You'll go back to the welcome screen. Your trips stay on this iPhone, and signing in later adds the ones you made to your account.")
-            } else if store.sync.pendingChanges {
+            if store.sync.pendingChanges {
                 Text("Some edits have not synced yet. We will try again. If they cannot be sent, you will stay signed in so you can reconnect or export your data.")
             } else {
                 Text("Your trips are saved to your account and come back when you sign in. This iPhone is cleared.")
@@ -270,8 +268,8 @@ struct ProfileView: View {
     }
 }
 
-/// Account and sync state: syncs on tap, or offers sign-in for guests and
-/// expired sessions.
+/// Account and sync state: syncs on tap, or offers sign-in when the
+/// session has lapsed.
 private struct AccountSyncRow: View {
     @Environment(TripStore.self) private var store
 
@@ -302,14 +300,14 @@ private struct AccountSyncRow: View {
     }
 
     private func title(_ sync: SyncEngine) -> String {
-        guard sync.isSignedIn else { return store.session == .guest ? "Sign in to sync" : "Sign in again" }
+        guard sync.isSignedIn else { return "Sign in again" }
         return sync.accountEmail ?? "Your account"
     }
 
     private func meta(_ sync: SyncEngine) -> String {
         if let notice = sync.recoveryNotice { return notice }
         guard sync.isSignedIn else {
-            return store.session == .guest ? "Keep trips in step with tripsloom.com" : "Session ended · trips here are safe"
+            return "Session ended · trips here are safe"
         }
         switch sync.status {
         case .syncing: return "Syncing…"

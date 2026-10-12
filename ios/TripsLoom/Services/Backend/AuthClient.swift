@@ -1,5 +1,7 @@
+import AuthenticationServices
 import CryptoKit
 import Foundation
+import UIKit
 
 /// A signed-in Supabase session. Kept in the Keychain, never in the trips file.
 struct AuthSession: Codable, Sendable {
@@ -13,7 +15,8 @@ struct AuthSession: Codable, Sendable {
 }
 
 /// Supabase Auth over its REST API: email and password, Sign in with Apple
-/// (ID token), password recovery, refresh and email links.
+/// (ID token), Google (OAuth in the system web sheet), password recovery,
+/// refresh and email links.
 @MainActor
 final class AuthClient {
     static let shared = AuthClient()
@@ -83,6 +86,20 @@ final class AuthClient {
         try await token(grant: "id_token", body: ["provider": "apple", "id_token": idToken, "nonce": nonce])
     }
 
+    /// Signs in through Supabase's OAuth page for `provider` ("google") in the
+    /// system's secure web sheet. Supabase sends the tokens back to
+    /// `tripsloom://auth/callback`, handled like an email link.
+    func signInWithOAuth(provider: String) async throws {
+        let config = try await supabase()
+        var components = URLComponents(url: config.url.appending(path: "auth/v1/authorize"), resolvingAgainstBaseURL: false)
+        components?.queryItems = [URLQueryItem(name: "provider", value: provider), URLQueryItem(name: "redirect_to", value: Backend.callbackURL)]
+        guard let url = components?.url else { throw BackendError(message: "Sign-in is unavailable right now.") }
+        let callback = try await WebSignIn.run(url: url, scheme: "tripsloom")
+        guard try await handle(url: callback) != nil else {
+            throw BackendError(message: "Sign-in didn't finish. Try again.")
+        }
+    }
+
     func sendPasswordReset(email: String) async throws {
         let config = try await supabase()
         var request = try endpoint(config, "auth/v1/recover", query: ["redirect_to": Backend.resetURL])
@@ -107,6 +124,19 @@ final class AuthClient {
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.httpBody = try? JSONSerialization.data(withJSONObject: ["data": ["display_name": name]])
         _ = try? await HTTP.send(request)
+    }
+
+    /// The name the account carries, such as the one Google shares.
+    func displayName() async -> String? {
+        guard let config = try? await supabase(), let token = try? await validToken(),
+              var request = try? endpoint(config, "auth/v1/user") else { return nil }
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        guard let (data, _) = try? await HTTP.send(request),
+              let body = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let meta = body["user_metadata"] as? [String: Any]
+        else { return nil }
+        let name = ((meta["display_name"] ?? meta["full_name"] ?? meta["name"]) as? String)?.trimmingCharacters(in: .whitespaces)
+        return name?.isEmpty == false ? name : nil
     }
 
     func signOut() {
@@ -243,5 +273,43 @@ final class AuthClient {
         let raw = (0..<32).map { _ in String(format: "%02x", UInt8.random(in: 0...255)) }.joined()
         let hashed = SHA256.hash(data: Data(raw.utf8)).map { String(format: "%02x", $0) }.joined()
         return (raw, hashed)
+    }
+}
+
+/// One sign-in in ASWebAuthenticationSession: shares Safari's cookies, so a
+/// Google account already signed in on this iPhone is offered straight away.
+@MainActor
+private enum WebSignIn {
+    private final class Anchor: NSObject, ASWebAuthenticationPresentationContextProviding {
+        func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+            let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            return scenes.flatMap(\.windows).first(where: \.isKeyWindow) ?? ASPresentationAnchor()
+        }
+    }
+
+    private static var current: (session: ASWebAuthenticationSession, anchor: Anchor)?
+
+    static func run(url: URL, scheme: String) async throws -> URL {
+        try await withCheckedThrowingContinuation { continuation in
+            let session = ASWebAuthenticationSession(url: url, callback: .customScheme(scheme)) { callback, error in
+                Task { @MainActor in
+                    current = nil
+                    if let callback {
+                        continuation.resume(returning: callback)
+                    } else if (error as? ASWebAuthenticationSessionError)?.code == .canceledLogin {
+                        continuation.resume(throwing: CancellationError())
+                    } else {
+                        continuation.resume(throwing: BackendError(message: "Sign-in couldn't open. Check your connection and try again."))
+                    }
+                }
+            }
+            let anchor = Anchor()
+            session.presentationContextProvider = anchor
+            current = (session, anchor)
+            if !session.start() {
+                current = nil
+                continuation.resume(throwing: BackendError(message: "Sign-in couldn't open. Try again."))
+            }
+        }
     }
 }

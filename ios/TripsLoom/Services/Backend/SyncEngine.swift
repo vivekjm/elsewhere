@@ -293,7 +293,7 @@ final class SyncEngine {
                     guard let baseline = state.extrasHashes[id] else { return false }
                     return baseline != Self.fingerprint(remoteExtra.cloudCopy)
                 } ?? false
-                // A baseline is required: a guest's first merge is not a conflict.
+                // A baseline is required: the first merge of trips made before sign-in is not a conflict.
                 let bothChanged = changedTrips.contains(id) && state.syncedTrips.contains(id)
                     && (differs(prior[id], received[id]) || nativeChanged == true)
                 if bothChanged {

@@ -97,7 +97,7 @@ struct PrivacyDetailsView: View {
     var body: some View {
         Form {
             Section("Account & trips") {
-                Text("Guests keep trips on this iPhone. Signing in sends your trips, plans, wardrobe, cover photos and travel preferences to Trips Loom's Cloudflare and Supabase services so you can use them on other devices. Session credentials are stored in the iOS Keychain.")
+                Text("Your trips, plans, wardrobe, cover photos and travel preferences are saved to your Trips Loom account on Cloudflare and Supabase so you can use them on other devices and tripsloom.com. Signing in with Apple or Google shares only your name and email. Session credentials are stored in the iOS Keychain.")
             }
             Section("Documents & sharing") {
                 Text("Travel documents and health check-ins stay on this device with iOS file protection. New trip invitations exclude health records and include the plan, names, costs and votes. Anyone with the invitation can read and forward it; only share it with people you trust. Invitations are copies, not live collaborative editing.")

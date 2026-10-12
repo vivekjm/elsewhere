@@ -4,6 +4,7 @@ nonisolated final class TravellerFlowTests: XCTestCase {
     @MainActor private func launch(largeText: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["TRIPSLOOM_UI_TEST_ID"] = UUID().uuidString
+        app.launchEnvironment["TRIPSLOOM_UI_TEST_SIGNED_IN"] = "1"
         app.launchArguments = ["-backend-url", "http://127.0.0.1:8787"]
         if largeText { app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"] }
         app.launch()
@@ -15,17 +16,16 @@ nonisolated final class TravellerFlowTests: XCTestCase {
         shot.name = name; shot.lifetime = .keepAlways; add(shot)
     }
 
-    @MainActor private func guest(_ app: XCUIApplication) {
-        let button = app.buttons["Continue as guest"]
-        XCTAssertTrue(button.waitForExistence(timeout: 10)); button.tap()
+    /// Skips first-run onboarding to reach an empty Trips tab.
+    @MainActor private func skipOnboarding(_ app: XCUIApplication) {
         XCTAssertTrue(app.buttons["Set up later"].waitForExistence(timeout: 10))
         app.buttons["Set up later"].tap()
         XCTAssertTrue(app.buttons["New trip"].waitForExistence(timeout: 10))
     }
 
-    @MainActor func testGuestOnboardingSettingsAndSupport() {
+    @MainActor func testOnboardingSettingsAndSupport() {
         let app = launch()
-        guest(app)
+        skipOnboarding(app)
         XCTAssertFalse(app.staticTexts["A week in Lisbon"].exists)
         screenshot(app, "Fresh account has no sample trips")
         app.tabBars.buttons["Profile"].tap()
@@ -33,7 +33,7 @@ nonisolated final class TravellerFlowTests: XCTestCase {
         if !privacy.isHittable { app.swipeUp() }
         XCTAssertTrue(privacy.waitForExistence(timeout: 5)); privacy.tap()
         XCTAssertTrue(app.buttons["Export my data"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["Delete my account"].exists)
+        XCTAssertTrue(app.buttons["Delete my account"].exists)
         screenshot(app, "Data controls")
         app.navigationBars.buttons.firstMatch.tap()
         let help = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Help & feedback'")).firstMatch
@@ -44,7 +44,7 @@ nonisolated final class TravellerFlowTests: XCTestCase {
     }
 
     @MainActor func testCreateTripWithoutSampleData() {
-        let app = launch(); guest(app)
+        let app = launch(); skipOnboarding(app)
         app.buttons["New trip"].tap()
         XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 5))
         app.buttons["Continue"].tap()
@@ -59,7 +59,7 @@ nonisolated final class TravellerFlowTests: XCTestCase {
     }
 
     @MainActor func testCloseNewTripFormDiscardsDraftImmediately() {
-        let app = launch(); guest(app)
+        let app = launch(); skipOnboarding(app)
         app.buttons["New trip"].tap()
         app.buttons["Continue"].tap()
         let name = app.textFields["Trip name"]
@@ -71,7 +71,7 @@ nonisolated final class TravellerFlowTests: XCTestCase {
     }
 
     @MainActor func testCityActivityAndPackingFlow() {
-        let app = launch(); guest(app)
+        let app = launch(); skipOnboarding(app)
         app.buttons["New trip"].tap()
         let city = app.buttons["trip-kind-city"]
         XCTAssertTrue(city.waitForExistence(timeout: 5))
@@ -96,8 +96,10 @@ nonisolated final class TravellerFlowTests: XCTestCase {
 
     @MainActor func testLargeTextPreferencesCanBeSaved() {
         let app = launch(largeText: true)
-        let guestButton = app.buttons["Continue as guest"]
-        XCTAssertTrue(guestButton.waitForExistence(timeout: 10)); guestButton.tap()
+        for _ in 0..<2 {
+            let next = app.buttons["Next"]
+            XCTAssertTrue(next.waitForExistence(timeout: 10)); next.tap()
+        }
         let save = app.buttons["save-travel-preferences"]
         XCTAssertTrue(save.waitForExistence(timeout: 5))
         if !save.isHittable { app.swipeUp() }

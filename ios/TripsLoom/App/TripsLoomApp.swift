@@ -85,7 +85,7 @@ final class AppRouter {
             guard let type = try await AuthClient.shared.handle(url: url) else { return }
             // Also after an expired session, so the sync picks up again (or
             // switches cleanly if this is a different account).
-            await store.didSignIn(via: store.session == .apple ? .apple : .email)
+            await store.didSignIn(via: store.session.isAccount ? store.session : .email)
             if type == "recovery" { resettingPassword = true } else { authMessage = "Your email is confirmed. You're signed in." }
         } catch {
             authMessage = error.localizedDescription
@@ -171,7 +171,7 @@ struct RootView: View {
             set: { router.importTripID = $0?.id }
         )) { item in ImportBookingsView(tripID: item.id) }
         .sheet(isPresented: Bindable(router).resettingPassword) { NewPasswordSheet() }
-        .sheet(isPresented: Binding(get: { store.session != .signedOut && store.profile.onboardingCompleted != true && store.trips.isEmpty && !router.newTrip && router.planner == nil }, set: { if !$0 { store.profile.onboardingCompleted = true } })) { NavigationStack { TravelPreferencesView(onboarding: true) } }
+        .fullScreenCover(isPresented: Binding(get: { store.session != .signedOut && store.profile.onboardingCompleted != true && store.trips.isEmpty && !router.newTrip && router.planner == nil }, set: { if !$0 { store.profile.onboardingCompleted = true } })) { OnboardingView() }
         .sheet(item: Bindable(router).joining) { invite in JoinTripSheet(invite: invite) }
         .alert("Trips Loom", isPresented: Binding(get: { router.authMessage != nil }, set: { if !$0 { router.authMessage = nil } })) {
             Button("OK") {}

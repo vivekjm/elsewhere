@@ -14,10 +14,10 @@ nonisolated final class PurchaseFlowTests: XCTestCase {
         defer { session.clearTransactions() }
         let app = XCUIApplication()
         app.launchEnvironment["TRIPSLOOM_UI_TEST_ID"] = UUID().uuidString
+        app.launchEnvironment["TRIPSLOOM_UI_TEST_SIGNED_IN"] = "1"
         app.launchArguments = ["-backend-url", "http://127.0.0.1:8787", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        if app.buttons["Continue as guest"].waitForExistence(timeout: 5) { app.buttons["Continue as guest"].tap() }
-        if app.buttons["Set up later"].waitForExistence(timeout: 3) { app.buttons["Set up later"].tap() }
+        if app.buttons["Set up later"].waitForExistence(timeout: 8) { app.buttons["Set up later"].tap() }
         XCTAssertTrue(app.tabBars.buttons["Profile"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Profile"].tap()
 

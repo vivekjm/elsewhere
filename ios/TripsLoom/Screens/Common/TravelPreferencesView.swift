@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Short, skippable onboarding that changes the planner's real inputs.
+/// Profile → Travel preferences: the same inputs first-run onboarding sets.
 struct TravelPreferencesView: View {
     @Environment(TripStore.self) private var store
     @Environment(\.dismiss) private var dismiss
@@ -11,8 +11,6 @@ struct TravelPreferencesView: View {
     @State private var diet = "No preference"
     @State private var budget = "Mid-range"
     @State private var metric = true
-    /// First run, as a sheet: offers "Set up later". From Profile it's pushed.
-    var onboarding = false
 
     var body: some View {
         Form {
@@ -27,19 +25,13 @@ struct TravelPreferencesView: View {
                 choice("Budget", value: $budget, options: PreferenceOptions.budgets)
                 Picker("Units", selection: $metric) { Text("Metric").tag(true); Text("Imperial").tag(false) }
             }
-            if onboarding {
-                Section {
-                    Button("Save preferences") { finish(save: true) }
-                    Button("Set up later") { finish(save: false) }
-                }
-            }
         }
         .formScreen()
-        .navigationTitle(onboarding ? "Make it yours" : "Travel preferences")
+        .navigationTitle("Travel preferences")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Done") { finish(save: true) }.accessibilityIdentifier("save-travel-preferences")
+                Button("Done") { finish() }.accessibilityIdentifier("save-travel-preferences")
             }
         }
         .tint(.lime)
@@ -56,13 +48,11 @@ struct TravelPreferencesView: View {
         }
     }
 
-    private func finish(save: Bool) {
-        if save {
-            store.profile.name = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(80))
-            store.profile.homeAirport = String(base.trimmingCharacters(in: .whitespacesAndNewlines).prefix(80))
-            store.profile.travelStyle = style; store.profile.pace = pace
-            store.profile.diet = diet; store.profile.budgetStyle = budget; store.profile.metric = metric
-        }
+    private func finish() {
+        store.profile.name = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(80))
+        store.profile.homeAirport = String(base.trimmingCharacters(in: .whitespacesAndNewlines).prefix(80))
+        store.profile.travelStyle = style; store.profile.pace = pace
+        store.profile.diet = diet; store.profile.budgetStyle = budget; store.profile.metric = metric
         store.profile.onboardingCompleted = true
         store.saveNow()
         dismiss()

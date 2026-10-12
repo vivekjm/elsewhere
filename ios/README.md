@@ -62,6 +62,7 @@ The app uses the same backend as tripsloom.com, so the same account works in bot
 
 `scripts/e2e/run.sh` starts a local replica of the backend on `http://127.0.0.1:8787`, seeded with a workspace made on the website. It copies the Worker's workspace and photo routes and checks every save with the web's real `workspaceSchema`, including its 409 on a stale revision and its stripping of unknown fields. It also imitates Supabase Auth and the `profiles` and `trip_extras` tables with per-user access.
 - **Launch**: start a Debug build with `-backend-url http://127.0.0.1:8787`. Release builds always use tripsloom.com.
+- **Continue with Google**: `/auth/v1/authorize?provider=google` stands in for Google's consent screen. It makes a new user named Gia Google and redirects straight back to the app with a session.
 - **Sign in without a password**: `curl localhost:8787/__admin/mint` returns a session. Open `tripsloom://auth/callback#access_token=…&refresh_token=…&expires_in=3600&type=signup` with `xcrun simctl openurl booted`, which is the same path as the link in a confirmation email.
 - **Act as the website**: `POST /__admin/web-edit` with a workspace saves a change. `POST /__admin/edit-before-next-put` makes the website save in the gap between the phone's fetch and its PUT.
 - **Other controls**:
@@ -70,7 +71,7 @@ The app uses the same backend as tripsloom.com, so the same account works in bot
   - `/__admin/state` and `/__admin/log` show what the server holds and received.
 
 Scenarios covered so far:
-- A guest's own trips move into a new account, and the sample trips and unused sample wardrobe are dropped.
+- Trips made on the phone before sign-in (including by older guest installs) move into a new account, and the sample trips and unused sample wardrobe are dropped.
 - Web IDs that aren't UUIDs are kept.
 - Web-only fields survive: links, notes, end times, completed, occasions, day titles.
 - Edits made on the website arrive on the phone.
