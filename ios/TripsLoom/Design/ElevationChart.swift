@@ -43,6 +43,12 @@ struct ElevationChart: View {
         stages.map { Point(day: $0.day, value: Double($0.altitude)) }
     }
 
+    /// Never zero-width: two stages can share a day.
+    private var dayDomain: ClosedRange<Int> {
+        let first = stages.first?.day ?? 0
+        return first...max(stages.last?.day ?? 1, first + 1)
+    }
+
     private var domain: ClosedRange<Double> {
         let values = points.map(\.value)
         let low = ((values.min() ?? 0) - 400) / 500
@@ -78,7 +84,7 @@ struct ElevationChart: View {
                     .foregroundStyle(Color.mint.opacity(0.7))
             }
             .chartYScale(domain: domain)
-            .chartXScale(domain: (stages.first?.day ?? 0)...(stages.last?.day ?? 1))
+            .chartXScale(domain: dayDomain)
             .chartXAxis(.hidden)
             .chartYAxis {
                 AxisMarks(position: .leading, values: yTicks) { _ in AxisValueLabel("00").foregroundStyle(.clear) }
@@ -141,7 +147,7 @@ struct ElevationChart: View {
                 }
             }
             .chartYScale(domain: domain)
-            .chartXScale(domain: (stages.first?.day ?? 0)...(stages.last?.day ?? 1))
+            .chartXScale(domain: dayDomain)
             .chartXAxis {
                 AxisMarks(values: xTicks) { value in
                     AxisValueLabel {

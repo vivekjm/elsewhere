@@ -26,23 +26,26 @@ final class TideService {
 
     private var days: [String: Day] = [:]
     private var loading: Set<String> = []
+    /// Estimates are retried later: the phone may be back online, or the
+    /// date may have come within the model's range.
+    private var retryAfter: [String: Date] = [:]
 
     func day(for trip: Trip, index: Int) -> Day? { days[key(trip, index)] }
 
     func load(_ trip: Trip, index: Int) async {
         let k = key(trip, index)
-        guard days[k] == nil, !loading.contains(k) else { return }
+        let canRetry = days[k]?.source == .estimate && (retryAfter[k] ?? .distantPast) < .now
+        guard days[k] == nil || canRetry, !loading.contains(k) else { return }
         loading.insert(k)
         defer { loading.remove(k) }
         let date = trip.date(ofDay: index)
         let estimate = Day(source: .estimate, points: Tides.curve(for: date, seed: trip.id, calendar: trip.calendar))
         var place = await Places.lookup(trip.place)
         if place == nil { place = await Places.lookup(trip.name) }
-        guard let place else {
-            days[k] = estimate
-            return
-        }
-        days[k] = await fetch(lat: place.latitude, lon: place.longitude, date: date, timeZone: trip.timeZone) ?? estimate
+        let fetched: Day?
+        if let place { fetched = await fetch(lat: place.latitude, lon: place.longitude, date: date, timeZone: trip.timeZone) } else { fetched = nil }
+        days[k] = fetched ?? estimate
+        if fetched == nil { retryAfter[k] = .now.addingTimeInterval(10 * 60) }
     }
 
     private func key(_ trip: Trip, _ index: Int) -> String {
