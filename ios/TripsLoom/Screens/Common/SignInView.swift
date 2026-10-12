@@ -1,11 +1,12 @@
 import AuthenticationServices
 import SwiftUI
 
-/// C1. Welcome: a short swipeable intro over a slow brand gradient, then
-/// one panel to continue with Apple, Google or email. There is no guest mode;
-/// trips already on this iPhone join the account on first sync.
+/// C1. Welcome: a short swipeable look at what the app does, over a slow
+/// woven backdrop, then Apple, Google or email. There is no guest mode; trips
+/// already on this iPhone join the account on first sync.
 struct SignInView: View {
     @Environment(TripStore.self) private var store
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var showEmail = false
     @State private var authError: String?
     @State private var nonce = AuthClient.makeNonce()
@@ -16,14 +17,14 @@ struct SignInView: View {
 
     private static let pages: [IntroPage] = [
         IntroPage(title: "Every trip,\nwoven together.",
-                  body: "City breaks, coasts, treks and summits. Plans, bookings and budgets in one place.",
-                  tiles: [("building.2.fill", Tile.plum), ("mountain.2.fill", Tile.green), ("water.waves", Tile.teal)]),
-        IntroPage(title: "Pack light,\ndress right.",
-                  body: "Packing lists and outfits built from your wardrobe and the forecast where you're going.",
-                  tiles: [("tshirt.fill", Tile.indigo), ("checklist", Tile.amber), ("cloud.sun.fill", Tile.bronze)]),
-        IntroPage(title: "Travel together,\nsafely.",
-                  body: "Split costs and vote on plans with friends, and check in with people at home.",
-                  tiles: [("person.2.fill", Tile.teal), ("checkmark.shield.fill", Tile.green), ("map.fill", Tile.red)]),
+                  body: "Days, stays, bookings and budgets in one plan that reads like a story, not a spreadsheet.",
+                  glimpse: .day),
+        IntroPage(title: "Dressed for\nevery day.",
+                  body: "Outfits from your own wardrobe, matched to each day's plans and the forecast where you're going.",
+                  glimpse: .outfit),
+        IntroPage(title: "Pack once,\nexactly.",
+                  body: "One list built from your days and outfits, with weights, so nothing is forgotten and nothing is extra.",
+                  glimpse: .packing),
     ]
 
     /// Release builds show a provider once it's switched on in Supabase;
@@ -38,9 +39,11 @@ struct SignInView: View {
 
     var body: some View {
         ZStack {
-            BrandBackdrop()
+            BrandBackdrop(threads: true)
             VStack(spacing: 0) {
-                header
+                Wordmark()
+                    .padding(.horizontal, 24)
+                    .padding(.top, 14)
                     .modifier(Entrance(index: 0, shown: shown))
                 TabView(selection: $page) {
                     ForEach(Self.pages.indices, id: \.self) { index in
@@ -50,12 +53,12 @@ struct SignInView: View {
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .modifier(Entrance(index: 1, shown: shown))
                 PageDots(count: Self.pages.count, current: page)
-                    .padding(.bottom, 18)
+                    .padding(.bottom, 22)
                 authPanel
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 20)
                     .modifier(Entrance(index: 3, shown: shown))
             }
-            .padding(.bottom, 8)
+            .padding(.bottom, 6)
         }
         .task {
             let found = await AuthClient.shared.enabledProviders()
@@ -71,24 +74,6 @@ struct SignInView: View {
         }
     }
 
-    private var header: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "point.topleft.down.to.point.bottomright.curvepath.fill")
-                .font(.system(size: 17, weight: .bold))
-                .foregroundStyle(Color.ink)
-                .frame(width: 34, height: 34)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.lime))
-                .accessibilityHidden(true)
-            Text("trips loom")
-                .font(.sf(19, .heavy))
-                .foregroundStyle(.white)
-                .accessibilityAddTraits(.isHeader)
-            Spacer()
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 14)
-    }
-
     private var authPanel: some View {
         VStack(spacing: 10) {
             if !store.trips.isEmpty {
@@ -98,7 +83,7 @@ struct SignInView: View {
                     .foregroundStyle(Color.textMuted)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 6)
-                    .padding(.bottom, 2)
+                    .padding(.bottom, 4)
             }
             if offers("apple") {
                 SignInWithAppleButton(.continue) { request in
@@ -116,7 +101,7 @@ struct SignInView: View {
             if offers("google") {
                 Button { Task { await signInWithGoogle() } } label: {
                     HStack(spacing: 10) {
-                        if working == "google" { ProgressView().tint(.white) } else { GoogleMark().frame(width: 20, height: 20) }
+                        if working == "google" { ProgressView().tint(.white) } else { GoogleMark().frame(width: 18, height: 18) }
                         Text("Continue with Google")
                     }
                 }
@@ -128,10 +113,8 @@ struct SignInView: View {
                 .buttonStyle(CTAStyle(kind: offers("apple") || offers("google") ? .glass : .white))
                 .disabled(working != nil)
             legal
-                .padding(.top, 4)
+                .padding(.top, 6)
         }
-        .padding(12)
-        .glass(34)
     }
 
     private var legal: some View {
@@ -196,11 +179,11 @@ struct SignInView: View {
     }
 }
 
-/// One intro page: a small stack of the app's own icon tiles, a headline and a line of copy.
+/// One intro page: a glimpse of the product, a headline and a line of copy.
 private struct IntroPage {
     var title: String
     var body: String
-    var tiles: [(symbol: String, color: Color)]
+    var glimpse: Glimpse
 }
 
 private struct IntroPageView: View {
@@ -209,15 +192,15 @@ private struct IntroPageView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Spacer(minLength: 12)
+            Spacer(minLength: 8)
             if !typeSize.isAccessibilitySize {
-                TileFan(tiles: page.tiles)
+                GlimpseStack(glimpse: page.glimpse)
                     .frame(maxWidth: .infinity)
-                    .padding(.bottom, 18)
+                    .padding(.bottom, 10)
                     .accessibilityHidden(true)
                 Spacer(minLength: 0)
             }
-            WordFittingTitle(text: page.title, size: 40, tracking: -1)
+            WordFittingTitle(text: page.title, size: 40, tracking: -0.8)
                 .foregroundStyle(.white)
                 .fixedSize(horizontal: false, vertical: true)
             Text(page.body)
@@ -227,38 +210,160 @@ private struct IntroPageView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 24)
-        .padding(.bottom, 14)
+        .padding(.bottom, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
     }
 }
 
-/// Three icon tiles fanned like cards, gently floating.
-private struct TileFan: View {
-    var tiles: [(symbol: String, color: Color)]
-    @State private var float = false
+/// The wordmark: a thread mark and the name in the display serif.
+struct Wordmark: View {
+    var body: some View {
+        HStack(spacing: 9) {
+            ThreadMark()
+                .frame(width: 22, height: 22)
+                .accessibilityHidden(true)
+            Text("Trips Loom")
+                .font(.display(21, .semibold))
+                .tracking(-0.2)
+                .foregroundStyle(.white)
+                .accessibilityAddTraits(.isHeader)
+            Spacer()
+        }
+    }
+}
+
+/// Two threads crossing: the loom, drawn so no asset is needed.
+private struct ThreadMark: View {
+    var body: some View {
+        Canvas { context, size in
+            let w = size.width, h = size.height
+            var a = Path()
+            a.move(to: CGPoint(x: 0, y: h * 0.72))
+            a.addCurve(to: CGPoint(x: w, y: h * 0.28), control1: CGPoint(x: w * 0.45, y: h * 0.72), control2: CGPoint(x: w * 0.55, y: h * 0.28))
+            var b = Path()
+            b.move(to: CGPoint(x: 0, y: h * 0.28))
+            b.addCurve(to: CGPoint(x: w, y: h * 0.72), control1: CGPoint(x: w * 0.45, y: h * 0.28), control2: CGPoint(x: w * 0.55, y: h * 0.72))
+            context.stroke(a, with: .color(.white.opacity(0.9)), style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
+            context.stroke(b, with: .color(Color.lime), style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
+        }
+    }
+}
+
+/// What a page shows: a planned day, that day's outfit, or the packing list.
+private enum Glimpse { case day, outfit, packing }
+
+/// A product card, with a second card tucked behind for depth.
+private struct GlimpseStack: View {
+    var glimpse: Glimpse
+    @State private var risen = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
-            ForEach(tiles.indices, id: \.self) { i in
-                let offset = CGFloat(i - 1)
-                Image(systemName: tiles[i].symbol)
-                    .font(.system(size: 38, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 104, height: 104)
-                    .background(RoundedRectangle(cornerRadius: 30, style: .continuous).fill(tiles[i].color.gradient))
-                    .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).strokeBorder(.white.opacity(0.18), lineWidth: 1))
-                    .shadow(color: .black.opacity(0.35), radius: 18, y: 12)
-                    .rotationEffect(.degrees(Double(offset) * 9))
-                    .offset(x: offset * 92, y: abs(offset) * 14 + (float ? (i == 1 ? -8 : 4) : 0))
-                    .zIndex(i == 1 ? 1 : 0)
-            }
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color(hex: 0x141922, opacity: 0.55))
+                .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(.white.opacity(0.07), lineWidth: 1))
+                .frame(width: 272 * 0.92, height: 150)
+                .offset(y: risen || reduceMotion ? -22 : -8)
+            GlimpseCard(glimpse: glimpse)
+                .shadow(color: .black.opacity(0.45), radius: 24, y: 16)
         }
-        .frame(height: 150)
+        .frame(width: 272)
         .onAppear {
             guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true)) { float = true }
+            withAnimation(.easeOut(duration: 0.9).delay(0.2)) { risen = true }
+        }
+    }
+}
+
+private struct GlimpseCard: View {
+    var glimpse: Glimpse
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            switch glimpse {
+            case .day: day
+            case .outfit: outfit
+            case .packing: packing
+            }
+        }
+        .padding(16)
+        .frame(width: 272, alignment: .leading)
+        .glass(24, fill: Color(hex: 0x141922, opacity: 0.78))
+    }
+
+    private func header(_ eyebrow: String, _ trailing: String? = nil) -> some View {
+        HStack {
+            Text(eyebrow).eyebrow(.lime)
+            Spacer()
+            if let trailing {
+                Text(trailing).font(.sf(11.5, .medium)).foregroundStyle(Color.textFaint)
+            }
+        }
+    }
+
+    private var day: some View {
+        Group {
+            header("Tue 14 Oct", "Lisbon · 19°")
+            Text("Day 3 · Alfama").font(.display(20)).foregroundStyle(.white)
+            VStack(alignment: .leading, spacing: 8) {
+                row(time: "09:30", "Walk the Alfama lanes")
+                row(time: "13:00", "Lunch at Ramiro")
+                row(time: "19:30", "Fado in Bairro Alto")
+            }
+        }
+    }
+
+    private func row(time: String, _ title: String) -> some View {
+        HStack(spacing: 10) {
+            Text(time).font(.mono(12, .medium)).foregroundStyle(Color.textMuted).frame(width: 40, alignment: .leading)
+            Circle().fill(Color.lime).frame(width: 5, height: 5)
+            Text(title).font(.sf(14, .medium)).foregroundStyle(.white).lineLimit(1)
+        }
+    }
+
+    private var outfit: some View {
+        Group {
+            header("What to wear", "Light rain")
+            Text("Linen shirt, dark denim,\ntrench coat").font(.display(20)).foregroundStyle(.white)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 8) {
+                ForEach([0xD9CBB5, 0x2E3A59, 0x7A5C3E, 0xE6C76A], id: \.self) { hex in
+                    Circle().fill(Color(hex: UInt32(hex))).frame(width: 26, height: 26)
+                        .overlay(Circle().strokeBorder(.white.opacity(0.18), lineWidth: 1))
+                }
+                Spacer()
+                Text("From your wardrobe").font(.sf(11.5, .medium)).foregroundStyle(Color.textFaint)
+            }
+        }
+    }
+
+    private var packing: some View {
+        Group {
+            header("Packing", "6.8 kg")
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle().stroke(Color.white.opacity(0.1), lineWidth: 6)
+                    Circle().trim(from: 0, to: 0.78).stroke(Color.lime, style: StrokeStyle(lineWidth: 6, lineCap: .round)).rotationEffect(.degrees(-90))
+                    Text("14/18").font(.mono(12, .semibold)).foregroundStyle(.white)
+                }
+                .frame(width: 56, height: 56)
+                VStack(alignment: .leading, spacing: 7) {
+                    pack("Trench coat", done: true)
+                    pack("Walking shoes", done: true)
+                    pack("Travel adapter", done: false)
+                }
+            }
+        }
+    }
+
+    private func pack(_ title: String, done: Bool) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                .font(.system(size: 14))
+                .foregroundStyle(done ? Color.lime : Color.white.opacity(0.3))
+            Text(title).font(.sf(14, .medium)).foregroundStyle(done ? .white : Color.textMuted)
         }
     }
 }
@@ -271,8 +376,8 @@ private struct PageDots: View {
         HStack(spacing: 6) {
             ForEach(0..<count, id: \.self) { i in
                 Capsule()
-                    .fill(i == current ? Color.lime : Color.white.opacity(0.25))
-                    .frame(width: i == current ? 22 : 7, height: 7)
+                    .fill(i == current ? Color.lime : Color.white.opacity(0.22))
+                    .frame(width: i == current ? 22 : 6, height: 6)
             }
         }
         .animation(Motion.snappy, value: current)
@@ -281,27 +386,60 @@ private struct PageDots: View {
     }
 }
 
-/// A slow, dark brand gradient: ink with hints of indigo, plum and lime.
+/// The brand backdrop: deep ink with a slow drift of indigo and warm dusk,
+/// and, on the welcome screen, fine threads drifting across like a loom.
 /// Holds still with Reduce Motion.
 struct BrandBackdrop: View {
+    var threads = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { context in
             let t = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate
-            let s = Float(sin(t / 6)), c = Float(cos(t / 7))
-            MeshGradient(width: 3, height: 3, points: [
-                [0, 0], [0.5, 0], [1, 0],
-                [0, 0.5], [0.5 + 0.12 * s, 0.42 + 0.08 * c], [1, 0.5],
-                [0, 1], [0.5, 1], [1, 1],
-            ], colors: [
-                Color(hex: 0x1B1640), Color(hex: 0x0B0E12), Color(hex: 0x2A0F2E),
-                Color(hex: 0x0E1A24), Color(hex: 0x23214F), Color(hex: 0x0B0E12),
-                Color(hex: 0x0B0E12), Color(hex: 0x1E2A12), Color(hex: 0x0B0E12),
-            ])
+            let s = Float(sin(t / 7)), c = Float(cos(t / 9))
+            ZStack {
+                MeshGradient(width: 3, height: 3, points: [
+                    [0, 0], [0.5, 0], [1, 0],
+                    [0, 0.5], [0.5 + 0.1 * s, 0.45 + 0.08 * c], [1, 0.5],
+                    [0, 1], [0.5, 1], [1, 1],
+                ], colors: [
+                    Color(hex: 0x11182A), Color(hex: 0x0B0E12), Color(hex: 0x1C1A2E),
+                    Color(hex: 0x0E1621), Color(hex: 0x1A2238), Color(hex: 0x0B0E12),
+                    Color(hex: 0x0B0E12), Color(hex: 0x1B1812), Color(hex: 0x0B0E12),
+                ])
+                if threads { LoomThreads(time: t) }
+            }
         }
-        .overlay(LinearGradient(colors: [.clear, Color(hex: 0x06080B, opacity: 0.7)], startPoint: .center, endPoint: .bottom))
+        .overlay(LinearGradient(colors: [.clear, Color(hex: 0x06080B, opacity: 0.75)], startPoint: .center, endPoint: .bottom))
         .ignoresSafeArea()
+    }
+}
+
+/// Fine curved lines that drift slowly across the screen.
+private struct LoomThreads: View {
+    var time: TimeInterval
+
+    var body: some View {
+        Canvas { context, size in
+            let count = 7
+            for i in 0..<count {
+                let f = Double(i) / Double(count - 1)
+                let baseY = size.height * (0.12 + 0.5 * f)
+                let amp = 18 + 26 * sin(f * .pi)
+                let phase = time * (0.12 + 0.05 * f) + f * 2.4
+                var path = Path()
+                path.move(to: CGPoint(x: -4, y: baseY))
+                let steps = 24
+                for step in 1...steps {
+                    let x = size.width * Double(step) / Double(steps)
+                    let y = baseY + amp * sin(x / size.width * 2.2 * .pi + phase) + 10 * sin(x / size.width * 5.1 * .pi - phase * 0.7)
+                    path.addLine(to: CGPoint(x: x, y: y))
+                }
+                let gold = i == 3
+                context.stroke(path, with: .color(gold ? Color.lime.opacity(0.28) : .white.opacity(0.05 + 0.03 * f)), lineWidth: gold ? 1.2 : 1)
+            }
+        }
+        .allowsHitTesting(false)
     }
 }
 

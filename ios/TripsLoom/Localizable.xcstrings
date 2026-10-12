@@ -517,6 +517,18 @@
         }
       }
     },
+    "14/18": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "14/18"
+          }
+        }
+      }
+    },
     "A week in Portugal, food and tiles": {
       "extractionState": "manual",
       "comment": "",
@@ -1261,6 +1273,18 @@
         }
       }
     },
+    "Both are optional and stay with your account.": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Both are optional and stay with your account."
+          }
+        }
+      }
+    },
     "Both are optional, and stay with your account.": {
       "extractionState": "manual",
       "comment": "",
@@ -1801,6 +1825,18 @@
         }
       }
     },
+    "Currency, %@": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Currency, %@"
+          }
+        }
+      }
+    },
     "D%lld": {
       "extractionState": "manual",
       "comment": "",
@@ -1881,6 +1917,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Day %lld, %lld metres. Highest %lld metres."
+          }
+        }
+      }
+    },
+    "Day 3 · Alfama": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day 3 · Alfama"
           }
         }
       }
@@ -2881,6 +2929,18 @@
         }
       }
     },
+    "From your wardrobe": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From your wardrobe"
+          }
+        }
+      }
+    },
     "From → To": {
       "extractionState": "manual",
       "comment": "",
@@ -2937,18 +2997,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Go unlimited"
-          }
-        }
-      }
-    },
-    "Goal: %lld km": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Goal: %lld km"
           }
         }
       }
@@ -3297,6 +3345,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Leave empty for no limit."
+          }
+        }
+      }
+    },
+    "Linen shirt, dark denim,\ntrench coat": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linen shirt, dark denim,\ntrench coat"
+          }
+        }
+      }
+    },
+    "Lisbon, Portugal": {
+      "extractionState": "manual",
+      "comment": "",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisbon, Portugal"
           }
         }
       }
@@ -4189,18 +4261,6 @@
         }
       }
     },
-    "Panaji, Goa": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Panaji, Goa"
-          }
-        }
-      }
-    },
     "Password": {
       "extractionState": "manual",
       "comment": "",
@@ -4501,14 +4561,14 @@
         }
       }
     },
-    "Porters in Nepal and India usually carry 15–20 kg each; a pack you carry yourself is often 8–12 kg.": {
+    "Porters on Himalayan and Andean treks usually carry 15–20 kg each; a pack you carry yourself is often 8–12 kg.": {
       "extractionState": "manual",
       "comment": "",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Porters in Nepal and India usually carry 15–20 kg each; a pack you carry yourself is often 8–12 kg."
+            "value": "Porters on Himalayan and Andean treks usually carry 15–20 kg each; a pack you carry yourself is often 8–12 kg."
           }
         }
       }
@@ -5641,18 +5701,6 @@
         }
       }
     },
-    "Start planning": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Start planning"
-          }
-        }
-      }
-    },
     "Starts": {
       "extractionState": "manual",
       "comment": "",
@@ -6505,14 +6553,14 @@
         }
       }
     },
-    "Weekend in Goa": {
+    "Weekend in Lisbon": {
       "extractionState": "manual",
       "comment": "",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Weekend in Goa"
+            "value": "Weekend in Lisbon"
           }
         }
       }
@@ -6577,14 +6625,14 @@
         }
       }
     },
-    "Where your trips usually start, like Bangalore or BLR. Shared with tripsloom.com.": {
+    "Where your trips usually start, like London or LHR. Shared with tripsloom.com.": {
       "extractionState": "manual",
       "comment": "",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Where your trips usually start, like Bangalore or BLR. Shared with tripsloom.com."
+            "value": "Where your trips usually start, like London or LHR. Shared with tripsloom.com."
           }
         }
       }
@@ -6861,18 +6909,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "readiness"
-          }
-        }
-      }
-    },
-    "trips loom": {
-      "extractionState": "manual",
-      "comment": "",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "trips loom"
           }
         }
       }

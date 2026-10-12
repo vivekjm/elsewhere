@@ -201,7 +201,7 @@ struct PackRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 Group {
                     if large {
-                        WordFittingTitle(text: item.name, size: 16, weight: .medium)
+                        WordFittingTitle(text: item.name, size: 16, weight: .medium, serif: false)
                     } else {
                         Text(item.name).font(.sf(16, .medium)).lineLimit(2)
                     }

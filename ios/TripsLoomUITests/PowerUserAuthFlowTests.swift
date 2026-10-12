@@ -44,7 +44,7 @@ nonisolated final class PowerUserAuthFlowTests: PowerUserScenarioCase {
         app.launchEnvironment["TRIPSLOOM_UI_TEST_ID"] = UUID().uuidString
         app.launchArguments = ["-backend-url", "http://127.0.0.1:8788", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        XCTAssertTrue(app.staticTexts["trips loom"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Trips Loom"].waitForExistence(timeout: 10))
         shot(app, "92-welcome")
         tap(app, app.buttons["Continue with Google"])
         // iOS asks before a web sign-in; the alert belongs to SpringBoard.
@@ -53,27 +53,27 @@ nonisolated final class PowerUserAuthFlowTests: PowerUserScenarioCase {
         XCTAssertTrue(allow.waitForExistence(timeout: 15), "No web sign-in prompt")
         allow.tap()
         // The harness returns Google's name, which onboarding greets and keeps.
-        XCTAssertTrue(app.staticTexts["Hi, Gia."].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["Good to have you, Gia."].waitForExistence(timeout: 15))
         XCTAssertEqual(app.textFields["Your name"].value as? String, "Gia Google")
         shot(app, "93-onboarding-about-you")
-        tap(app, app.buttons["Next"])
-        tap(app, app.buttons["Trek and climb"])
-        tap(app, app.buttons["Relaxed"])
-        shot(app, "94-onboarding-travel-style")
-        tap(app, app.buttons["Next"])
-        tap(app, app.buttons["Vegetarian"])
+        tap(app, app.buttons["Continue"])
+        // Exploring lands on home rather than opening a trip form.
+        tap(app, app.buttons["Just looking for now"])
+        shot(app, "94-onboarding-intent")
+        tap(app, app.buttons["Continue"])
+        tap(app, app.buttons["Budget and shared costs"])
+        tap(app, app.buttons["Continue"])
         tap(app, app.buttons["Imperial"])
+        shot(app, "95-onboarding-units-and-currency")
         tap(app, app.buttons["save-travel-preferences"])
         XCTAssertTrue(app.buttons["New trip"].waitForExistence(timeout: 10))
         tab(app, "Profile")
         let account = app.buttons.matching(NSPredicate(format: "label CONTAINS 'google-'")).firstMatch
         XCTAssertTrue(account.waitForExistence(timeout: 15), "Google account not shown after sync")
-        tap(app, app.buttons.matching(NSPredicate(format: "label CONTAINS 'Travel preferences'")).firstMatch)
         let shows = { (text: String) in
             app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", text, text)).firstMatch
         }
-        XCTAssertTrue(shows("Trek and climb").waitForExistence(timeout: 5))
-        XCTAssertTrue(shows("Relaxed").exists && shows("Vegetarian").exists && shows("Imperial").exists)
-        shot(app, "95-preferences-kept")
+        XCTAssertTrue(shows("Imperial").waitForExistence(timeout: 5))
+        shot(app, "96-preferences-kept")
     }
 }

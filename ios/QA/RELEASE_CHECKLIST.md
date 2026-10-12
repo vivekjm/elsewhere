@@ -16,7 +16,8 @@ Run these once before the first App Store submission.
 
 1. Create the subscriptions `com.tripsloom.pro.yearly` and
    `com.tripsloom.pro.monthly` with the prices in `TripsLoom.storekit`
-   (₹2,499 with a 7-day trial; ₹349).
+   (US$29.99 a year with a 7-day trial; US$3.99 a month; App Store Connect
+   sets the equivalents for every other storefront).
 2. On the phone, sign in with a Sandbox tester (Settings → App Store).
 3. Profile → "Free · see Pro" → buy yearly → the chip reads "Pro · Yearly".
 4. Delete and reinstall → Restore purchases → Pro returns.

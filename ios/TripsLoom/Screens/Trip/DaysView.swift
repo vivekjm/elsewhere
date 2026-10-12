@@ -278,7 +278,7 @@ struct PlanCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Group {
                     if large {
-                        WordFittingTitle(text: plan.title, size: 16, weight: .medium)
+                        WordFittingTitle(text: plan.title, size: 16, weight: .medium, serif: false)
                     } else {
                         Text(plan.title).font(.sf(16, .medium)).lineLimit(2)
                     }

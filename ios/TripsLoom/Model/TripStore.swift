@@ -36,7 +36,8 @@ final class TripStore {
             if profile.name != oldValue.name || profile.homeAirport != oldValue.homeAirport
                 || profile.metric != oldValue.metric || profile.travelStyle != oldValue.travelStyle
                 || profile.diet != oldValue.diet || profile.pace != oldValue.pace
-                || profile.budgetStyle != oldValue.budgetStyle || profile.onboardingCompleted != oldValue.onboardingCompleted {
+                || profile.budgetStyle != oldValue.budgetStyle || profile.onboardingCompleted != oldValue.onboardingCompleted
+                || profile.intent != oldValue.intent || profile.focus != oldValue.focus || profile.currency != oldValue.currency {
                 sync.profileChange()
             }
         }
@@ -96,6 +97,8 @@ final class TripStore {
                 // Guest mode is gone: older guests sign in, and the trips on
                 // this iPhone are added to their account on first sync.
                 session = snapshot.session == .guest ? .signedOut : snapshot.session
+                profile.diet = PreferenceOptions.currentDiet(profile.diet)
+                CurrencyService.preferred = profile.currency
                 #if DEBUG
                 Self.applyUITestSession(&session)
                 #endif

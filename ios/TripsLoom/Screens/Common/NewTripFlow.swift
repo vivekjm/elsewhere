@@ -172,7 +172,7 @@ struct NewTripForm: View {
                 VStack(alignment: .leading, spacing: 12) {
                     GlassList {
                         VStack(alignment: .leading, spacing: 3) {
-                            TextField("Trip name", text: $name, prompt: Text("Weekend in Goa").foregroundStyle(Color.textFaint))
+                            TextField("Trip name", text: $name, prompt: Text("Weekend in Lisbon").foregroundStyle(Color.textFaint))
                                 .accessibilityLabel("Trip name")
                                 .font(.sf(16, .semibold))
                                 .focused($focus, equals: .name)
@@ -185,7 +185,7 @@ struct NewTripForm: View {
                         HStack(spacing: 12) {
                             IconTile(symbol: "mappin", color: Tile.teal, size: .medium)
                             VStack(alignment: .leading, spacing: 3) {
-                                TextField("Destination", text: $place, prompt: Text("Panaji, Goa").foregroundStyle(Color.textFaint))
+                                TextField("Destination", text: $place, prompt: Text("Lisbon, Portugal").foregroundStyle(Color.textFaint))
                                     .accessibilityLabel("Destination")
                                     .font(.sf(16, .semibold))
                                     .textContentType(.addressCity)

@@ -25,9 +25,9 @@ struct PlannerFlow: View {
     }
 
     private let ideas = [
-        Idea(title: "10 days trekking in Nepal", meta: "October · tea houses · ₹1.2L", kind: .trek),
+        Idea(title: "6 days on the Tour du Mont Blanc", meta: "September · refuges · moderate", kind: .trek),
         Idea(title: "4 slow days in Kyoto", meta: "April · food · walking", kind: .city),
-        Idea(title: "A long weekend by the sea", meta: "No flights · from Bangalore", kind: .beach),
+        Idea(title: "A long weekend on the Amalfi Coast", meta: "Short flight · boats · lemon groves", kind: .beach),
     ]
 
     var body: some View {

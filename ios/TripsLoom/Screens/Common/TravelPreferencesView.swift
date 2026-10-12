@@ -11,6 +11,7 @@ struct TravelPreferencesView: View {
     @State private var diet = "No preference"
     @State private var budget = "Mid-range"
     @State private var metric = true
+    @State private var currency = CurrencyService.home
 
     var body: some View {
         Form {
@@ -24,6 +25,9 @@ struct TravelPreferencesView: View {
                 choice("Food", value: $diet, options: PreferenceOptions.diets)
                 choice("Budget", value: $budget, options: PreferenceOptions.budgets)
                 Picker("Units", selection: $metric) { Text("Metric").tag(true); Text("Imperial").tag(false) }
+                Picker("Currency", selection: $currency) {
+                    ForEach(CurrencyService.common, id: \.self) { Text("\($0) · \(CurrencyService.name(for: $0))").tag($0) }
+                }
             }
         }
         .formScreen()
@@ -39,6 +43,7 @@ struct TravelPreferencesView: View {
             name = store.profile.name; base = store.profile.homeAirport
             style = store.profile.travelStyle; pace = store.profile.pace
             diet = store.profile.diet; budget = store.profile.budgetStyle; metric = store.profile.metric
+            currency = store.profile.currency ?? CurrencyService.home
         }
     }
 
@@ -53,6 +58,7 @@ struct TravelPreferencesView: View {
         store.profile.homeAirport = String(base.trimmingCharacters(in: .whitespacesAndNewlines).prefix(80))
         store.profile.travelStyle = style; store.profile.pace = pace
         store.profile.diet = diet; store.profile.budgetStyle = budget; store.profile.metric = metric
+        store.profile.currency = currency; CurrencyService.preferred = currency
         store.profile.onboardingCompleted = true
         store.saveNow()
         dismiss()

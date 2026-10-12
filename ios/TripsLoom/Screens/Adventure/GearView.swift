@@ -236,7 +236,7 @@ struct PorterLimitEditor: View {
                 Section {
                     NumberRow("Limit (\(Fmt.weightUnit))", value: $limit.inWeightUnits)
                 } footer: {
-                    Text("Porters in Nepal and India usually carry 15–20 kg each; a pack you carry yourself is often 8–12 kg.")
+                    Text("Porters on Himalayan and Andean treks usually carry 15–20 kg each; a pack you carry yourself is often 8–12 kg.")
                 }
             }
             .scrollContentBackground(.hidden)

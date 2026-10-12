@@ -24,8 +24,23 @@ final class CurrencyService {
         }
     }
 
-    /// The phone's currency, e.g. "INR".
-    nonisolated static var home: String { Locale.current.currency?.identifier ?? "USD" }
+    /// The currency chosen in the profile, else the phone's, e.g. "EUR".
+    nonisolated static var home: String { preferred ?? Locale.current.currency?.identifier ?? "USD" }
+
+    nonisolated private static let preferredKey = "currency.preferred"
+    /// Kept in UserDefaults so `home` can be read from any thread.
+    nonisolated static var preferred: String? {
+        get { UserDefaults.standard.string(forKey: preferredKey) }
+        set { UserDefaults.standard.set(newValue, forKey: preferredKey) }
+    }
+
+    /// Currencies offered in onboarding and Profile, most used first.
+    nonisolated static let common = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "SGD", "AED", "INR", "CNY", "KRW", "THB", "MXN", "BRL", "ZAR", "SEK", "NOK", "DKK", "NZD"]
+
+    /// "Euro", "US Dollar"; the code when the locale has no name.
+    nonisolated static func name(for code: String) -> String {
+        Locale.current.localizedString(forCurrencyCode: code) ?? code
+    }
 
     /// "€" → "EUR". Trips store a symbol; unknown symbols pass through if
     /// they already look like a code.

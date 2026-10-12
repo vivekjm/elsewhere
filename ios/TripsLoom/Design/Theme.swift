@@ -14,8 +14,9 @@ extension Color {
         )
     }
 
-    /// Primary / selected. Text on it is `ink`.
-    static let lime = Color(hex: 0xD4F54A)
+    /// Primary / selected: a warm champagne gold. Text on it is `ink`. The
+    /// token keeps its original name; every screen reads the accent from here.
+    static let lime = Color(hex: 0xE6C76A)
     /// Go, safe, charts.
     static let mint = Color(hex: 0x3DF5A8)
     /// Warnings, SOS, required.
@@ -52,9 +53,25 @@ extension Font {
         .system(size: TypeScale.scaled(size), weight: weight)
     }
 
-    /// SF Mono, used for numbers and meta.
+    /// New York, the editorial serif used for titles and the wordmark. The
+    /// website sets its headings in a serif too, so the brand reads the same.
+    static func display(_ size: CGFloat, _ weight: Font.Weight = .semibold) -> Font {
+        .system(size: TypeScale.scaled(size), weight: weight, design: .serif)
+    }
+
+    /// Numbers and meta: SF with figures of equal width, so columns of
+    /// amounts and times line up without looking like code.
     static func mono(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
-        .system(size: TypeScale.scaled(size), weight: weight, design: .monospaced)
+        .system(size: TypeScale.scaled(size), weight: weight).monospacedDigit()
+    }
+}
+
+extension UIFont {
+    /// The UIKit twin of `Font.display`, for measuring and `WordFittingTitle`.
+    static func display(ofSize size: CGFloat, weight: UIFont.Weight) -> UIFont {
+        let base = UIFont.systemFont(ofSize: size, weight: weight)
+        guard let serif = base.fontDescriptor.withDesign(.serif) else { return base }
+        return UIFont(descriptor: serif, size: size)
     }
 }
 
@@ -68,13 +85,21 @@ enum TypeScale {
 }
 
 extension View {
-    /// Large display title: 700 weight, tight tracking. Capped at 36pt so
-    /// long trip names still fit on one or two lines.
+    /// Large display title in the serif: semibold, slightly tight. Capped at
+    /// 36pt so long trip names still fit on one or two lines.
     func displayTitle(_ size: CGFloat = 34) -> some View {
         let size = min(size, 36)
-        return font(.sf(size, .bold))
-            .tracking(-size * 0.025)
+        return font(.display(size))
+            .tracking(-size * 0.015)
             .foregroundStyle(.white)
+    }
+
+    /// Small tracked capitals above a title or section: "YOUR KIND OF TRIP".
+    func eyebrow(_ color: Color = .textMuted) -> some View {
+        font(.sf(11.5, .semibold))
+            .tracking(1.4)
+            .textCase(.uppercase)
+            .foregroundStyle(color)
     }
 
     /// Secondary line under a title: SF, sentence case, muted. Mono is kept
@@ -102,10 +127,12 @@ enum Metrics {
 struct WordFittingTitle: View {
     var text: String
     var size: CGFloat
-    var weight: UIFont.Weight = .bold
+    var weight: UIFont.Weight = .semibold
     var tracking: CGFloat = 0
     /// Looks the text up in the string catalog, for fixed labels.
     var localized = false
+    /// The serif display face (default), or SF.
+    var serif = true
     @State private var width: CGFloat = 0
     /// Read so the title re-measures when the text size changes.
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -114,15 +141,19 @@ struct WordFittingTitle: View {
         let scaled = TypeScale.scaled(size)
         let fit = factor(scaled)
         (localized ? Text(LocalizedStringKey(text)) : Text(verbatim: text))
-            .font(Font(UIFont.systemFont(ofSize: scaled * fit, weight: weight) as CTFont))
+            .font(Font(face(scaled * fit) as CTFont))
             .tracking(tracking * fit)
             .frame(maxWidth: .infinity, alignment: .leading)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
     }
 
+    private func face(_ size: CGFloat) -> UIFont {
+        serif ? .display(ofSize: size, weight: weight) : .systemFont(ofSize: size, weight: weight)
+    }
+
     private func factor(_ scaled: CGFloat) -> CGFloat {
         guard width > 0 else { return 1 }
-        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: scaled, weight: weight), .kern: tracking]
+        let attributes: [NSAttributedString.Key: Any] = [.font: face(scaled), .kern: tracking]
         let longest = text.split(whereSeparator: \.isWhitespace)
             .map { (String($0) as NSString).size(withAttributes: attributes).width }
             .max() ?? 0

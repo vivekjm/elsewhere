@@ -87,6 +87,9 @@ struct NativePreferences: Codable, Sendable {
     var pace: String?
     var budgetStyle: String?
     var onboardingCompleted: Bool?
+    var intent: String?
+    var focus: [String]?
+    var currency: String?
 
     init(_ profile: Profile) {
         travelStyle = String(profile.travelStyle.prefix(80))
@@ -94,14 +97,20 @@ struct NativePreferences: Codable, Sendable {
         pace = String(profile.pace.prefix(80))
         budgetStyle = String(profile.budgetStyle.prefix(80))
         onboardingCompleted = profile.onboardingCompleted
+        intent = profile.intent?.rawValue
+        focus = profile.focus.map { Array($0.prefix(12)).map { String($0.prefix(40)) } }
+        currency = profile.currency.map { String($0.prefix(3)) }
     }
 
     func apply(to profile: inout Profile) {
         if let travelStyle { profile.travelStyle = travelStyle }
-        if let diet { profile.diet = diet }
+        if let diet { profile.diet = PreferenceOptions.currentDiet(diet) }
         if let pace { profile.pace = pace }
         if let budgetStyle { profile.budgetStyle = budgetStyle }
         if let onboardingCompleted { profile.onboardingCompleted = onboardingCompleted }
+        if let intent { profile.intent = PreferenceOptions.Intent(rawValue: intent) }
+        if let focus { profile.focus = focus }
+        if let currency { profile.currency = currency }
     }
 }
 

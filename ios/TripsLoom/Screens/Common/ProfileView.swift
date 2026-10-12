@@ -113,6 +113,21 @@ struct ProfileView: View {
                     }
                 }
                 .buttonStyle(.plain)
+
+                Menu {
+                    Picker("Currency", selection: Binding(
+                        get: { store.profile.currency ?? CurrencyService.home },
+                        set: { store.profile.currency = $0; CurrencyService.preferred = $0 })) {
+                        ForEach(CurrencyService.common, id: \.self) { Text("\($0) · \(CurrencyService.name(for: $0))").tag($0) }
+                    }
+                } label: {
+                    ListRow("Currency", meta: "New trips and conversions") {
+                        IconTile(symbol: "banknote", color: Tile.bronze, size: .medium)
+                    } trailing: {
+                        Text(store.profile.currency ?? CurrencyService.home).font(.sf(15)).foregroundStyle(Color.textMuted)
+                    }
+                }
+                .buttonStyle(.plain)
             }
 
             // Used by the AI planner and stylist.
@@ -210,7 +225,7 @@ struct ProfileView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Where your trips usually start, like Bangalore or BLR. Shared with tripsloom.com.")
+            Text("Where your trips usually start, like London or LHR. Shared with tripsloom.com.")
         }
         .confirmationDialog("Start fresh?", isPresented: $confirmClear, titleVisibility: .visible) {
             Button("Delete all trips and wardrobe", role: .destructive) { store.clearAll() }

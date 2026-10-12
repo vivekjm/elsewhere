@@ -96,9 +96,16 @@ nonisolated final class TravellerFlowTests: XCTestCase {
 
     @MainActor func testLargeTextPreferencesCanBeSaved() {
         let app = launch(largeText: true)
-        for _ in 0..<2 {
-            let next = app.buttons["Next"]
+        for step in 0..<3 {
+            let next = app.buttons["Continue"]
             XCTAssertTrue(next.waitForExistence(timeout: 10)); next.tap()
+            // "Just looking" lands on home; the other intents open a trip form.
+            if step == 0 {
+                let looking = app.buttons["Just looking for now"]
+                XCTAssertTrue(looking.waitForExistence(timeout: 5))
+                if !looking.isHittable { app.swipeUp() }
+                looking.tap()
+            }
         }
         let save = app.buttons["save-travel-preferences"]
         XCTAssertTrue(save.waitForExistence(timeout: 5))

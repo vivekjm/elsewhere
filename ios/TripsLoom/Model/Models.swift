@@ -924,8 +924,62 @@ struct Adventure: Codable, Hashable, Sendable {
 enum PreferenceOptions {
     static let styles = ["City + Trek", "City", "Trek and climb", "Beach", "Road trips", "A bit of everything"]
     static let paces = ["Relaxed", "Balanced", "Walks a lot", "Packed days"]
-    static let diets = ["No preference", "Vegetarian", "Vegan", "Eggetarian", "Jain", "Halal", "Non-vegetarian"]
+    static let diets = ["No preference", "Vegetarian", "Vegan", "Pescatarian", "Gluten-free", "Dairy-free"]
     static let budgets = ["Budget", "Mid-range", "Luxury"]
+
+    /// Older installs stored region-specific diets; fold them into the
+    /// international list so Profile never shows a choice that isn't offered.
+    static func currentDiet(_ diet: String) -> String {
+        switch diet {
+        case "Eggetarian", "Jain": "Vegetarian"
+        case let d where diets.contains(d): d
+        default: "No preference"
+        }
+    }
+
+    /// What the person is here for; onboarding lands them accordingly.
+    enum Intent: String, CaseIterable, Codable, Sendable {
+        case booked, planning, exploring
+
+        var title: String {
+            switch self {
+            case .booked: "A trip that's already booked"
+            case .planning: "A trip I'm still shaping"
+            case .exploring: "Just looking for now"
+            }
+        }
+        var detail: String {
+            switch self {
+            case .booked: "Add the dates and bookings. We'll build the days around them."
+            case .planning: "Describe it, and get a first draft of days, stays and packing."
+            case .exploring: "Browse ideas, and start a trip whenever you're ready."
+            }
+        }
+        var symbol: String {
+            switch self {
+            case .booked: "airplane.departure"
+            case .planning: "sparkles"
+            case .exploring: "safari"
+            }
+        }
+    }
+
+    /// The parts of a trip the app looks after. Chosen in onboarding; the
+    /// home screen and Discover lead with these.
+    struct Focus: Hashable, Identifiable, Sendable {
+        var id: String
+        var title: String
+        var detail: String
+        var symbol: String
+    }
+    static let focuses: [Focus] = [
+        Focus(id: "days", title: "Day-by-day plans", detail: "Every stay, table and ticket in its place.", symbol: "calendar"),
+        Focus(id: "packing", title: "Packing and outfits", detail: "What to wear, built from your wardrobe and the forecast.", symbol: "tshirt"),
+        Focus(id: "money", title: "Budget and shared costs", detail: "Know what it costs, and who owes whom.", symbol: "creditcard"),
+        Focus(id: "documents", title: "Bookings and documents", detail: "Tickets, passes and confirmations, offline.", symbol: "doc.text"),
+        Focus(id: "adventure", title: "Treks, climbs and safety", detail: "Routes, altitude checks and check-ins at home.", symbol: "mountain.2"),
+        Focus(id: "together", title: "Travelling together", detail: "Shared plans, polls and split costs.", symbol: "person.2"),
+    ]
 
     /// Trip kinds a travel style leans toward, for Discover.
     static func kinds(for style: String) -> Set<TripKind> {
@@ -944,7 +998,7 @@ struct Profile: Codable, Hashable, Sendable {
     var name: String = ""
     var isPro = false
     var proPlan: String?
-    var travelStyle = "City + Trek"
+    var travelStyle = "A bit of everything"
     var homeAirport = ""
     var metric = true
     var reminders = false
@@ -962,6 +1016,12 @@ struct Profile: Codable, Hashable, Sendable {
     /// Pro: ask for Face ID before showing travel documents.
     var lockDocuments: Bool?
     var onboardingCompleted: Bool?
+    /// Why they came (onboarding), and the parts of a trip they care about.
+    var intent: PreferenceOptions.Intent?
+    var focus: [String]?
+    /// Currency for new trips and conversions, as a code ("EUR"). `nil`
+    /// follows the phone's region.
+    var currency: String?
 
     var firstName: String { name.split(separator: " ").first.map(String.init) ?? name }
     var initials: String {

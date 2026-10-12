@@ -99,7 +99,8 @@ struct Chip: View {
 
     var body: some View {
         Text(text)
-            .font(.mono(11.5, .semibold))
+            .font(.sf(11, .semibold))
+            .tracking(0.7)
             .textCase(.uppercase)
             // Never squeezed at normal sizes; at accessibility sizes it may
             // wrap and shrink rather than push the layout off screen.
@@ -433,7 +434,7 @@ struct ListRow<Leading: View, Trailing: View>: View {
             VStack(alignment: .leading, spacing: 3) {
                 Group {
                     if stacked {
-                        WordFittingTitle(text: title, size: 16, weight: .medium, localized: true)
+                        WordFittingTitle(text: title, size: 16, weight: .medium, localized: true, serif: false)
                     } else {
                         Text(LocalizedStringKey(title)).font(.sf(16, .medium))
                     }

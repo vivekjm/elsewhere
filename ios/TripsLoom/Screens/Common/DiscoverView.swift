@@ -140,6 +140,7 @@ struct DiscoverView: View {
             var s = 0
             let k = item[keyPath: kind]
             if styleKinds.contains(k) || (k.isAdventure && styleKinds.contains(where: \.isAdventure)) { s += 3 }
+            if (store.profile.focus ?? []).contains("adventure"), k.isAdventure { s += 2 }
             if pastKinds.contains(k) { s += 2 }
             if let idea = item as? DiscoverIdea, idea.currency == homeSymbol { s += 1 }
             if let place = item as? Destination, place.currency == homeSymbol { s += 1 }
@@ -166,15 +167,15 @@ struct DiscoverView: View {
                 return FeaturedIdea(title: short, meta: "\(Fmt.count(min(top.days.count, 6), "day")) · \(top.days.prefix(2).map(\.title).joined(separator: " · "))",
                              chip: "For you · \(top.kind.label.lowercased())", photo: top.photo, prompt: Self.prompt(for: top))
             }
-            return FeaturedIdea(title: "Sandakphu ridge", meta: "6 days · 3,636 m · moderate", chip: "Trending · trek", photo: .himalaya, prompt: "6 days trekking the Sandakphu ridge, moderate, tea houses")
+            return FeaturedIdea(title: "Tour du Mont Blanc", meta: "6 days · 2,665 m · moderate", chip: "Trending · trek", photo: .himalaya, prompt: "6 days on the Tour du Mont Blanc, moderate, mountain refuges")
         case .treks:
-            return FeaturedIdea(title: "Sandakphu ridge", meta: "6 days · 3,636 m · moderate", chip: "Trending · trek", photo: .himalaya, prompt: "6 days trekking the Sandakphu ridge, moderate, tea houses")
+            return FeaturedIdea(title: "Tour du Mont Blanc", meta: "6 days · 2,665 m · moderate", chip: "Trending · trek", photo: .himalaya, prompt: "6 days on the Tour du Mont Blanc, moderate, mountain refuges")
         case .cities:
             return FeaturedIdea(title: "Lisbon in autumn", meta: "5 days · food · tiles", chip: "Trending · city", photo: .lisbon, prompt: "5 days in Lisbon in autumn, food and tiles")
         case .beaches:
-            return FeaturedIdea(title: "Goa off-season", meta: "4 days · dives · quiet beaches", chip: "Trending · beach", photo: .beach, prompt: "A long weekend in Goa, diving and quiet beaches")
+            return FeaturedIdea(title: "Amalfi Coast in May", meta: "4 days · boats · quiet coves", chip: "Trending · beach", photo: .beach, prompt: "A long weekend on the Amalfi Coast in May, boats and quiet coves")
         case .road:
-            return FeaturedIdea(title: "Western Ghats drive", meta: "5 days · 900 km · coffee country", chip: "Trending · road", photo: .himalaya, prompt: "5 day road trip through the Western Ghats from Bangalore")
+            return FeaturedIdea(title: "Pacific Coast Highway", meta: "5 days · 1,050 km · Big Sur", chip: "Trending · road", photo: .himalaya, prompt: "5 day road trip down the Pacific Coast Highway from San Francisco to Los Angeles")
         }
     }
 
@@ -285,16 +286,18 @@ struct DiscoverView: View {
     /// destination the drafter knows.
     static let ideas: [DiscoverIdea] = {
         let curated = [
-            DiscoverIdea(title: "Sunset cruise, Mandovi", meta: "Goa · 2 h", photo: .beach, price: 18, currency: "€", kind: .beach, category: .evening, placeKeys: ["goa"]),
-            DiscoverIdea(title: "Coffee estate stay", meta: "Coorg · 2 nights", photo: .himalaya, price: 64, currency: "€", kind: .road, category: .stay, placeKeys: ["coorg", "kodagu", "madikeri"]),
+            DiscoverIdea(title: "Sunset sail from Positano", meta: "Amalfi Coast · 3 h", photo: .beach, price: 85, currency: "€", kind: .beach, category: .evening, placeKeys: ["amalfi", "positano", "sorrento"]),
             DiscoverIdea(title: "Alfama food walk", meta: "Lisbon · 3 h", photo: .lisbon, price: 35, currency: "€", kind: .city, category: .food, placeKeys: ["lisbon"]),
-            DiscoverIdea(title: "Tea house hike, Ghorepani", meta: "Nepal · 1 day", photo: .himalaya, price: 25, currency: "€", kind: .trek, category: .activity, placeKeys: ["nepal", "pokhara", "ghorepani", "annapurna"]),
-            DiscoverIdea(title: "Night kayak, Sal backwaters", meta: "Goa · 2 h", photo: .aurora, price: 22, currency: "€", kind: .beach, category: .activity, placeKeys: ["goa"]),
-            DiscoverIdea(title: "Ghats sunrise drive", meta: "Chikmagalur · 4 h", photo: .himalaya, price: 15, currency: "€", kind: .road, category: .transit, placeKeys: ["chikmagalur", "western ghats"]),
-            DiscoverIdea(title: "Goechala viewpoint trek", meta: "Sikkim · 9 days", photo: .himalaya, price: nil, currency: "₹", kind: .trek, category: .activity, placeKeys: ["sikkim", "yuksom", "goechala"]),
-            DiscoverIdea(title: "Hampta Pass crossing", meta: "Manali · 5 days", photo: .himalaya, price: nil, currency: "₹", kind: .trek, category: .activity, placeKeys: ["manali", "hampta"]),
-            DiscoverIdea(title: "Stok Kangri base camp", meta: "Ladakh · 6 days", photo: .himalaya, price: nil, currency: "₹", kind: .climb, category: .activity, placeKeys: ["ladakh", "leh", "stok"]),
-            DiscoverIdea(title: "Lakeside camping, Pawna", meta: "Lonavala · 1 night", photo: .aurora, price: nil, currency: "₹", kind: .camp, category: .stay, placeKeys: ["pawna", "lonavala"]),
+            DiscoverIdea(title: "Tea house hike, Ghorepani", meta: "Nepal · 1 day", photo: .himalaya, price: 25, currency: "$", kind: .trek, category: .activity, placeKeys: ["nepal", "pokhara", "ghorepani", "annapurna"]),
+            DiscoverIdea(title: "Glacier lagoon kayak", meta: "Jökulsárlón · 2 h", photo: .aurora, price: 110, currency: "€", kind: .road, category: .activity, placeKeys: ["iceland", "jokulsarlon", "reykjavik"]),
+            DiscoverIdea(title: "Refuge night, Alta Badia", meta: "Dolomites · 1 night", photo: .himalaya, price: 70, currency: "€", kind: .trek, category: .stay, placeKeys: ["dolomites", "alta badia", "cortina"]),
+            DiscoverIdea(title: "Big Sur coast drive", meta: "Highway 1 · 1 day", photo: .beach, price: 40, currency: "$", kind: .road, category: .transit, placeKeys: ["big sur", "highway 1", "pacific coast", "california"]),
+            DiscoverIdea(title: "Laugavegur trail", meta: "Iceland · 4 days", photo: .aurora, price: nil, currency: "€", kind: .trek, category: .activity, placeKeys: ["iceland", "laugavegur", "landmannalaugar"]),
+            DiscoverIdea(title: "W Trek, Torres del Paine", meta: "Patagonia · 5 days", photo: .himalaya, price: nil, currency: "$", kind: .trek, category: .activity, placeKeys: ["patagonia", "torres del paine", "puerto natales"]),
+            DiscoverIdea(title: "Breithorn summit day", meta: "Zermatt · 1 day", photo: .himalaya, price: 180, currency: "CHF", kind: .climb, category: .activity, placeKeys: ["zermatt", "breithorn", "switzerland"]),
+            DiscoverIdea(title: "Fjord camping, Lofoten", meta: "Norway · 1 night", photo: .aurora, price: nil, currency: "€", kind: .camp, category: .stay, placeKeys: ["lofoten", "norway"]),
+            DiscoverIdea(title: "Kaiseki dinner, Gion", meta: "Kyoto · 2 h", photo: .aurora, price: 12_000, currency: "¥", kind: .city, category: .food, placeKeys: ["kyoto", "gion"]),
+            DiscoverIdea(title: "Harbour kayak at dusk", meta: "Sydney · 2 h", photo: .beach, price: 60, currency: "A$", kind: .beach, category: .activity, placeKeys: ["sydney", "australia"]),
         ]
         let skip = ["drive", "check in", "arrive", "fly", "ferry", "train", "pickup", "transfer", "back to", "easy evening",
                     "lunch", "dinner", "short walk", "café", "beach morning", "walk the", "spa"]
