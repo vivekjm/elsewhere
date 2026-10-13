@@ -5,12 +5,12 @@ import { useRouter } from '../core/nav';
 import { takePendingLanding } from '../core/landing';
 import { usePrefs, useSelection, useTrips } from '../core/state';
 import { useExtras, type Trip, type TripExtras } from '../data';
-import { compactRange, dateRange, money, plural, todayISO } from '../domain/format';
+import { compactRange, dateRange, money, plural, shortDay, todayISO } from '../domain/format';
 import { IDEA_FILTERS, IDEAS, type Idea } from '../domain/ideas';
 import { budgetOf, CATEGORY, countdownLabel, coverOf, featuredTrip, KIND_LABEL, KIND_TINT, pastTrips, planArt, plansOn, statusOf, todos, upcomingTrips } from '../domain/trips';
 import {
   Banner, Button, Chips, colors, EmptyState, fonts, Header, Hero, HeroRule, HeroText, HScroll, Icon, Illustration, MediaRow, Pill,
-  PhotoCard, radii, RoundButton, RowView, Screen, Section, shadows, Stack, T,
+  PhotoCard, radii, RoundButton, RowView, Screen, Section, shadows, Stack, T, type IllustrationName, type Tint,
 } from '../loom';
 import { useRates } from '../services/currency';
 import { isFlightPlan } from '../services/flights';
@@ -37,19 +37,43 @@ export function SyncBanner() {
   return null;
 }
 
-function FirstTripHero({ name }: { name: string }) {
+/** No trip coming up: a first trip for a new user, or the next one after a past trip. */
+function FirstTripHero({ name, last }: { name: string; last?: Trip | null }) {
   const router = useRouter();
+  const greeting = last ? 'Welcome back' : 'Welcome';
   return <Hero gap={16}>
     <RowView align="flex-start" style={{ justifyContent: 'space-between' }}>
       <View style={{ gap: 4, flex: 1 }}>
-        <HeroText faint style={{ fontSize: 14 }}>{name ? `Welcome, ${name}` : 'Welcome'}</HeroText>
-        <HeroText v="display" style={{ fontSize: 28, lineHeight: 32, letterSpacing: -0.5 }}>Where to first?</HeroText>
-        <HeroText faint style={{ fontSize: 14 }}>Add a trip you’ve booked, or describe one and get a first draft of days and packing.</HeroText>
+        <HeroText faint style={{ fontSize: 14 }}>{name ? `${greeting}, ${name}` : greeting}</HeroText>
+        <HeroText v="display" style={{ fontSize: 28, lineHeight: 32, letterSpacing: -0.5 }}>{last ? 'Where next?' : 'Where to first?'}</HeroText>
+        <HeroText faint style={{ fontSize: 14 }}>{last
+          ? `Your last trip was ${last.name}. Plan the next one, or start from an idea below.`
+          : 'Add a trip you’ve booked, or describe one and get a first draft of days and packing.'}</HeroText>
       </View>
       <Illustration name="compass" width={64} height={64} radius={12} />
     </RowView>
     <Button label="Plan with AI" icon="sparkle" kind="white" height={50} onPress={() => router.push('/planner' as never)} />
     <Button label="Add a trip I’ve booked" icon="plus" kind="dark" height={50} onPress={() => router.push('/new-trip' as never)} />
+  </Hero>;
+}
+
+/** Nothing saved on this phone and the server couldn't be reached: say so instead of pretending there are no trips. */
+function LoadFailedHero() {
+  const { status, error, reload } = useTrips();
+  const [busy, setBusy] = useState(false);
+  return <Hero gap={16}>
+    <RowView align="flex-start" style={{ justifyContent: 'space-between' }}>
+      <View style={{ gap: 4, flex: 1 }}>
+        <HeroText faint style={{ fontSize: 14 }}>{status === 'offline' ? 'You’re offline' : 'Something went wrong'}</HeroText>
+        <HeroText v="display" style={{ fontSize: 28, lineHeight: 32, letterSpacing: -0.5 }}>Couldn’t load your trips</HeroText>
+        <HeroText faint style={{ fontSize: 14 }}>{status === 'offline'
+          ? 'This phone doesn’t have a saved copy yet. Connect to the internet, then try again.'
+          : error || 'Your trips are safe. Try again in a moment.'}</HeroText>
+      </View>
+      <Illustration name="compass" width={64} height={64} radius={12} />
+    </RowView>
+    <Button label={busy ? 'Trying…' : 'Try again'} icon="refresh" kind="white" height={50}
+      onPress={busy ? undefined : () => { setBusy(true); void reload().catch(() => {}).finally(() => setBusy(false)); }} />
   </Hero>;
 }
 
@@ -96,20 +120,32 @@ function TripHero({ trip, extras }: { trip: Trip; extras: TripExtras }) {
   </Hero>;
 }
 
-/** During a trip: what's left today, with the next plan marked. A flight opens its live status. */
-function TodaySection({ trip }: { trip: Trip }) {
+/** During a trip: what's left today, with the next plan marked. A flight opens its live status; a trek shows today's stage. */
+function TodaySection({ trip, extras }: { trip: Trip; extras: TripExtras }) {
   const router = useRouter();
   const { select } = useSelection();
   const open = useOpenTrip();
   const today = todayISO();
+  if (extras.kind === 'trek') {
+    const stage = extras.adventure.stages.find((st) => st.date === today);
+    return <Section title="Today" action="Trek" onAction={() => open(trip)}>
+      {stage
+        ? <MediaRow ill="summit" tint="lavender" eyebrow={stage.done ? 'Stage done' : 'Today’s stage'} title={stage.title || `${stage.from} to ${stage.to}`}
+          meta={[stage.title && stage.from && stage.to ? '' : stage.from || stage.to, stage.distanceKm ? `${stage.distanceKm} km` : '', stage.hours ? `${stage.hours} h` : '', stage.endAltitude ? `${stage.endAltitude.toLocaleString()} m` : ''].filter(Boolean).join(' · ')}
+          onPress={() => open(trip, '/adventure/climb')} />
+        : <MediaRow ill="tent" tint="lavender" eyebrow={shortDay(today)} title="No stage planned" meta="A rest day, or add today’s stage" onPress={() => open(trip)} />}
+    </Section>;
+  }
   const now = new Date();
   const clock = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  const left = plansOn(trip, today).filter((a) => !a.completed);
+  const all = plansOn(trip, today);
+  const left = all.filter((a) => !a.completed);
   const next = left.find((a) => !a.time || a.time >= clock);
   const show = (id: string, flight: boolean) => {
     select(trip.id);
     router.push((flight ? { pathname: '/flight', params: { id } } : { pathname: '/add-plan', params: { id } }) as never);
   };
+  const addPlan = () => { select(trip.id); router.push({ pathname: '/add-plan', params: { date: today } } as never); };
   return <Section title="Today" action="Itinerary" onAction={() => open(trip, '/trip/days')}>
     {left.length ? <Stack>{left.slice(0, 4).map((a) => {
       const flight = isFlightPlan(a);
@@ -118,9 +154,19 @@ function TodaySection({ trip }: { trip: Trip }) {
         eyebrow={[a.id === next?.id ? 'Next' : '', a.time || label].filter(Boolean).join(' · ')}
         title={a.title} meta={flight ? 'Live flight status' : a.place || label} onPress={() => show(a.id, flight)} />;
     })}</Stack>
-      : <MediaRow ill="compass" tint="mint" eyebrow="Today" title="Nothing else planned" meta="Add a plan, or check in where you are"
-        onPress={() => open(trip, '/trip/days')} />}
+      : all.length
+        ? <MediaRow ill="compass" tint="mint" eyebrow={shortDay(today)} title="All done for today" meta={`${plural(all.length, 'plan')} done · check in where you are`}
+          onPress={() => open(trip, '/trip/map')} />
+        : <MediaRow ill="compass" tint="mint" eyebrow={shortDay(today)} title="Nothing planned today" meta="Add a plan, or keep the day free" onPress={addPlan} />}
   </Section>;
+}
+
+/** Where each to-do is finished, so its row opens the right place. */
+function todoDetail(todo: string): { ill: IllustrationName; tint: Tint; meta: string; path: string } {
+  if (/stay/i.test(todo)) return { ill: 'stay', tint: 'lavender', meta: 'Add the hotel or flat for each night', path: '/trip/days' };
+  if (/plan/i.test(todo)) return { ill: 'compass', tint: 'mint', meta: 'Add plans, or draft them with AI', path: '/trip/days' };
+  if (/pack/i.test(todo)) return { ill: 'suitcase', tint: 'peach', meta: 'Tick off items, or get suggestions', path: '/trip/packing' };
+  return { ill: 'ticket', tint: 'rose', meta: 'Keep tickets offline in one place', path: '/trip/documents' };
 }
 
 /** Before a trip: the open to-dos, so the next step is one tap away. */
@@ -130,8 +176,18 @@ function BeforeYouGo({ trip, extras }: { trip: Trip; extras: TripExtras }) {
   const left = workspace ? todos(workspace, trip, extras) : [];
   if (!left.length) return null;
   return <Section title="Before you go">
-    <Stack>{left.slice(0, 3).map((t) => <MediaRow key={t} ill="suitcase" tint="peach" eyebrow={trip.name} title={t} meta="Open the trip to finish this"
-      onPress={() => open(trip)} />)}</Stack>
+    <Stack>{left.slice(0, 3).map((t) => { const d = todoDetail(t); return <MediaRow key={t} ill={d.ill} tint={d.tint} eyebrow={trip.name} title={t} meta={d.meta}
+      onPress={() => open(trip, d.path)} />; })}</Stack>
+  </Section>;
+}
+
+/** Ways in besides planning from scratch: an invite from a friend, or a booking confirmation. */
+function OtherWaysToStart() {
+  return <Section title="Other ways to start">
+    <Stack>
+      <MediaRow ill="passport" tint="lavender" eyebrow="Invited?" title="Join a friend’s trip" meta="Paste the invite link or code they sent" href="/join-trip" />
+      <MediaRow ill="receipt" tint="peach" eyebrow="Already booked?" title="Import a booking" meta="Paste a flight or hotel confirmation" href="/import-bookings" />
+    </Stack>
   </Section>;
 }
 
@@ -144,47 +200,69 @@ function IdeaCard({ idea, big }: { idea: Idea; big?: boolean }) {
 export function HomeScreen() {
   const router = useRouter();
   const prefs = usePrefs();
-  const { trips, status } = useTrips();
+  const { trips, status, workspace } = useTrips();
   const extras = useExtras();
   const open = useOpenTrip();
   const { select } = useSelection();
   const featured = featuredTrip(trips);
   const phase = featured ? statusOf(featured).phase : null;
-  const others = upcomingTrips(trips).filter((t) => t.id !== featured?.id);
-  const past = pastTrips(trips).filter((t) => t.id !== featured?.id);
+  // A trip under way or coming up gets the trip hero; with only past trips, Home looks forward to the next one.
+  const current = featured && phase !== 'past' ? featured : null;
+  const others = upcomingTrips(trips).filter((t) => t.id !== current?.id);
+  const past = pastTrips(trips);
+  const loading = status === 'loading' && !trips.length;
+  const loadFailed = !workspace && (status === 'offline' || status === 'error');
 
   useFocusEffect(React.useCallback(() => {
     const landing = takePendingLanding();
     if (landing) setTimeout(() => router.push(landing as never), 350);
   }, [router]));
 
+  if (loading) return <Screen bar="tabs" gap={22}>
+    <View accessibilityLabel="Loading your trips" style={{ height: 320, borderRadius: radii.hero, backgroundColor: colors.card, opacity: 0.6 }} />
+    <View style={{ height: 120, borderRadius: radii.card, backgroundColor: colors.card, opacity: 0.4 }} />
+  </Screen>;
+  // The ideas are part of the app, so they still work offline.
+  if (loadFailed) return <Screen bar="tabs" gap={22}>
+    <LoadFailedHero />
+    <Section title="Ideas to explore" action="See all" onAction={() => router.push('/discover' as never)}>
+      <HScroll gap={12}>{IDEAS.slice(0, 4).map((idea) => <IdeaCard key={idea.id} idea={idea} />)}</HScroll>
+    </Section>
+  </Screen>;
+
   return <Screen bar="tabs" gap={22}>
     <SyncBanner />
-    {status === 'loading' && !trips.length ? <View accessibilityLabel="Loading your trips" style={{ height: 320, borderRadius: radii.hero, backgroundColor: colors.card, opacity: 0.6 }} />
-      : featured ? <TripHero trip={featured} extras={extras.get(featured.id)} /> : <FirstTripHero name={prefs.firstName} />}
-    <Section title="Quick actions">
+    {current ? <TripHero trip={current} extras={extras.get(current.id)} /> : <FirstTripHero name={prefs.firstName} last={past[0]} />}
+    {current ? <Section title="Quick actions">
       <HScroll>
+        {extras.get(current.id).kind === 'trek' ? <>
+          <Pill label="Climb" icon="activity" onPress={() => open(current, '/adventure/climb')} />
+          <Pill label="Gear" icon="trips" onPress={() => open(current, '/adventure/gear')} />
+          <Pill label="Prepare" icon="flag" onPress={() => open(current, '/adventure/prepare')} />
+          <Pill label="Safety" icon="shield" onPress={() => open(current, '/adventure/safety')} />
+        </> : <>
+          <Pill label="Packing" icon="check" onPress={() => open(current, '/trip/packing')} />
+          <Pill label="Budget" icon="card" onPress={() => open(current, '/trip/budget')} />
+          <Pill label="Map" icon="map" onPress={() => open(current, '/trip/map')} />
+          <Pill label="Documents" icon="doc" onPress={() => open(current, '/trip/documents')} />
+          <Pill label="Essentials" icon="globe" onPress={() => { select(current.id); router.push('/essentials' as never); }} />
+        </>}
         <Pill label="New trip" icon="plus" href="/new-trip" />
         <Pill label="AI plan" icon="sparkle" href="/planner" />
-        {featured ? <Pill label="Packing" icon="check" onPress={() => open(featured, '/trip/packing')} /> : null}
-        {featured ? <Pill label="Budget" icon="card" onPress={() => open(featured, '/trip/budget')} /> : null}
-        {featured ? <Pill label="Map" icon="map" onPress={() => open(featured, '/trip/map')} /> : null}
-        {featured ? <Pill label="Documents" icon="doc" onPress={() => open(featured, '/trip/documents')} /> : null}
-        {featured ? <Pill label="Essentials" icon="globe" onPress={() => { select(featured.id); router.push('/essentials' as never); }} /> : null}
-        <Pill label="Import" icon="mail" href="/import-bookings" />
       </HScroll>
-    </Section>
-    {featured && phase === 'active' ? <TodaySection trip={featured} /> : null}
-    {featured && phase === 'upcoming' ? <BeforeYouGo trip={featured} extras={extras.get(featured.id)} /> : null}
+    </Section> : null}
+    {current && phase === 'active' ? <TodaySection trip={current} extras={extras.get(current.id)} /> : null}
+    {current && phase === 'upcoming' ? <BeforeYouGo trip={current} extras={extras.get(current.id)} /> : null}
     {others.length ? <Section title="Up next">
       <HScroll gap={12}>{others.map((t) => <PhotoCard key={t.id} ill={coverOf(t)} label={compactRange(t.start, t.end)} title={t.name}
         meta={`${KIND_LABEL[extras.get(t.id).kind]} · ${countdownLabel(statusOf(t))}`} onPress={() => open(t)} />)}</HScroll>
     </Section> : null}
+    {!current ? <OtherWaysToStart /> : null}
     {past.length ? <Section title="Past trips">
       <Stack>{past.slice(0, 5).map((t) => <MediaRow key={t.id} ill={coverOf(t)} eyebrow={compactRange(t.start, t.end)} tint={KIND_TINT[extras.get(t.id).kind]}
         title={t.name} meta={`Recap · ${plural(statusOf(t).totalDays, 'day')} · ${t.destination}`} onPress={() => open(t, '/recap')} />)}</Stack>
     </Section> : null}
-    {(!trips.length && status !== 'loading') || (featured && !others.length) ? <Section title={trips.length ? 'Ideas for your next trip' : 'Ideas to start from'} action="See all" onAction={() => router.push('/discover' as never)}>
+    {!others.length ? <Section title={trips.length ? 'Ideas for your next trip' : 'Ideas to start from'} action="See all" onAction={() => router.push('/discover' as never)}>
       <HScroll gap={12}>{IDEAS.slice(0, 4).map((idea) => <IdeaCard key={idea.id} idea={idea} />)}</HScroll>
     </Section> : null}
   </Screen>;

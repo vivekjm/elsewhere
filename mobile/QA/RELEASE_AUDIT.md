@@ -213,3 +213,20 @@ Built with free, keyless services only: OpenFreeMap tiles (OpenStreetMap), Apple
 - **New plans** now guess their kind from the title ("Flight …" picks Move), as expenses already did. Flight plans show the passport illustration instead of a train.
 - **The recap called the trip's total cost "spent";** it now says "total", matching the budget.
 - **Exported PDFs had random file names and lost their colours.** They're now named after the trip and keep their backgrounds.
+
+## Home in every state (2026-10-14)
+
+Each state was forced and checked in the simulator panel.
+
+| State | What Home shows now |
+| --- | --- |
+| Loading, nothing cached | Placeholder shapes |
+| Couldn't load, nothing cached (offline or server error) | "Couldn't load your trips" with Try again, plus trip ideas, which work offline. Before, it showed "Where to first?" as if the account had no trips. |
+| New user, no trips | "Where to first?" hero, then Other ways to start (Join a friend's trip, Import a booking) and Ideas. The Quick actions that repeated the hero's buttons are gone. |
+| Only past trips | "Where next?" hero naming the last trip, Other ways to start, Past trips with recaps, and Ideas. Before, it showed a finished-trip hero with nothing pointing forward. |
+| Trip coming up | Countdown hero, Quick actions, and Before you go. Each to-do opens its own section (stays and plans in Days, packing, documents) with its own picture. |
+| During a trip | Today: remaining plans with the next one marked; a flight opens live status. |
+| During a trip, nothing planned today | "Nothing planned today" opens Add a plan for today |
+| During a trip, all of today done | "All done for today", which opens the map to check in |
+| During a trek | Today's stage (distance, hours, altitude), and trek Quick actions: Climb, Gear, Prepare, Safety |
+| No other trips planned | Ideas for your next trip |
