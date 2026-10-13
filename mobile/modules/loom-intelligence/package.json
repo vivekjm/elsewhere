@@ -1,0 +1,6 @@
+{
+  "name": "loom-intelligence",
+  "version": "1.0.0",
+  "private": true,
+  "description": "On-device trip drafting with Apple Foundation Models"
+}
