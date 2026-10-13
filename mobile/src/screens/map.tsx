@@ -50,7 +50,8 @@ function useLocatePlans() {
   }, [missing.map((a) => a.id).join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
   return busy;
 }
-const placeQuery = (a: Activity, destination: string) => `${a.place.trim()}|${destination.split(',')[0].trim()}`;
+/** What a saved position was found for; the version makes every plan look itself up again when the rules change. */
+const placeQuery = (a: Activity, destination: string) => `v2|${a.place.trim()}|${destination.split(',')[0].trim()}`;
 
 /* ------------------------------------------------------------------ trip map */
 

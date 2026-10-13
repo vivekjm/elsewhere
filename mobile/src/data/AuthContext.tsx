@@ -109,7 +109,9 @@ function asProfile(value: unknown): AuthProfile | null {
 function isConfig(value: unknown): value is SupabaseConfig {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  return typeof v.url === 'string' && /^https:\/\//.test(v.url) &&
+  // HTTPS only, except a backend running on this computer during development (local Supabase).
+  const local = __DEV__ && typeof v.url === 'string' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(v.url);
+  return typeof v.url === 'string' && (/^https:\/\//.test(v.url) || local) &&
     typeof v.publishableKey === 'string' && v.publishableKey.length > 0;
 }
 function message(error: unknown, fallback: string): string {

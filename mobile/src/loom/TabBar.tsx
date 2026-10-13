@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import { haptic, springs } from './motion';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Icon, type IconName } from './graphics';
@@ -19,28 +21,51 @@ export function makeTabBar(items: TabItem[], parentOf: Record<string, string> = 
     const current = state.routes[state.index]?.name ?? '';
     const activeRoute = parentOf[current] ?? current;
     const insets = useSafeAreaInsets();
+    const index = Math.max(0, items.findIndex((i) => i.route === activeRoute));
+    // The ember marker slides between tabs instead of blinking from one to the next.
+    const [width, setWidth] = useState(0);
+    const slot = width / items.length;
+    const x = useSharedValue(-1);
+    useEffect(() => {
+      if (!slot) return;
+      const target = index * slot + slot / 2 - 9;
+      x.value = x.value < 0 ? target : withSpring(target, springs.soft);
+    }, [index, slot, x]);
+    const marker = useAnimatedStyle(() => ({ opacity: x.value < 0 ? 0 : 1, transform: [{ translateX: Math.max(0, x.value) }] }));
     return <View style={{
       position: 'absolute', left: 0, right: 0, bottom: 0, height: tabBarHeight(insets.bottom), backgroundColor: colors.card,
       borderTopLeftRadius: 20, borderTopRightRadius: 20, boxShadow: shadows.tabBar,
       flexDirection: 'row', paddingTop: 14, paddingHorizontal: 8,
     }}>
+      <View pointerEvents="none" onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={{ position: 'absolute', left: 8, right: 8, top: 0, height: 3 }}>
+        <Animated.View style={[{ width: 18, height: 3, borderBottomLeftRadius: 2, borderBottomRightRadius: 2, backgroundColor: colors.ember }, marker]} />
+      </View>
       {items.map((item) => {
         const on = item.route === activeRoute;
         const route = state.routes.find((r) => r.name === item.route);
-        return <Pressable key={item.route} accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={item.label}
-          onPress={() => {
-            if (!route) return;
-            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-            if (!event.defaultPrevented) navigation.navigate(item.route as never);
-          }}
-          style={{ flex: 1, alignItems: 'center', gap: 6 }}>
-          <View style={{ position: 'absolute', top: -14, width: 18, height: 3, borderBottomLeftRadius: 2, borderBottomRightRadius: 2, backgroundColor: on ? colors.ember : 'transparent' }} />
-          <Icon name={item.icon} size={24} color={on ? colors.ink : colors.stone} strokeWidth={on ? 2.2 : 1.8} />
-          <Text maxFontSizeMultiplier={1.2} numberOfLines={1} style={{ fontFamily: on ? fonts.semibold : fonts.medium, fontSize: 11, color: on ? colors.ink : colors.stone }}>{item.label}</Text>
-        </Pressable>;
+        return <TabButton key={item.route} item={item} on={on} onPress={() => {
+          if (!route) return;
+          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+          if (!on) haptic.select();
+          if (!event.defaultPrevented) navigation.navigate(item.route as never);
+        }} />;
       })}
     </View>;
   };
+}
+
+/** One tab: the icon gives a small spring hop when it becomes the active tab. */
+function TabButton({ item, on, onPress }: { item: TabItem; on: boolean; onPress: () => void }) {
+  const hop = useSharedValue(0);
+  useEffect(() => {
+    if (on) hop.value = withSequence(withTiming(1, { duration: 110 }), withSpring(0, springs.snappy));
+  }, [on, hop]);
+  const icon = useAnimatedStyle(() => ({ transform: [{ translateY: -3 * hop.value }, { scale: 1 + 0.08 * hop.value }] }));
+  return <Pressable accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={item.label} onPress={onPress}
+    style={{ flex: 1, alignItems: 'center', gap: 6 }}>
+    <Animated.View style={icon}><Icon name={item.icon} size={24} color={on ? colors.ink : colors.stone} strokeWidth={on ? 2.2 : 1.8} /></Animated.View>
+    <Text maxFontSizeMultiplier={1.2} numberOfLines={1} style={{ fontFamily: on ? fonts.semibold : fonts.medium, fontSize: 11, color: on ? colors.ink : colors.stone }}>{item.label}</Text>
+  </Pressable>;
 }
 
 export const APP_TABS: TabItem[] = [

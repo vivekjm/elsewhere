@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useRouter } from '../core/nav';
-import { useCurrentTrip } from '../core/state';
+import { useCurrentTrip, usePrefs } from '../core/state';
 import { uid } from '../data';
+import { COUNTRIES } from '../domain/countries';
 import { suggestPacking } from '../domain/packing';
+import { lookup } from '../services/places';
 import { Button, CheckToggle, EmptyState, Group, Loading, Note, Row, Section, Sheet, T } from '../loom';
 import { useTripWeather } from '../services/weather';
 
@@ -13,7 +15,22 @@ export function PackSuggestSheet() {
   const router = useRouter();
   const weather = useTripWeather(current?.trip ?? null);
   const days = useMemo(() => Object.values(weather), [weather]);
-  const suggestions = useMemo(() => current ? suggestPacking(current.trip, current.extras.kind, days, current.trip.extras.map((e) => e.name)) : [], [current, days]);
+  // Same country, or the destination's plugs all fit home sockets: no adapter.
+  const { homeBase } = usePrefs();
+  const [sameSockets, setSameSockets] = useState(false);
+  const destination = current?.trip.destination ?? '';
+  useEffect(() => {
+    if (!destination || !homeBase) return;
+    let active = true;
+    void Promise.all([lookup(destination), lookup(homeBase)]).then(([away, home]) => {
+      if (!active || !away?.countryCode || !home?.countryCode) return;
+      const plugs = (cc: string) => (COUNTRIES[cc]?.plugs ?? '').split(/[^A-Z]+/).filter(Boolean);
+      const awayPlugs = plugs(away.countryCode), homePlugs = plugs(home.countryCode);
+      setSameSockets(away.countryCode === home.countryCode || (!!awayPlugs.length && awayPlugs.every((x) => homePlugs.includes(x))));
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [destination, homeBase]);
+  const suggestions = useMemo(() => current ? suggestPacking(current.trip, current.extras.kind, days, current.trip.extras.map((e) => e.name), sameSockets) : [], [current, days, sameSockets]);
   const [off, setOff] = useState<Set<string>>(new Set());
   const [ready, setReady] = useState(false);
   // Give the forecast a moment so weather-based items appear in the first list.

@@ -6,5 +6,5 @@ const TabBar = makeTabBar(ADVENTURE_TABS);
 
 export default function AdventureTabs() {
   return <Tabs tabBar={(props) => <TabBar {...props} />} backBehavior="history"
-    screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.canvas } }} />;
+    screenOptions={{ headerShown: false, animation: 'shift', sceneStyle: { backgroundColor: colors.canvas } }} />;
 }

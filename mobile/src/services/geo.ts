@@ -11,7 +11,9 @@ export type LatLng = { lat: number; lng: number };
 
 /** Finds a place, biased to the trip's city ("El Born" → "El Born, Barcelona"). Cached for 90 days. */
 export async function geocodePlace(place: string, city: string): Promise<PlanPlace | null> {
-  const query = city && !place.toLowerCase().includes(city.toLowerCase()) ? `${place}, ${city}` : place;
+  // Airports, stations and ports are often where you leave from, outside the destination: don't pin them to its city.
+  const hub = /\b(airport|terminal|station|railway|bus stand|port|harbour|harbor)\b/i.test(place);
+  const query = city && !hub && !place.toLowerCase().includes(city.toLowerCase()) ? `${place}, ${city}` : place;
   if (query.trim().length < 2) return null;
   return cached(`geo.${query.toLowerCase()}`, 90 * 86400000, async () => {
     if (Platform.OS === 'ios') {
@@ -36,13 +38,20 @@ export async function currentPosition(): Promise<LatLng | null> {
 
 /** A short name for a position ("El Born, Barcelona"); empty when nothing is known. */
 export async function placeName(at: LatLng): Promise<string> {
+  // On a shoreline the nearest "name" can be the sea itself; a traveller expects the beach or village instead.
+  const water = (n?: string | null) => !!n && /\b(sea|ocean|bay|gulf|strait|channel)\b/i.test(n);
   try {
     const [r] = await Location.reverseGeocodeAsync({ latitude: at.lat, longitude: at.lng });
-    if (r) return [r.name && r.name !== r.street ? r.name : r.district || r.street, r.city].filter(Boolean).join(', ');
+    if (r) {
+      const spot = [r.name && r.name !== r.street && !water(r.name) ? r.name : '', r.district, r.street].find((x) => x && !water(x)) ?? '';
+      const area = [r.city, r.subregion, r.region].find((x) => x && x !== spot && !water(x)) ?? '';
+      const label = [spot, area].filter(Boolean).join(', ');
+      if (label) return label;
+    }
   } catch { /* Try Photon. */ }
   const data = await getJSON<{ features?: { properties?: { name?: string; city?: string } }[] }>(`https://photon.komoot.io/reverse?lat=${at.lat}&lon=${at.lng}&limit=1`);
   const p = data?.features?.[0]?.properties;
-  return p ? [p.name, p.city].filter(Boolean).join(', ') : '';
+  return p ? [water(p.name) ? '' : p.name, p.city].filter(Boolean).join(', ') : '';
 }
 
 /** Great-circle distance in kilometres. */

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import Animated, { Easing, ReduceMotion, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop, SvgXml } from 'react-native-svg';
 import { iconPaths, type IconName } from './iconPaths';
@@ -54,18 +55,24 @@ export function EmberBackdrop({ variant = 'hero' }: { variant?: 'hero' | 'option
   </View>;
 }
 
-/** A progress ring. `inner` fills the centre so the label stays readable on any background. */
+/** A progress ring. `inner` fills the centre so the label stays readable on any background. The arc sweeps to its value. */
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 export function Ring({ pct, size = 64, thickness = 7, color = '#FFFFFF', track = 'rgba(255,255,255,0.35)', inner = 'rgba(255,106,43,0.92)', children }: {
   pct: number; size?: number; thickness?: number; color?: string; track?: string; inner?: string; children?: React.ReactNode;
 }) {
   const r = (size - thickness) / 2;
   const c = 2 * Math.PI * r;
+  const shown = useSharedValue(0);
+  useEffect(() => {
+    shown.value = withTiming(Math.max(0, Math.min(100, pct)), { duration: 800, easing: Easing.out(Easing.cubic), reduceMotion: ReduceMotion.System });
+  }, [pct, shown]);
+  const arc = useAnimatedProps(() => ({ strokeDasharray: [(c * shown.value) / 100, c] }));
   return <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
     <Svg width={size} height={size} style={{ position: 'absolute' }}>
       <Circle cx={size / 2} cy={size / 2} r={r - thickness / 2} fill={inner} />
       <Circle cx={size / 2} cy={size / 2} r={r} stroke={track} strokeWidth={thickness} fill="none" />
-      <Circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={thickness} fill="none"
-        strokeDasharray={`${(c * pct) / 100} ${c}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+      <AnimatedCircle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={thickness} fill="none" strokeLinecap="round"
+        animatedProps={arc} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
     </Svg>
     {children}
   </View>;

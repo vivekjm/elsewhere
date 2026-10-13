@@ -48,7 +48,7 @@ export function TimeField({ label, value, onChange, flex, optional }: { label: s
         <DateTimePicker value={asTime(value)} mode="time" display="compact" onValueChange={handle} accentColor={colors.ember} accessibilityLabel={label} />
         {clear}
       </> : <Pressable accessibilityRole="button" onPress={() => onChange('09:00')} style={{ flex: 1, minHeight: 44, justifyContent: 'center' }}>
-        <Text maxFontSizeMultiplier={1.7} style={{ fontFamily: fonts.medium, fontSize: 15, color: colors.placeholder }}>Any time · tap to set</Text>
+        <Text maxFontSizeMultiplier={1.7} style={{ fontFamily: fonts.medium, fontSize: 15, color: colors.placeholder }} numberOfLines={1}>Any time</Text>
       </Pressable>}
     </Shell>;
   }

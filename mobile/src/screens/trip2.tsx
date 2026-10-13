@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Pressable, Text, View, type ImageStyle, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Alert, Image, Keyboard, Pressable, Text, View, type ImageStyle, type ViewStyle } from 'react-native';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useRouter } from '../core/nav';
 import * as DocumentPicker from 'expo-document-picker';
@@ -21,8 +21,9 @@ import { budgetOf, convert, EXPENSE_ICON, EXPENSE_LABEL, EXPENSE_TINT, nameOf } 
 import {
   Avatar, Bars, Button, Card, Checkbox, CheckToggle, Chips, colors, CurrencyField, DateField, EmptyState, Field, FieldLabel, fonts, Group, Header, Hero, HeroText,
   Icon, IconTile, Loading, Note, Press, Progress, Radio, radii, Ring, RoundButton, Row, RowView, Screen, Section, Segmented, shadows, Sheet, Stack, SwatchRow, T, Tag,
-  tints, type IconName,
+  tints, type IconName, CountUp, VARIANTS, enterItem, haptic, listLayout, PressScale,
 } from '../loom';
+import Animated, { FadeIn, FadeOut, FadeOutLeft } from 'react-native-reanimated';
 import { convertLabel, useRates } from '../services/currency';
 import { tides, type TideDay } from '../services/outdoors';
 import { summary, useTripWeather, weatherIcon } from '../services/weather';
@@ -145,7 +146,7 @@ export function AddPieceSheet() {
           style={{ width: 40, height: 40, borderRadius: radii.round, backgroundColor: c, borderWidth: color === c ? 3 : 1, borderColor: color === c ? colors.ember : colors.rule }} />)}
       </View>
     </Stack>
-    <Field label="Weight (grams)" value={grams} onChangeText={setGrams} icon="trips" kind="number" placeholder="e.g. 320" />
+    <Field label="Weight (grams)" value={grams} onChangeText={setGrams} icon="trips" kind="count" placeholder="e.g. 320" />
     <Field label="Notes" value={notes} onChangeText={setNotes} multiline maxLength={5000} placeholder="Fabric, care, what it goes with" />
   </Sheet>;
 }
@@ -233,15 +234,17 @@ export function PackingScreen() {
   const toggle = (row: PackRow) => editTrip((t) => {
     if (row.automatic) t.packed = row.packed ? t.packed.filter((id) => id !== row.id) : [...t.packed, row.id];
     else { const e = t.extras.find((x) => x.id === row.id); if (e) e.packed = !e.packed; }
+    if (!row.packed && done + 1 === total) haptic.success();
   });
   const limit = (trip.weightLimit || 0) * 1000;
   return <Screen bar="tabs">
     <Header title="Packing" right={<RoundButton icon="plus" dark label="Add an item" href="/add-item" />} />
     <Hero padding={18}>
       <RowView gap={16}>
-        <Ring pct={pct}><HeroText v="row" style={{ fontFamily: fonts.bold, fontSize: 15 }}>{pct}%</HeroText></Ring>
+        <Ring pct={pct}><CountUp value={pct} format={(n) => `${Math.round(n)}%`} maxFontSizeMultiplier={1.3} style={{ fontFamily: fonts.bold, fontSize: 15, color: '#FFFFFF' }} /></Ring>
         <View style={{ flex: 1, gap: 6 }}>
-          <HeroText v="title" style={{ fontSize: 24, lineHeight: 28, letterSpacing: -0.4 }}>{done} of {total} packed</HeroText>
+          <CountUp value={done} format={(n) => `${Math.round(n)} of ${total} packed`} maxFontSizeMultiplier={1.4}
+            style={{ fontFamily: fonts.semibold, fontSize: 24, lineHeight: 28, letterSpacing: -0.4, color: '#FFFFFF' }} />
           <HeroText v="small" style={{ fontSize: 14 }}>{weight(grams, prefs.unit)}{limit ? ` of ${weight(limit, prefs.unit)}` : ''} · {total - done === 0 ? (total ? 'all packed' : 'nothing on the list') : `${total - done} to go`}</HeroText>
           <Progress pct={limit ? Math.min(100, (grams / limit) * 100) : pct} color={limit && grams > limit ? '#FFE0D6' : '#FFFFFF'} track="rgba(255,255,255,0.35)" />
         </View>
@@ -250,18 +253,18 @@ export function PackingScreen() {
     {limit && grams > limit ? <Note>Over the bag limit by {weight(grams - limit, prefs.unit)}.</Note> : null}
     <Button label="Suggest items for this trip" icon="sparkle" kind="white" height={48} href="/pack-suggest" />
     <Chips value={filter} onChange={setFilter} items={FILTERS.map((f, i) => ({ label: i === 0 ? `${f} · ${total}` : i === 1 ? `${f} · ${total - done}` : i === 2 ? `${f} · ${done}` : f }))} />
-    {groups.map((group) => <Section key={group} title={group}>
-      <Stack>{visible.filter((r) => r.category === group).map((r) => r.automatic
-        ? <SwatchRow key={r.id} color={r.color || '#8b8b73'} eyebrow={r.packed ? 'Packed' : `For ${r.dates.slice(0, 3).map((d) => weekday(d)).join(', ')}${r.dates.length > 3 ? '…' : ''}`} tint={r.packed ? 'mint' : 'grey'}
+    {groups.map((group) => <Animated.View key={group} layout={listLayout} entering={FadeIn.duration(200)} exiting={FadeOut.duration(160)}><Section title={group}>
+      <Stack>{visible.filter((r) => r.category === group).map((r, i) => <Animated.View key={r.id} entering={enterItem(i)} exiting={FadeOutLeft.duration(220)} layout={listLayout}>{r.automatic
+        ? <SwatchRow color={r.color || '#8b8b73'} eyebrow={r.packed ? 'Packed' : `For ${r.dates.slice(0, 3).map((d) => weekday(d)).join(', ')}${r.dates.length > 3 ? '…' : ''}`} tint={r.packed ? 'mint' : 'grey'}
           title={r.name} meta={r.weight ? weight(r.weight, prefs.unit) : 'From your outfits'} trailing={<CheckToggle label={`${r.name} packed`} checked={r.packed} onChange={() => toggle(r)} />} />
-        : <Pressable key={r.id} accessibilityRole="button" accessibilityLabel={`Edit ${r.name}`} onPress={() => router.push({ pathname: '/add-item', params: { id: r.id } } as never)}>
+        : <PressScale accessibilityRole="button" accessibilityLabel={`Edit ${r.name}`} onPress={() => router.push({ pathname: '/add-item', params: { id: r.id } } as never)}>
           <Card padding={14}><RowView gap={14}>
             <IconTile icon={r.category === 'Documents' ? 'doc' : r.category === 'Electronics' ? 'plug' : r.category === 'Toiletries' || r.category === 'Health & care' ? 'heart' : 'trips'} tint={r.packed ? 'mint' : undefined} />
             <View style={{ flex: 1, gap: 2 }}><T v="row" style={{ fontSize: 15 }}>{r.quantity > 1 ? `${r.quantity} × ` : ''}{r.name}</T><T v="meta">{r.packed ? 'Packed' : 'To pack'}{r.weight ? ` · ${weight(r.weight * r.quantity, prefs.unit)}` : ''}</T></View>
             <CheckToggle label={`${r.name} packed`} checked={r.packed} onChange={() => toggle(r)} />
           </RowView></Card>
-        </Pressable>)}</Stack>
-    </Section>)}
+        </PressScale>}</Animated.View>)}</Stack>
+    </Section></Animated.View>)}
     {!rows.length ? <EmptyState art="suitcase" title="Nothing to pack yet" body="Style your days and the clothes appear here. Add essentials like chargers and passports yourself."
       action={<Stack gap={10}><Button label="Suggest items" icon="sparkle" href="/pack-suggest" /><Button label="Add an item" icon="plus" kind="white" href="/add-item" /></Stack>} />
       : !visible.length ? <Card><T v="small">{filter === 1 ? 'Everything is packed. Have a good trip.' : filter === 2 ? 'Nothing packed yet.' : 'Nothing needed in the first two days.'}</T></Card> : null}
@@ -311,8 +314,8 @@ export function AddItemSheet() {
     </Stack> : null}
     <Stack gap={8}><FieldLabel>Kind</FieldLabel><Chips value={EXTRA_CATEGORIES.indexOf(category ?? 'Essentials')} onChange={(i) => setCategory(EXTRA_CATEGORIES[i])} items={EXTRA_CATEGORIES.map((c) => ({ label: c }))} /></Stack>
     <RowView align="flex-start">
-      <Field flex label="How many" value={quantity} onChangeText={(t) => setQuantity(t.replace(/\D/g, '').slice(0, 3))} kind="number" icon="plus" />
-      <Field flex label="Weight each (g)" value={grams} onChangeText={setGrams} kind="number" icon="trips" placeholder="Optional" />
+      <Field flex label="How many" value={quantity} onChangeText={(t) => setQuantity(t.replace(/\D/g, '').slice(0, 3))} kind="count" icon="plus" />
+      <Field flex label="Weight each (g)" value={grams} onChangeText={setGrams} kind="count" icon="trips" placeholder="Optional" />
     </RowView>
   </Sheet>;
 }
@@ -340,7 +343,8 @@ export function BudgetScreen() {
     <Hero>
       <Stack gap={4}>
         <HeroText faint style={{ fontSize: 14 }}>Total planned</HeroText>
-        <HeroText v="hero" style={{ lineHeight: 40, letterSpacing: -1 }}>{money(b.planned, trip.currency)}</HeroText>
+        <CountUp value={b.planned} format={(n) => money(Math.round(n), trip.currency)} maxFontSizeMultiplier={1.3} numberOfLines={1}
+          style={[VARIANTS.hero, { lineHeight: 40, letterSpacing: -1, color: '#FFFFFF' }]} />
         <HeroText faint style={{ fontSize: 14 }}>{b.limit ? `of ${money(b.limit, trip.currency)} · ${Math.round((b.planned / b.limit) * 100)}%` : 'No budget set'}{b.spent ? ` · ${money(b.spent, trip.currency)} spent` : ''}</HeroText>
       </Stack>
       {b.limit ? <Progress pct={pct} color={b.remaining < 0 ? '#FFE0D6' : '#FFFFFF'} track="rgba(255,255,255,0.35)" /> : null}
@@ -426,6 +430,7 @@ export function AddExpenseSheet() {
     try {
       const r = await scanReceipt(result.assets[0].uri);
       if (r.amount === null && !r.merchant) { Alert.alert('Couldn’t read that receipt', 'Try a flatter, brighter photo, or enter it by hand.'); return; }
+      Keyboard.dismiss();
       if (r.amount !== null) setAmount(Number.isInteger(r.amount) ? String(r.amount) : r.amount.toFixed(2));
       if (r.currency && (CURRENCIES as readonly string[]).includes(r.currency)) setCurrency(r.currency);
       if (r.merchant && !title.trim()) { setTitle(r.merchant); if (!picked) { const g = guess(r.merchant); if (g) setCategory(g); } }

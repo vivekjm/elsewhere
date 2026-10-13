@@ -6,3 +6,4 @@ export { routeMap, routeMapTall } from './routeMaps';
 export * from './pickers';
 export * from './CurrencySheet';
 export * from './PlaceField';
+export * from './motion';

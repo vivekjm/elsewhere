@@ -66,9 +66,9 @@ export const planArt = (trip: Trip, a: Activity): IllustrationName => {
 export const sortPlans = (list: Activity[]) => [...list].sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99') || a.title.localeCompare(b.title));
 export const plansOn = (trip: Trip, date: string) => sortPlans(trip.activities.filter((a) => a.date === date));
 
-/** Days with at least one plan, an outfit or a stay. */
+/** Days with at least one plan. A stay alone doesn't count, matching the "Plan N more days" to-do. */
 export function plannedDays(trip: Trip): number {
-  return tripDates(trip).filter((d) => trip.activities.some((a) => a.date === d) || !!trip.days[d]?.stay || !!trip.days[d]?.outfitId).length;
+  return tripDates(trip).filter((d) => trip.activities.some((a) => a.date === d)).length;
 }
 
 /** The next plan that hasn't started (today, or the trip's first day). */

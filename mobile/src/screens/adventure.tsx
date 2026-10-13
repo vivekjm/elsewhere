@@ -310,7 +310,7 @@ export function AddGearSheet() {
     <Field label="Item" value={name} onChangeText={(t) => { setName(t); setError(''); }} icon="trips" placeholder="Down jacket" maxLength={200} error={error} autoFocus={!existing} />
     <Stack gap={8}><FieldLabel>Group</FieldLabel><Chips value={GEAR_GROUPS.indexOf(group)} onChange={(i) => setGroup(GEAR_GROUPS[i])} items={GEAR_GROUPS.map((g) => ({ label: GROUP_LABEL[g], icon: GROUP_ICON[g] }))} /></Stack>
     <Stack gap={8}><FieldLabel>Carried in</FieldLabel><Segmented options={['Porter bag', 'Day pack']} value={bag === 'porter' ? 'Porter bag' : 'Day pack'} onChange={(v) => setBag(v === 'Porter bag' ? 'porter' : 'day')} /></Stack>
-    <Field label="Weight in grams" value={grams} onChangeText={setGrams} icon="packing" kind="number" placeholder="620" />
+    <Field label="Weight in grams" value={grams} onChangeText={setGrams} icon="packing" kind="count" placeholder="620" />
     <Group><Row icon="card" title="Still to buy or borrow" trailing={<Toggle value={missing} onChange={setMissing} label="Still to buy or borrow" />} /></Group>
   </Sheet>;
 }

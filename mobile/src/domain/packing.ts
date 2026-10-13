@@ -9,7 +9,8 @@ import type { DayWeather } from '../services/weather';
 type Category = (typeof EXTRA_CATEGORIES)[number];
 export type Suggestion = { name: string; category: Category; quantity: number; reason: string };
 
-export function suggestPacking(trip: Trip, kind: TripKind, weather: DayWeather[], existing: string[]): Suggestion[] {
+/** `sameSockets`: the destination uses the same plugs as home (or is in the home country), so no adapter is needed. */
+export function suggestPacking(trip: Trip, kind: TripKind, weather: DayWeather[], existing: string[], sameSockets = false): Suggestion[] {
   const out: Suggestion[] = [];
   // "Passport" already covers "Passport or ID"; "Sunglasses" covers "Sunglasses". Compare by key words.
   const words = (n: string) => n.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3 && !['with', 'your', 'travel', 'details', 'kit', 'and'].includes(w));
@@ -38,7 +39,7 @@ export function suggestPacking(trip: Trip, kind: TripKind, weather: DayWeather[]
   add('Underwear', 'Essentials', `${days} ${days === 1 ? 'day' : 'days'}${days > 6 ? ', with a wash' : ''}`, changes);
   add('Socks', 'Essentials', `${days} ${days === 1 ? 'day' : 'days'}${days > 6 ? ', with a wash' : ''}`, changes);
   add('Sleepwear', 'Essentials', 'Every trip');
-  add('Travel adapter', 'Electronics', 'Check the plug type in Essentials');
+  if (!sameSockets) add('Travel adapter', 'Electronics', 'Check the plug type in Essentials');
   if (days > 6) add('Laundry bag', 'Other', 'Longer than a week');
   if (days > 3) add('Power bank', 'Electronics', 'Long days out');
 

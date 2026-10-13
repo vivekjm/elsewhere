@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { useRouter } from '../core/nav';
 import * as WebBrowser from 'expo-web-browser';
 import { reportError, useCurrentTrip, usePrefs, useSelection, useTrips } from '../core/state';
@@ -8,6 +8,7 @@ import { ACTIVITY_TYPES, blankDay, EXPENSE_CATEGORIES, safeLink, TRIP_KINDS, TRI
 import { clockTime, dateRange, dayOfMonth, daysFromToday, localDay, longDay, money, plural, shortDay, todayISO, weekday } from '../domain/format';
 import { budgetOf, CATEGORY, convert, EXPENSE_LABEL, countdownLabel, coverOf, KIND_LABEL, KIND_MOOD, KIND_TINT, MOOD_ART, MOOD_LABEL, packingOf, planArt, plannedDays, plansOn, statusOf, type Mood } from '../domain/trips';
 import {
+  CoverParallax,
   Button, Card, Checkbox, Chips, colors, CurrencyField, Dashed, DateField, EmptyState, Field, FieldLabel, fonts, Group, Header, Hero, HeroRule, HeroText, Icon,
   Illustration, Loading, MediaRow, Note, PlaceField, radii, RoundButton, Row, RowView, Screen, Section, shadows, Sheet, Stack, Swatches, T, Tag, TimeField, Toggle,
 } from '../loom';
@@ -43,9 +44,11 @@ export function TripScreen() {
   const planned = plannedDays(trip);
   return <Screen bar="tabs">
     <Header title="Your trip" right={<RoundButton icon="more" label="Trip options" href="/trip-actions" />} />
+    {/* Where the trip card on Home zooms to. */}
+    <Link.AppleZoomTarget>
     <View style={{ backgroundColor: colors.card, borderRadius: radii.hero, overflow: 'hidden', boxShadow: shadows.lift }}>
       <View style={{ height: 210 }}>
-        <Illustration name={coverOf(trip)} width="100%" height="100%" />
+        <CoverParallax height={210}><Illustration name={coverOf(trip)} width="100%" height="100%" /></CoverParallax>
         <View style={{ position: 'absolute', left: 16, bottom: 12, flexDirection: 'row', gap: 6 }}>
           <Tag text={`${KIND_LABEL[extras.kind]} · ${plural(status.totalDays, 'day')}`} tint={KIND_TINT[extras.kind]} />
           {extras.invitedBy ? <Tag text={`From ${extras.invitedBy}`} tint="lavender" /> : null}
@@ -65,20 +68,21 @@ export function TripScreen() {
         </RowView>
       </View>
     </View>
+    </Link.AppleZoomTarget>
     <Stack>
-      {status.phase === 'past' ? <MediaRow ill="compass" eyebrow="Recap" tint="peach" title="How was it?" meta="Highlights, totals and your rating" href="/recap" /> : null}
-      {extras.kind === 'trek' ? <MediaRow ill="summit" eyebrow="Adventure" tint="mint" title="Route, gear and safety" meta="Stages, porter bag, check-ins" onPress={() => router.replace('/adventure' as never)} /> : null}
-      <MediaRow ill="suitcase" eyebrow="Packing" tint="mint" title={pack?.total ? `${pack.packed} of ${pack.total} packed` : 'Start your list'}
+      {status.phase === 'past' ? <MediaRow index={0} ill="compass" eyebrow="Recap" tint="peach" title="How was it?" meta="Highlights, totals and your rating" href="/recap" /> : null}
+      {extras.kind === 'trek' ? <MediaRow index={1} ill="summit" eyebrow="Adventure" tint="mint" title="Route, gear and safety" meta="Stages, porter bag, check-ins" onPress={() => router.replace('/adventure' as never)} /> : null}
+      <MediaRow index={2} ill="suitcase" eyebrow="Packing" tint="mint" title={pack?.total ? `${pack.packed} of ${pack.total} packed` : 'Start your list'}
         meta={pack?.total ? `${(pack.packedGrams / 1000).toFixed(1)} kg packed${trip.weightLimit ? ` of ${trip.weightLimit} kg` : ''}` : 'Outfits and essentials add themselves'} href="/trip/packing" />
-      <MediaRow ill="receipt" eyebrow="Budget" tint="rose" title={budget.limit ? `${money(budget.planned, trip.currency)} of ${money(budget.limit, trip.currency)}` : budget.planned ? `${money(budget.planned, trip.currency)} planned` : 'No budget yet'}
+      <MediaRow index={3} ill="receipt" eyebrow="Budget" tint="rose" title={budget.limit ? `${money(budget.planned, trip.currency)} of ${money(budget.limit, trip.currency)}` : budget.planned ? `${money(budget.planned, trip.currency)} planned` : 'No budget yet'}
         meta={budget.spent ? `${money(budget.spent, trip.currency)} spent so far` : 'Plans with a price and expenses count here'} href="/trip/budget" />
-      <MediaRow ill="peaks" eyebrow="Map" tint="mint" title="Your places on a map" meta="Day routes, check-ins, save for offline" href="/trip/map" />
-      <MediaRow ill="compass" eyebrow="Essentials" tint="lavender" title={`Local time, plugs and money`} meta="Emergency number, driving side, tipping" href="/essentials" />
-      <MediaRow ill="passport" eyebrow="Documents" tint="lavender" title={extras.documents.length ? plural(extras.documents.length, 'document') : 'No documents yet'}
+      <MediaRow index={4} ill="peaks" eyebrow="Map" tint="mint" title="Your places on a map" meta="Day routes, check-ins, save for offline" href="/trip/map" />
+      <MediaRow index={5} ill="compass" eyebrow="Essentials" tint="lavender" title={`Local time, plugs and money`} meta="Emergency number, driving side, tipping" href="/essentials" />
+      <MediaRow index={6} ill="passport" eyebrow="Documents" tint="lavender" title={extras.documents.length ? plural(extras.documents.length, 'document') : 'No documents yet'}
         meta={extras.documents.length ? extras.documents.slice(0, 2).map((d) => d.title).join(' · ') : 'Tickets, bookings, insurance'} href="/trip/documents" />
-      <MediaRow ill="stay" eyebrow="People" tint="peach" title={extras.people.length ? `You and ${plural(extras.people.length, 'other')}` : trip.travellers > 1 ? plural(trip.travellers, 'traveller') : 'Just you'}
+      <MediaRow index={7} ill="stay" eyebrow="People" tint="peach" title={extras.people.length ? `You and ${plural(extras.people.length, 'other')}` : trip.travellers > 1 ? plural(trip.travellers, 'traveller') : 'Just you'}
         meta={trip.travellers > extras.people.length + 1 ? `Add ${trip.travellers - extras.people.length - 1 === 1 ? 'their name' : 'their names'} to split costs and vote` : extras.people.length ? 'Split costs and vote on plans' : 'Add friends to split costs'} href="/people" />
-      {extras.kind === 'dive' || extras.kind === 'beach' ? <MediaRow ill="tide" eyebrow="Tides & dives" tint="mint" title="Tides & stops" meta="Tide curve and dive log" href="/trip/tides" /> : null}
+      {extras.kind === 'dive' || extras.kind === 'beach' ? <MediaRow index={8} ill="tide" eyebrow="Tides & dives" tint="mint" title="Tides & stops" meta="Tide curve and dive log" href="/trip/tides" /> : null}
     </Stack>
   </Screen>;
 }
@@ -171,7 +175,7 @@ export function TripForm({ draft, set, errors }: { draft: TripDraft; set: (patch
     </Stack>
     <CoverPicker value={draft.theme} onChange={(theme) => set({ theme })} />
     <RowView align="flex-start">
-      <Field flex label="Travellers" value={draft.travellers} onChangeText={(travellers) => set({ travellers: travellers.replace(/\D/g, '').slice(0, 3) })} icon="users" kind="number" error={errors.travellers} />
+      <Field flex label="Travellers" value={draft.travellers} onChangeText={(travellers) => set({ travellers: travellers.replace(/\D/g, '').slice(0, 3) })} icon="users" kind="count" error={errors.travellers} />
       <Field flex label="Bag limit (kg)" value={draft.weightLimit} onChangeText={(weightLimit) => set({ weightLimit })} icon="trips" kind="number" placeholder="None" error={errors.weightLimit} />
     </RowView>
     <RowView align="flex-start">
@@ -305,7 +309,7 @@ export function DaysScreen() {
       <View style={{ flex: 1 }}><T v="section">{longDay(day)}</T><T v="meta">Day {dates.indexOf(day) + 1} of {dates.length}{info?.title ? ` · ${info.title}` : ''}</T></View>
       {wx ? <RowView gap={6}><Icon name={weatherIcon(wx.code)} size={18} color={colors.stone} /><T v="small" style={{ fontSize: 14 }}>{t(wx.high)} / {t(wx.low)}{wx.typical ? ' · usually' : ''}</T></RowView> : null}
     </RowView>
-    {plans.length ? <Stack>{plans.map((a) => <MediaRow key={a.id} ill={planArt(trip, a)} eyebrow={`${CATEGORY[a.category].label}${a.time ? ` · ${a.time}${a.endTime ? `–${a.endTime}` : ''}` : ''}`} tint={CATEGORY[a.category].tint}
+    {plans.length ? <Stack>{plans.map((a, i) => <MediaRow index={i} key={a.id} ill={planArt(trip, a)} eyebrow={`${CATEGORY[a.category].label}${a.time ? ` · ${a.time}${a.endTime ? `–${a.endTime}` : ''}` : ''}`} tint={CATEGORY[a.category].tint}
       title={a.title} meta={[a.place, a.cost ? money(a.cost, trip.currency) : ''].filter(Boolean).join(' · ') || 'Tap to add details'}
       onPress={() => router.push({ pathname: '/add-plan', params: { id: a.id } } as never)}
       trailing={<Pressable accessibilityRole="checkbox" accessibilityState={{ checked: !!a.completed }} accessibilityLabel={`${a.title} done`} hitSlop={10} onPress={() => toggleDone(a)}><Checkbox checked={!!a.completed} /></Pressable>} />)}</Stack>
@@ -345,7 +349,7 @@ export function DaySheet() {
   return <Sheet title={longDay(date)} footer={<Button label="Save" icon="check" onPress={save} />}>
     <Field label="Where you’re staying" value={stay} onChangeText={setStay} icon="bed" placeholder="Hotel, flat, refuge…" maxLength={200} />
     {date < current.trip.end ? <Group><Row icon="calendar" title="Same stay for the rest of the trip" meta="Fills every later night" trailing={<Toggle value={allNights} onChange={setAllNights} label="Same stay for later nights" />} /></Group> : null}
-    <Field label="Day title" value={title} onChangeText={setTitle} icon="edit" placeholder="Temples and tea" maxLength={200} />
+    <Field label="Day title" value={title} onChangeText={setTitle} icon="edit" placeholder="Arrival day, a day at the beach" maxLength={200} />
     <Field label="Notes" value={notes} onChangeText={setNotes} multiline maxLength={5000} placeholder="Reservations, reminders…" />
   </Sheet>;
 }
@@ -462,7 +466,7 @@ export function RecapScreen() {
       <Field label="A note for next time" value={note} onChangeText={setNote} onBlur={() => editExtras((d) => { d.recapNote = note; })} multiline maxLength={2000} placeholder="What you’d do again, or differently" />
     </Card>
     {highlights.length ? <Section title="Highlights">
-      <Stack>{highlights.map((a) => <MediaRow key={a.id} ill={planArt(trip, a)} eyebrow={longDay(a.date)} tint={CATEGORY[a.category].tint} title={a.title} meta={a.place || CATEGORY[a.category].label} trailing={null} />)}</Stack>
+      <Stack>{highlights.map((a, i) => <MediaRow index={i} key={a.id} ill={planArt(trip, a)} eyebrow={longDay(a.date)} tint={CATEGORY[a.category].tint} title={a.title} meta={a.place || CATEGORY[a.category].label} trailing={null} />)}</Stack>
     </Section> : null}
     {budget.limit ? <Note>Budget {money(budget.limit, trip.currency)} · {budget.remaining >= 0 ? `${money(budget.remaining, trip.currency)} under` : `${money(-budget.remaining, trip.currency)} over`}</Note> : null}
     {extras.journal.length ? <Section title="Where you went">

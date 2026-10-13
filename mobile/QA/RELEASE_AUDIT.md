@@ -230,3 +230,71 @@ Each state was forced and checked in the simulator panel.
 | During a trip, all of today done | "All done for today", which opens the map to check in |
 | During a trek | Today's stage (distance, hours, altitude), and trek Quick actions: Climb, Gear, Prepare, Safety |
 | No other trips planned | Ideas for your next trip |
+
+## Full user-flow test with real accounts (2026-10-14)
+
+No preview workspace and no hard-coded data. The app ran against a local copy of the backend: Supabase with the repo's migrations, plus the web API for workspace sync. Everything was created by tapping through the app, as a user would.
+
+**Vivek (new account):**
+1. Signed up with email.
+2. Onboarding: name carried over, home base Bengaluru, "already booked", focus areas plus documents, metric, INR.
+3. Created "Goa with friends" (today to Sunday, beach, 3 travellers, ₹45,000 budget, notes).
+4. Added plans:
+   - Flight 6E 5102 with fare.
+   - Sunset at Anjuna.
+   - The villa as the stay for every night.
+   - Spice farm and dinner on Thursday.
+5. Added suggested packing items and ticked some as packed.
+6. Added Arjun and Meera.
+7. Expenses:
+   - Scanned a Goan restaurant receipt from Photos (₹2,100, split three ways).
+   - Taxi paid by Arjun.
+   - Settle up showed "Meera owes you ₹1,000".
+8. Started a vote and cast one.
+9. Checked in at Anjuna; viewed the trip map.
+10. Created a second trip, Manali in December.
+11. Signed out and back in: everything returned from the server.
+
+**Asha (second new account):** chose "Just looking". She landed on Discover, and Home showed the new-user empty state. The server keeps each account's data apart: Vivek has 2 trips, Asha has 0.
+
+### Found and fixed during this test
+
+- **Finishing onboarding ignored the choice of where to go** ("already booked" should open New trip, "just looking" should open Discover). The account flipped to Home before the landing was set. Fixed and rechecked with Asha.
+- **Place search:**
+  - "Goa" offered Genoa, the Philippines and Fiji, not Goa in India.
+  - "Manali" put a Chennai suburb above the hill town.
+  - Suggestions now lead with OpenStreetMap's best-known towns, states and countries. Goa, Manali, Paris, Bali and Kyoto all now come first.
+- **Map:** "Kempegowda Airport" was pinned in Goa because every place was searched near the trip's city. Airports, stations and ports are no longer tied to the destination; the map now runs Bengaluru to Goa.
+- **Check-ins:** a shoreline check-in was named "Arabian Sea". Names of seas and bays are skipped, so it now reads "Goa".
+- **Packing:** suggested a travel adapter for a trip within India. Adapters are now suggested only when the destination's plugs don't fit home sockets.
+- **Keyboard:**
+  - The keyboard covered fields and pushed layouts off screen on sign-in, onboarding, sheets and forms. Footers now step aside while typing, and the focused field stays visible.
+  - Number keypads had no way to close them; a Done bar was added.
+- **Travellers and item counts** offered a decimal keypad; they now use whole numbers.
+- **Day title** placeholder was "Temples and tea", Kyoto copy on a Goa trip.
+- **Trip header** said "4 of 5 days planned" while the hero said "Plan 3 more days". A stay alone no longer counts as a planned day.
+- **Small fixes:** the time placeholder wrapped onto two lines; the keypad stayed open after a receipt scan; the woven lines crossed the sign-in title.
+
+### Not a product bug
+
+The simulator's fast typing sometimes dropped or reordered characters in long fields, and the development menu's floating button covered sheet close buttons. Both are test-tool effects, not app behaviour.
+
+## Motion and transitions (2026-10-14)
+
+Everything runs on the UI thread with Reanimated 4.7, which was already in the native build, so no rebuild was needed. It is now a direct dependency, pinned to the built version. Every animation holds still when Reduce Motion is on.
+
+**Checked in recordings of the simulator:**
+- **Shared zoom transition (iOS 18+):** trip cards on Home (the trip hero, Up next and Past trips) grow into the trip screen and shrink back into the card on the way out. The trip card on the trip page is the landing target.
+- **Sticky headers:** once a screen's header scrolls away, a frosted compact bar with the title and a back arrow fades in.
+- **Tabs:** screens cross-fade with a slight shift, the ember marker slides between tabs, the active icon hops, and there's a selection haptic.
+- **Lists:** rows rise in with a short stagger. In Packing, items leave the "To pack" filter by sliding out, and the rest glide up to close the gap, sections included.
+- **Numbers and progress:**
+  - The trip day count, budget total and "N of M packed" count up.
+  - The packing ring sweeps; progress bars fill; budget bars grow.
+- **Controls:**
+  - Cards and buttons give slightly under the finger.
+  - Toggles slide with a squash, checkboxes pop with a delayed tick, and radios spring.
+  - Haptics on ticks, toggles and choices; a success haptic when the last item is packed.
+- **Trip cover:** parallax while scrolling, and it stretches when pulled down.
+
+**Fixed while building:** the count-up formatter was called on the animation thread and crashed the app. It now formats on the JS thread.

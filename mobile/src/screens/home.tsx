@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { Link, useFocusEffect } from 'expo-router';
 import { useRouter } from '../core/nav';
 import { takePendingLanding } from '../core/landing';
 import { usePrefs, useSelection, useTrips } from '../core/state';
@@ -10,8 +10,9 @@ import { IDEA_FILTERS, IDEAS, type Idea } from '../domain/ideas';
 import { budgetOf, CATEGORY, countdownLabel, coverOf, featuredTrip, KIND_LABEL, KIND_TINT, pastTrips, planArt, plansOn, statusOf, todos, upcomingTrips } from '../domain/trips';
 import {
   Banner, Button, Chips, colors, EmptyState, fonts, Header, Hero, HeroRule, HeroText, HScroll, Icon, Illustration, MediaRow, Pill,
-  PhotoCard, radii, RoundButton, RowView, Screen, Section, shadows, Stack, T, type IllustrationName, type Tint,
+  CountUp, enterItem, PhotoCard, PressScale, radii, Reveal, RoundButton, RowView, Screen, Section, shadows, Stack, T, type IllustrationName, type Tint,
 } from '../loom';
+import Animated from 'react-native-reanimated';
 import { useRates } from '../services/currency';
 import { isFlightPlan } from '../services/flights';
 import { suggest, type Place } from '../services/places';
@@ -26,6 +27,21 @@ export function useOpenTrip() {
     const adventure = extras.get(trip.id).kind === 'trek';
     router.push((path || (adventure ? '/adventure' : '/trip')) as never);
   };
+}
+
+/**
+ * Opens a trip from a card with the iOS zoom transition: the card grows into the trip screen (and shrinks back on
+ * the way out). The card's own buttons are just visuals here; the whole card is the target.
+ */
+function TripLink({ trip, path, label, children }: { trip: Trip; path?: string; label: string; children: React.ReactNode }) {
+  const { select } = useSelection();
+  const extras = useExtras();
+  const href = path || (extras.get(trip.id).kind === 'trek' ? '/adventure' : '/trip');
+  return <Link href={href as never} asChild onPress={() => select(trip.id)}>
+    <PressScale accessibilityRole="button" accessibilityLabel={label} scaleTo={0.98}>
+      <Link.AppleZoom><View pointerEvents="none">{children}</View></Link.AppleZoom>
+    </PressScale>
+  </Link>;
 }
 
 /** Workspace sync problems, shown at the top of Home and Profile. */
@@ -98,7 +114,9 @@ function TripHero({ trip, extras }: { trip: Trip; extras: TripExtras }) {
       <Illustration name={coverOf(trip)} width={64} height={64} radius={12} />
     </RowView>
     <RowView gap={8} align="baseline">
-      <HeroText style={{ fontFamily: fonts.semibold, fontSize: 56, lineHeight: 60, letterSpacing: -2 }}>{big}</HeroText>
+      {/^\d+$/.test(big)
+        ? <CountUp value={Number(big)} duration={900} maxFontSizeMultiplier={1.2} style={{ fontFamily: fonts.semibold, fontSize: 56, lineHeight: 60, letterSpacing: -2, color: '#FFFFFF' }} />
+        : <HeroText style={{ fontFamily: fonts.semibold, fontSize: 56, lineHeight: 60, letterSpacing: -2 }}>{big}</HeroText>}
       <HeroText faint style={{ fontSize: 15 }}>{bigLabel}</HeroText>
     </RowView>
     <HeroRule />
@@ -115,9 +133,13 @@ function TripHero({ trip, extras }: { trip: Trip; extras: TripExtras }) {
         </HeroText>
       </RowView>
     </Stack>
-    <Button label={status.phase === 'past' ? 'See the recap' : 'Open trip'} icon="chev" kind="white" height={50}
-      onPress={() => open(trip, status.phase === 'past' ? '/recap' : '')} />
+    <Button label={status.phase === 'past' ? 'See the recap' : 'Open trip'} icon="chev" kind="white" height={50} />
   </Hero>;
+}
+
+function TripHeroLink({ trip, extras }: { trip: Trip; extras: TripExtras }) {
+  const past = statusOf(trip).phase === 'past';
+  return <TripLink trip={trip} path={past ? '/recap' : undefined} label={`${past ? 'Recap of' : 'Open'} ${trip.name}`}><TripHero trip={trip} extras={extras} /></TripLink>;
 }
 
 /** During a trip: what's left today, with the next plan marked. A flight opens its live status; a trek shows today's stage. */
@@ -147,10 +169,10 @@ function TodaySection({ trip, extras }: { trip: Trip; extras: TripExtras }) {
   };
   const addPlan = () => { select(trip.id); router.push({ pathname: '/add-plan', params: { date: today } } as never); };
   return <Section title="Today" action="Itinerary" onAction={() => open(trip, '/trip/days')}>
-    {left.length ? <Stack>{left.slice(0, 4).map((a) => {
+    {left.length ? <Stack>{left.slice(0, 4).map((a, i) => {
       const flight = isFlightPlan(a);
       const label = flight ? 'Flight' : CATEGORY[a.category].label;
-      return <MediaRow key={a.id} ill={planArt(trip, a)} tint={CATEGORY[a.category].tint}
+      return <MediaRow index={i} key={a.id} ill={planArt(trip, a)} tint={CATEGORY[a.category].tint}
         eyebrow={[a.id === next?.id ? 'Next' : '', a.time || label].filter(Boolean).join(' · ')}
         title={a.title} meta={flight ? 'Live flight status' : a.place || label} onPress={() => show(a.id, flight)} />;
     })}</Stack>
@@ -176,7 +198,7 @@ function BeforeYouGo({ trip, extras }: { trip: Trip; extras: TripExtras }) {
   const left = workspace ? todos(workspace, trip, extras) : [];
   if (!left.length) return null;
   return <Section title="Before you go">
-    <Stack>{left.slice(0, 3).map((t) => { const d = todoDetail(t); return <MediaRow key={t} ill={d.ill} tint={d.tint} eyebrow={trip.name} title={t} meta={d.meta}
+    <Stack>{left.slice(0, 3).map((t, i) => { const d = todoDetail(t); return <MediaRow index={i} key={t} ill={d.ill} tint={d.tint} eyebrow={trip.name} title={t} meta={d.meta}
       onPress={() => open(trip, d.path)} />; })}</Stack>
   </Section>;
 }
@@ -232,7 +254,7 @@ export function HomeScreen() {
 
   return <Screen bar="tabs" gap={22}>
     <SyncBanner />
-    {current ? <TripHero trip={current} extras={extras.get(current.id)} /> : <FirstTripHero name={prefs.firstName} last={past[0]} />}
+    <Reveal>{current ? <TripHeroLink trip={current} extras={extras.get(current.id)} /> : <FirstTripHero name={prefs.firstName} last={past[0]} />}</Reveal>
     {current ? <Section title="Quick actions">
       <HScroll>
         {extras.get(current.id).kind === 'trek' ? <>
@@ -254,13 +276,15 @@ export function HomeScreen() {
     {current && phase === 'active' ? <TodaySection trip={current} extras={extras.get(current.id)} /> : null}
     {current && phase === 'upcoming' ? <BeforeYouGo trip={current} extras={extras.get(current.id)} /> : null}
     {others.length ? <Section title="Up next">
-      <HScroll gap={12}>{others.map((t) => <PhotoCard key={t.id} ill={coverOf(t)} label={compactRange(t.start, t.end)} title={t.name}
-        meta={`${KIND_LABEL[extras.get(t.id).kind]} · ${countdownLabel(statusOf(t))}`} onPress={() => open(t)} />)}</HScroll>
+      <HScroll gap={12}>{others.map((t, i) => <Animated.View key={t.id} entering={enterItem(i)}><TripLink trip={t} label={`Open ${t.name}`}>
+        <PhotoCard ill={coverOf(t)} label={compactRange(t.start, t.end)} title={t.name} meta={`${KIND_LABEL[extras.get(t.id).kind]} · ${countdownLabel(statusOf(t))}`} />
+      </TripLink></Animated.View>)}</HScroll>
     </Section> : null}
     {!current ? <OtherWaysToStart /> : null}
     {past.length ? <Section title="Past trips">
-      <Stack>{past.slice(0, 5).map((t) => <MediaRow key={t.id} ill={coverOf(t)} eyebrow={compactRange(t.start, t.end)} tint={KIND_TINT[extras.get(t.id).kind]}
-        title={t.name} meta={`Recap · ${plural(statusOf(t).totalDays, 'day')} · ${t.destination}`} onPress={() => open(t, '/recap')} />)}</Stack>
+      <Stack>{past.slice(0, 5).map((t, i) => <Animated.View key={t.id} entering={enterItem(i)}><TripLink trip={t} path="/recap" label={`Recap of ${t.name}`}>
+        <MediaRow ill={coverOf(t)} eyebrow={compactRange(t.start, t.end)} tint={KIND_TINT[extras.get(t.id).kind]} title={t.name} meta={`Recap · ${plural(statusOf(t).totalDays, 'day')} · ${t.destination}`} />
+      </TripLink></Animated.View>)}</Stack>
     </Section> : null}
     {!others.length ? <Section title={trips.length ? 'Ideas for your next trip' : 'Ideas to start from'} action="See all" onAction={() => router.push('/discover' as never)}>
       <HScroll gap={12}>{IDEAS.slice(0, 4).map((idea) => <IdeaCard key={idea.id} idea={idea} />)}</HScroll>
@@ -284,7 +308,7 @@ export function DiscoverScreen() {
       <HScroll gap={12}>{top.map((idea) => <IdeaCard key={idea.id} idea={idea} big />)}</HScroll>
     </Section>
     {more.length ? <Section title="More to explore">
-      <Stack>{more.map((idea) => <MediaRow key={idea.id} ill={idea.art} eyebrow={idea.label} tint={idea.tint} title={idea.title} meta={idea.meta}
+      <Stack>{more.map((idea, i) => <MediaRow index={i} key={idea.id} ill={idea.art} eyebrow={idea.label} tint={idea.tint} title={idea.title} meta={idea.meta}
         onPress={() => router.push({ pathname: '/planner', params: { prompt: idea.prompt, destination: idea.destination, kind: idea.kind } } as never)} />)}</Stack>
     </Section> : null}
     <T v="small" style={{ paddingHorizontal: 4 }}>Tap an idea to draft it with AI, then change anything before you save it.</T>
@@ -316,7 +340,7 @@ export function SearchScreen() {
       <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8}><T v="small" style={{ fontFamily: fonts.semibold, fontSize: 14 }}>Cancel</T></Pressable>
     </RowView>
     {ideaMatches.length ? <Section title="Trip ideas">
-      <Stack>{ideaMatches.map((idea) => <MediaRow key={idea.id} ill={idea.art} eyebrow={idea.label} tint={idea.tint} title={idea.title} meta={idea.meta}
+      <Stack>{ideaMatches.map((idea, i) => <MediaRow index={i} key={idea.id} ill={idea.art} eyebrow={idea.label} tint={idea.tint} title={idea.title} meta={idea.meta}
         onPress={() => router.push({ pathname: '/planner', params: { prompt: idea.prompt, destination: idea.destination, kind: idea.kind } } as never)} />)}</Stack>
     </Section> : null}
     {results.length ? <Section title="Places">
