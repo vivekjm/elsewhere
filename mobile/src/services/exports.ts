@@ -3,7 +3,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import type { TripExtras } from '../data/extras';
 import { tripDates, type Trip, type Workspace } from '../data/model';
-import { clockTime, dateRange, localDay, longDay, money } from '../domain/format';
+import { clockTime, dateRange, localDay, longDay, money, planTime } from '../domain/format';
 import { CATEGORY, sortPlans } from '../domain/trips';
 
 const safeName = (name: string) => name.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-').slice(0, 60) || 'trip';
@@ -103,7 +103,7 @@ export async function exportTravelBook(trip: Trip, extras: TripExtras, spentByCa
     const plans = sortPlans(trip.activities.filter((a) => a.date === date));
     const day = trip.days[date];
     if (!plans.length && !day?.notes && !day?.title) return '';
-    return `<section><h3>Day ${i + 1} · ${html(longDay(date))}${day?.title ? ` — ${html(day.title)}` : ''}</h3>${plans.map((a) => `<p>${a.completed ? '✓ ' : ''}${a.time ? `<span class="m">${html(a.time)}</span> ` : ''}${html(a.title)}${a.place ? ` <span class="m">· ${html(a.place)}</span>` : ''}</p>`).join('')}${day?.notes ? `<p class="n">${html(day.notes)}</p>` : ''}</section>`;
+    return `<section><h3>Day ${i + 1} · ${html(longDay(date))}${day?.title ? ` — ${html(day.title)}` : ''}</h3>${plans.map((a) => `<p>${a.completed ? '✓ ' : ''}${a.time ? `<span class="m">${html(planTime(a.time))}</span> ` : ''}${html(a.title)}${a.place ? ` <span class="m">· ${html(a.place)}</span>` : ''}</p>`).join('')}${day?.notes ? `<p class="n">${html(day.notes)}</p>` : ''}</section>`;
   }).join('');
   const money_ = spentByCategory.length ? `<h2>Spending</h2><table>${spentByCategory.map((x) => `<tr><td>${html(x.label)}</td><td class="r">${html(money(x.amount, trip.currency))}</td></tr>`).join('')}<tr><td><b>Total</b></td><td class="r"><b>${html(money(spent, trip.currency))}</b></td></tr></table>` : '';
   const doc = `<!doctype html><html><head><meta charset="utf-8"><style>

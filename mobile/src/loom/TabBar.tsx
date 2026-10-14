@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
-import { haptic, springs } from './motion';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { ease, haptic } from './motion';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Icon, type IconName } from './graphics';
@@ -29,7 +29,7 @@ export function makeTabBar(items: TabItem[], parentOf: Record<string, string> = 
     useEffect(() => {
       if (!slot) return;
       const target = index * slot + slot / 2 - 9;
-      x.value = x.value < 0 ? target : withSpring(target, springs.soft);
+      x.value = x.value < 0 ? target : withTiming(target, ease);
     }, [index, slot, x]);
     const marker = useAnimatedStyle(() => ({ opacity: x.value < 0 ? 0 : 1, transform: [{ translateX: Math.max(0, x.value) }] }));
     return <View style={{
@@ -54,16 +54,11 @@ export function makeTabBar(items: TabItem[], parentOf: Record<string, string> = 
   };
 }
 
-/** One tab: the icon gives a small spring hop when it becomes the active tab. */
+/** One tab: icon and label; the marker above is drawn by the bar. */
 function TabButton({ item, on, onPress }: { item: TabItem; on: boolean; onPress: () => void }) {
-  const hop = useSharedValue(0);
-  useEffect(() => {
-    if (on) hop.value = withSequence(withTiming(1, { duration: 110 }), withSpring(0, springs.snappy));
-  }, [on, hop]);
-  const icon = useAnimatedStyle(() => ({ transform: [{ translateY: -3 * hop.value }, { scale: 1 + 0.08 * hop.value }] }));
   return <Pressable accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={item.label} onPress={onPress}
     style={{ flex: 1, alignItems: 'center', gap: 6 }}>
-    <Animated.View style={icon}><Icon name={item.icon} size={24} color={on ? colors.ink : colors.stone} strokeWidth={on ? 2.2 : 1.8} /></Animated.View>
+    <Icon name={item.icon} size={24} color={on ? colors.ink : colors.stone} strokeWidth={on ? 2.2 : 1.8} />
     <Text maxFontSizeMultiplier={1.2} numberOfLines={1} style={{ fontFamily: on ? fonts.semibold : fonts.medium, fontSize: 11, color: on ? colors.ink : colors.stone }}>{item.label}</Text>
   </Pressable>;
 }

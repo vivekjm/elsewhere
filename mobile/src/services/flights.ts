@@ -21,6 +21,11 @@ export type FlightStatus = {
   remainingKm: number | null;
   etaMinutes: number | null;
   progress: number | null;
+  /**
+   * The airports the person wrote in the plan ("BLR to GOX"), when the flight number's usual route doesn't match.
+   * Flight numbers are reused and re-routed, so the plan wins: no route or live position is shown for the other flight.
+   */
+  mismatch: { from: string; to: string; usual: string } | null;
 };
 
 /** "TP 1321 · LHR → LIS", "Flight BA117", "ba 117" → { airline: "TP", number: "1321" }. */
@@ -88,15 +93,26 @@ export function bearing(a: { lat: number; lng: number }, b: { lat: number; lng: 
   return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
 }
 
+/** Airport codes written in a plan: "BLR to GOX", "BLR → GOX", "BLR-GOX". */
+export function plannedAirports(text: string): { from: string; to: string } | null {
+  const m = text.match(/\b([A-Z]{3})\s*(?:→|->|–|-|to)\s*([A-Z]{3})\b/);
+  return m && m[1] !== m[2] ? { from: m[1], to: m[2] } : null;
+}
+
 /** Everything known about a flight right now. `departs` is the planned departure, if the plan has a date and time. */
 export async function flightStatus(text: string, departs: Date | null, now = new Date()): Promise<FlightStatus | null> {
   const parsed = parseFlightNumber(text);
   if (!parsed) return null;
   const number = `${parsed.airline} ${parsed.number}`;
   const airline = await airlineIcao(parsed.airline);
-  if (!airline) return { number, route: null, live: null, phase: 'unknown', remainingKm: null, etaMinutes: null, progress: null };
+  if (!airline) return { number, route: null, live: null, phase: 'unknown', remainingKm: null, etaMinutes: null, progress: null, mismatch: null };
   const callsign = `${airline.icao}${parsed.number}`;
-  const [r, position] = await Promise.all([route(callsign, airline.name), live(callsign)]);
+  const [usualRoute, livePosition] = await Promise.all([route(callsign, airline.name), live(callsign)]);
+  const planned = plannedAirports(text);
+  const differs = !!planned && !!usualRoute && (usualRoute.origin.iata !== planned.from || usualRoute.destination.iata !== planned.to);
+  const mismatch = differs && usualRoute ? { ...planned!, usual: `${usualRoute.origin.iata} → ${usualRoute.destination.iata}` } : null;
+  const r = mismatch ? null : usualRoute;
+  const position = mismatch ? null : livePosition;
   // A flight number is reused daily: only trust a live position near the planned day.
   const nearPlan = !departs || Math.abs(now.getTime() - departs.getTime()) < 20 * 3600000;
   const pos = nearPlan ? position : null;
@@ -116,7 +132,7 @@ export async function flightStatus(text: string, departs: Date | null, now = new
     const minutes = (distanceKm(r.origin, r.destination) / 800) * 60 + 40;
     phase = now.getTime() - departs.getTime() > minutes * 60000 ? 'landed' : 'unknown';
   } else if (pos?.onGround && departs && now > departs) phase = 'unknown';
-  return { number, route: r, live: pos, phase, remainingKm, etaMinutes, progress };
+  return { number, route: r, live: pos, phase, remainingKm, etaMinutes, progress, mismatch };
 }
 
 /** Whether a plan looks like a flight, so screens can offer "Flight status". */

@@ -19,6 +19,18 @@ export function fromDate(date: Date): string { return todayISO(date); }
 
 /** A timestamp (full ISO, UTC) as this device's calendar date, `YYYY-MM-DD`. */
 export function localDay(stamp: string): string { return todayISO(new Date(stamp)); }
+/** A plan's "HH:MM" in this device's clock style ("19:00" or "7:00 PM"); empty stays empty. */
+export function planTime(hhmm: string): string {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || '');
+  if (!m) return hhmm || '';
+  const d = new Date(2000, 0, 1, Number(m[1]), Number(m[2]));
+  return fmt({ hour: 'numeric', minute: '2-digit' }).format(d);
+}
+/** A plan's start and optional end: "7:00 – 9:00 PM" style, as the locale writes ranges. */
+export function planTimes(start: string, end?: string): string {
+  if (!start) return '';
+  return end ? `${planTime(start)} – ${planTime(end)}` : planTime(start);
+}
 /** A timestamp as this device's clock time in the user's locale ("21:40" or "9:40 PM"). */
 export function clockTime(stamp: string): string { return fmt({ hour: 'numeric', minute: '2-digit' }).format(new Date(stamp)); }
 

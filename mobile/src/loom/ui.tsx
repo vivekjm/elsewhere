@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, InputAccessoryView, Keyboard, KeyboardAvoidingView, LayoutAnimation, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
+  ActivityIndicator, Alert, InputAccessoryView, Keyboard, KeyboardAvoidingView, Platform, StatusBar as RNStatusBar, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
   type KeyboardTypeOptions, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle,
 } from 'react-native';
-import Animated, { Extrapolation, interpolate, interpolateColor, runOnJS, useAnimatedReaction, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withSpring, withTiming, type SharedValue } from 'react-native-reanimated';
+import Animated, { Extrapolation, interpolate, interpolateColor, runOnJS, useAnimatedReaction, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
-import { AnimatedFill, enterItem, GrowBar, haptic, listLayout, ParallaxCover, PressScale, springs } from './motion';
-import { useRouter } from '../core/nav';
+import { AnimatedFill, ease, GrowBar, haptic, ParallaxCover, PressScale } from './motion';
+import { closingOnPurpose, useRouter } from '../core/nav';
+import { useIsFocused, useNavigation, usePreventRemove } from 'expo-router/react-navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmberBackdrop, Icon, Illustration, type IconName, type IllustrationName } from './graphics';
 import { tabBarHeight } from './TabBar';
@@ -88,6 +89,15 @@ function StickyBar({ y, title, back, top }: { y: SharedValue<number>; title: str
   </Animated.View>;
 }
 
+/** A frosted band behind the status bar that fades in as soon as content scrolls under it. */
+function StatusScrim({ y, height }: { y: SharedValue<number>; height: number }) {
+  const style = useAnimatedStyle(() => ({ opacity: interpolate(y.value, [0, 16], [0, 1], Extrapolation.CLAMP) }));
+  return <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: 0, left: 0, right: 0, height, overflow: 'hidden' }, style]}>
+    <BlurView intensity={40} tint="light" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(238,237,235,0.8)' }} />
+  </Animated.View>;
+}
+
 /** A scrolling screen on the canvas. Pads for the notch and, when a tab bar floats over it, for the bar. */
 /** `modal`: the screen is presented as a page sheet, which already clears the status bar unless it was opened full screen. */
 export function Screen({ children, gap = 16, bar = 'none', footer, scroll = true, background = colors.canvas, modal }: {
@@ -98,19 +108,23 @@ export function Screen({ children, gap = 16, bar = 'none', footer, scroll = true
   const topInset = modal && router.canGoBack() ? 6 : insets.top;
   const bottom = bar === 'tabs' ? tabBarHeight(insets.bottom) + 24 : (footer ? 16 : insets.bottom + 24);
   const content = { paddingTop: topInset + 10, paddingHorizontal: 16, paddingBottom: bottom, gap };
-  const typing = useKeyboardOpen();
   const y = useSharedValue(0);
+  const screenScroll = useRef<Animated.ScrollView>(null);
+  useKeepFocusedVisible(screenScroll as never);
   const onScroll = useAnimatedScrollHandler((e) => { y.value = e.contentOffset.y; });
   const [sticky, setSticky] = useState<StickyTitle | null>(null);
   const ctx = React.useMemo(() => ({ y, setSticky }), [y]);
   return <ScrollContext.Provider value={ctx}>
     <View style={{ flex: 1, backgroundColor: background }}>
       {scroll
-        ? <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={[content, { flexGrow: 1 }]} showsVerticalScrollIndicator={false}
+        ? <Animated.ScrollView ref={screenScroll} onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={[content, { flexGrow: 1 }]} showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets>{children}</Animated.ScrollView>
         : <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[content, { flex: 1 }]}>{children}</KeyboardAvoidingView>}
       {scroll && sticky ? <StickyBar y={y} title={sticky.title} back={sticky.back} top={topInset} /> : null}
-      {footer && !typing ? <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: insets.bottom + 12, gap: 8 }}>{footer}</View> : null}
+      {/* Screens without a sticky bar (Home, Discover) still need the status bar kept clear of scrolled content. */}
+      {scroll && !sticky && topInset > 20 ? <StatusScrim y={y} height={topInset} /> : null}
+      {/* The footer stays put while typing: the keyboard simply covers it, so nothing above it resizes. */}
+      {footer ? <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: insets.bottom + 12, gap: 8 }}>{footer}</View> : null}
     </View>
   </ScrollContext.Provider>;
 }
@@ -127,15 +141,15 @@ export const Spacer = () => <View style={{ flex: 1 }} />;
 
 /* ------------------------------------------------------------------ Buttons */
 
-export function RoundButton({ icon, onPress, href, dark, label, size = 48, back }: {
-  icon: IconName; onPress?: () => void; href?: string; dark?: boolean; label: string; size?: number; back?: boolean;
+export function RoundButton({ icon, onPress, href, dark, label, size = 48, back, danger }: {
+  icon: IconName; onPress?: () => void; href?: string; dark?: boolean; label: string; size?: number; back?: boolean; danger?: boolean;
 }) {
   const router = useRouter();
   const action = back ? () => (router.canGoBack() ? router.back() : router.replace('/home' as never)) : onPress;
   return <Press onPress={action} href={href} label={label} style={{
     width: size, height: size, borderRadius: radii.button, alignItems: 'center', justifyContent: 'center',
     backgroundColor: dark ? colors.inkButton : colors.card, boxShadow: dark ? shadows.dark : shadows.button,
-  }}><Icon name={icon} size={20} color={dark ? '#FFFFFF' : colors.ink} /></Press>;
+  }}><Icon name={icon} size={20} color={dark ? '#FFFFFF' : danger ? colors.danger : colors.ink} /></Press>;
 }
 
 export function BackButton() {
@@ -160,6 +174,20 @@ export function Button({ label, icon, leading, kind = 'dark', onPress, href, ful
     <Text maxFontSizeMultiplier={maxScale(15)} style={{ fontFamily: fonts.semibold, fontSize: 15, color: fg }}>{label}</Text>
     {trailing ? glyph : null}
   </Press>;
+}
+
+/**
+ * A sheet's footer on one line: the main action fills the row, secondary actions (directions, delete…) sit beside
+ * it as round icon buttons with spoken labels.
+ */
+export function SheetActions({ primary, actions = [] }: {
+  primary: React.ReactElement; actions?: ({ icon: IconName; label: string; onPress: () => void; danger?: boolean } | null | false)[];
+}) {
+  const list = actions.filter((a): a is { icon: IconName; label: string; onPress: () => void; danger?: boolean } => !!a);
+  return <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+    <View style={{ flex: 1 }}>{primary}</View>
+    {list.map((a) => <RoundButton key={a.label} icon={a.icon} label={a.label} onPress={a.onPress} danger={a.danger} size={56} />)}
+  </View>;
 }
 
 /** Filter chips and quick actions: 42 high, squared-off. */
@@ -294,12 +322,9 @@ export function Row({ icon, title, meta, trailing = 'chev', tint, onPress, href,
   return onPress || href ? <Press onPress={onPress} href={href} label={title} style={style}>{body}</Press> : <View style={style}>{body}</View>;
 }
 
-export function MediaRow({ ill, eyebrow, tint, title, meta, trailing = 'chev', href, onPress, height = 92, index }: {
+export function MediaRow({ ill, eyebrow, tint, title, meta, trailing = 'chev', href, onPress, height = 92 }: {
   ill: IllustrationName; eyebrow: string; tint: Tint; title: string; meta: string; trailing?: React.ReactNode | 'chev'; href?: string; onPress?: () => void; height?: number;
-  /** Position in a list: the row rises in, staggered after the ones above it. */
-  index?: number;
 }) {
-  if (index !== undefined) return <Animated.View entering={enterItem(index)} layout={listLayout}><MediaRow {...{ ill, eyebrow, tint, title, meta, trailing, href, onPress, height }} /></Animated.View>;
   // The art is pinned to the left edge so the row's height comes only from its text (percent heights in an
   // auto-height row can resolve against the wrong box).
   return <Press href={href} onPress={onPress} label={title} style={{
@@ -359,8 +384,8 @@ export function Toggle({ initial = true, value, onChange, label, disabled }: { i
   const setOn = (next: boolean) => { haptic.select(); setOwn(next); onChange?.(next); };
   // The knob slides and the track fades between colours instead of snapping.
   const t = useSharedValue(on ? 1 : 0);
-  useEffect(() => { t.value = withSpring(on ? 1 : 0, springs.snappy); }, [on, t]);
-  const knob = useAnimatedStyle(() => ({ transform: [{ translateX: 20 * t.value }, { scaleX: 1 + 0.12 * Math.sin(Math.PI * t.value) }] }));
+  useEffect(() => { t.value = withTiming(on ? 1 : 0, ease); }, [on, t]);
+  const knob = useAnimatedStyle(() => ({ transform: [{ translateX: 20 * t.value }] }));
   const track = useAnimatedStyle(() => ({ backgroundColor: interpolateColor(t.value, [0, 1], [colors.track, colors.inkButton]) }));
   return <Pressable accessibilityRole="switch" accessibilityLabel={label} accessibilityState={{ checked: on, disabled }} disabled={disabled} hitSlop={8} onPress={() => setOn(!on)}>
     <Animated.View style={[{ width: 50, height: 30, borderRadius: radii.round, padding: 3 }, track]}>
@@ -372,9 +397,9 @@ export function Toggle({ initial = true, value, onChange, label, disabled }: { i
 export function Checkbox({ checked, accent = colors.inkButton }: { checked: boolean; accent?: string }) {
   // Ticking fills the box with a small overshoot; the tick scales in a beat later.
   const t = useSharedValue(checked ? 1 : 0);
-  useEffect(() => { t.value = checked ? withSpring(1, { damping: 11, stiffness: 320, mass: 0.6 }) : withTiming(0, { duration: 140 }); }, [checked, t]);
-  const fill = useAnimatedStyle(() => ({ opacity: Math.min(1, t.value * 1.4), transform: [{ scale: 0.6 + 0.4 * t.value }] }));
-  const tick = useAnimatedStyle(() => ({ transform: [{ scale: Math.max(0, (t.value - 0.35) / 0.65) }] }));
+  useEffect(() => { t.value = withTiming(checked ? 1 : 0, { ...ease, duration: 160 }); }, [checked, t]);
+  const fill = useAnimatedStyle(() => ({ opacity: t.value }));
+  const tick = useAnimatedStyle(() => ({ opacity: t.value }));
   return <View style={{ width: 28, height: 28, borderRadius: radii.check, borderWidth: 2, borderColor: colors.control, alignItems: 'center', justifyContent: 'center' }}>
     <Animated.View style={[{ position: 'absolute', top: -2, left: -2, right: -2, bottom: -2, borderRadius: radii.check, backgroundColor: accent, alignItems: 'center', justifyContent: 'center' }, fill]}>
       <Animated.View style={tick}><Icon name="check" size={16} color="#FFFFFF" strokeWidth={3} /></Animated.View>
@@ -393,9 +418,9 @@ export function CheckToggle({ initial = false, accent, checked, onChange, label 
 
 export function Radio({ on }: { on: boolean }) {
   const t = useSharedValue(on ? 1 : 0);
-  useEffect(() => { t.value = withSpring(on ? 1 : 0, springs.snappy); }, [on, t]);
+  useEffect(() => { t.value = withTiming(on ? 1 : 0, ease); }, [on, t]);
   const ring = useAnimatedStyle(() => ({ borderColor: interpolateColor(t.value, [0, 1], [colors.control, '#FFFFFF']), backgroundColor: interpolateColor(t.value, [0, 1], ['rgba(255,255,255,0)', '#FFFFFF']) }));
-  const dot = useAnimatedStyle(() => ({ transform: [{ scale: t.value }] }));
+  const dot = useAnimatedStyle(() => ({ opacity: t.value }));
   return <Animated.View style={[{ width: 24, height: 24, borderRadius: radii.round, borderWidth: 2, alignItems: 'center', justifyContent: 'center', boxShadow: on ? '0px 2px 8px rgba(30,30,30,0.12)' : undefined }, ring]}>
     <Animated.View style={[{ width: 10, height: 10, borderRadius: radii.round, backgroundColor: colors.ember }, dot]} />
   </Animated.View>;
@@ -413,6 +438,14 @@ const FIELD_KINDS: Record<FieldKind, Partial<TextInputProps> & { keyboardType?: 
   phone: { keyboardType: 'phone-pad', textContentType: 'telephoneNumber', autoComplete: 'tel' },
   place: { autoCapitalize: 'words', textContentType: 'addressCity' },
 };
+
+/**
+ * Text inside inputs. No vertical padding and no lineHeight: iOS centres single-line text itself, and a lineHeight
+ * on a TextInput is applied to typed text but not to the placeholder, so the two sat at different heights.
+ */
+export const inputText: TextStyle = { fontFamily: fonts.medium, fontSize: 15, color: colors.ink, paddingTop: 0, paddingBottom: 0, includeFontPadding: false };
+/** A single-line input fills its row's height so the text is centred on the icon beside it. */
+export const singleLine: TextStyle = { flex: 1, alignSelf: 'stretch' };
 
 export function Field({ label, value, onChangeText, placeholder, icon, multiline, secure, flex, kind = 'text', error, hint, autoFocus, maxLength, onSubmitEditing, returnKeyType, trailing, editable = true, onFocus, onBlur }: {
   label: string; value?: string; onChangeText?: (text: string) => void; placeholder?: string; icon?: IconName; multiline?: boolean;
@@ -442,7 +475,7 @@ export function Field({ label, value, onChangeText, placeholder, icon, multiline
         inputAccessoryViewID={pad ? accessoryId : undefined}
         editable={editable} onFocus={onFocus} onBlur={onBlur} onSubmitEditing={onSubmitEditing} returnKeyType={returnKeyType} submitBehavior={multiline ? 'newline' : 'blurAndSubmit'}
         accessibilityLabel={label} accessibilityHint={error || hint}
-        style={{ flex: 1, fontFamily: fonts.medium, fontSize: 15, color: editable ? colors.ink : colors.stone, paddingVertical: multiline ? 0 : 12, minHeight: multiline ? 68 : undefined, textAlignVertical: multiline ? 'top' : 'center' }} />
+        style={[inputText, { color: editable ? colors.ink : colors.stone }, multiline ? { flex: 1, alignSelf: 'stretch', minHeight: 68, textAlignVertical: 'top' } : singleLine]} />
       {trailing}
     </Pressable>
     {error ? <T v="meta" color={colors.danger} style={{ paddingLeft: 4 }}>{error}</T> : hint ? <T v="meta" style={{ paddingLeft: 4 }}>{hint}</T> : null}
@@ -511,7 +544,7 @@ export function Segmented({ options, initial, value: controlled, onChange }: { o
 }
 
 export function Progress({ pct, color = colors.ember, track = colors.rule, height = 6 }: { pct: number; color?: string; track?: string; height?: number }) {
-  return <View style={{ height, borderRadius: radii.round, backgroundColor: track, overflow: 'hidden' }}><AnimatedFill pct={pct} color={color} height="100%" radius={radii.round} /></View>;
+  return <View style={{ height, borderRadius: radii.round, backgroundColor: track, overflow: 'hidden' }}><AnimatedFill pct={pct} color={color} radius={radii.round} /></View>;
 }
 
 export function Steps({ n, total = 4, light }: { n: number; total?: number; light?: boolean }) {
@@ -553,7 +586,7 @@ export function Bars({ values, labels, active, color = colors.ember, faded = '#F
   const max = Math.max(...values, 1);
   return <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
     {values.map((v, i) => <View key={i} style={{ flex: 1, alignItems: 'center', gap: 8, justifyContent: 'flex-end', height: height + 26 }}>
-      <GrowBar height={Math.max(6, (v / max) * height)} delay={i * 50} style={{ width: '100%', maxWidth: 28, borderRadius: radii.round, backgroundColor: active === undefined || active === i ? color : faded }} />
+      <GrowBar height={Math.max(6, (v / max) * height)} style={{ width: '100%', maxWidth: 28, borderRadius: radii.round, backgroundColor: active === undefined || active === i ? color : faded }} />
       <T v="meta" style={{ fontSize: 11 }}>{labels[i]}</T>
     </View>)}
   </View>;
@@ -561,15 +594,36 @@ export function Bars({ values, labels, active, color = colors.ember, faded = '#F
 
 /* ------------------------------------------------------------------ Sheets */
 
+/**
+ * When the keyboard opens, scrolls the whole focused field (not just its caret line) above it, with some room.
+ * Multi-line fields (notes) were otherwise left mostly under the keyboard.
+ */
+export function useKeepFocusedVisible(scroll: React.RefObject<{ scrollResponderScrollNativeHandleToKeyboard?: (node: unknown, offset: number, preventNegative: boolean) => void } | null>) {
+  const focused = useIsFocused();
+  useEffect(() => {
+    if (!focused) return;
+    const sub = Keyboard.addListener('keyboardDidShow', () => {
+      const input = TextInput.State.currentlyFocusedInput();
+      if (input) scroll.current?.scrollResponderScrollNativeHandleToKeyboard?.(input, 24, true);
+    });
+    return () => sub.remove();
+  }, [scroll, focused]);
+}
+
+/** True once any of `values` differs from what it was when the form opened. */
+export function useDirty(values: unknown): boolean {
+  const first = useRef(JSON.stringify(values));
+  return JSON.stringify(values) !== first.current;
+}
+
 /** Content of a modal route: grabber, centred title and a close button, then scrolling content. */
 /** True while the on-screen keyboard is up. Footers step aside so the field being typed in stays visible. */
 export function useKeyboardOpen() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    const change = (next: boolean) => {
-      LayoutAnimation.configureNext(LayoutAnimation.create(220, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
-      setOpen(next);
-    };
+    // No LayoutAnimation here: on the new architecture it reorders native views mid-update and crashed the app
+    // ("unmount a view which has a different index") when the keyboard switched type inside a sheet.
+    const change = (next: boolean) => setOpen(next);
     const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => change(true));
     const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => change(false));
     return () => { show.remove(); hide.remove(); };
@@ -577,22 +631,43 @@ export function useKeyboardOpen() {
   return open;
 }
 
-export function Sheet({ title, children, footer }: { title: string; children: React.ReactNode; footer?: React.ReactNode }) {
+export function Sheet({ title, children, footer, dirty }: {
+  title: string; children: React.ReactNode; footer?: React.ReactNode;
+  /** Unsaved changes: closing (swipe down, the X, back) asks before throwing them away. */
+  dirty?: boolean;
+}) {
   const router = useRouter();
+  const navigation = useNavigation();
+  usePreventRemove(!!dirty, ({ data }) => {
+    // Save and Delete close the sheet themselves; only a swipe down, the X or the back gesture can lose work.
+    if (closingOnPurpose()) { navigation.dispatch(data.action); return; }
+    Alert.alert('Discard changes?', 'What you typed here hasn’t been saved.', [
+      { text: 'Keep editing', style: 'cancel' },
+      { text: 'Discard', style: 'destructive', onPress: () => navigation.dispatch(data.action) },
+    ]);
+  });
   const insets = useSafeAreaInsets();
   // A page sheet already clears the status bar; only a full-screen open (no screen below it) needs the inset.
   const top = router.canGoBack() ? 0 : insets.top;
-  const typing = useKeyboardOpen();
+  const scrollRef = useRef<ScrollView>(null);
+  useKeepFocusedVisible(scrollRef as never);
+  // While a sheet is up, the status bar would sit over the dimmed screen behind it (clock over that screen's
+  // header). Hide it for the sheet's lifetime; it comes back when the sheet closes.
+  useEffect(() => {
+    if (Platform.OS !== 'ios' || !router.canGoBack()) return;
+    const entry = RNStatusBar.pushStackEntry({ hidden: true, animated: true });
+    return () => RNStatusBar.popStackEntry(entry);
+  }, [router]);
   return <View style={{ flex: 1, backgroundColor: colors.canvas }}>
     <View style={{ alignItems: 'center', paddingTop: top + 10 }}><View style={{ width: 40, height: 5, borderRadius: radii.round, backgroundColor: colors.dashed }} /></View>
     <RowView style={{ justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10 }}>
       <View style={{ width: 48 }} />
       <T v="title">{title}</T>
-      <RoundButton icon="x" label="Close" onPress={() => router.back()} />
+      <RoundButton icon="x" label="Close" onPress={() => (navigation.canGoBack() ? navigation.goBack() : router.replace('/home' as never))} />
     </RowView>
-    {/* The scroll view keeps the focused field above the keyboard; the footer returns when typing stops. */}
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: footer && !typing ? 16 : insets.bottom + 24 }} showsVerticalScrollIndicator={false}
+    {/* The scroll view keeps the focused field above the keyboard; the footer stays put under it (no resize). */}
+    <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: footer ? 16 : insets.bottom + 24 }} showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets>{children}</ScrollView>
-    {footer && !typing ? <View style={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 12, paddingTop: 4 }}>{footer}</View> : null}
+    {footer ? <View style={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 12, paddingTop: 4 }}>{footer}</View> : null}
   </View>;
 }

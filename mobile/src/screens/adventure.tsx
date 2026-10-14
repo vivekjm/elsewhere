@@ -6,11 +6,13 @@ import { SvgXml } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { reportError, useCurrentTrip, usePrefs, useTrips } from '../core/state';
 import { GEAR_GROUPS, tripDates, uid, type Adventure, type CheckIn, type GearGroup, type Stage } from '../data';
-import { altitude, dateRange, distance, longDay, plural, shortDay, todayISO, weekday, weight } from '../domain/format';
+import { altitude, dateRange, distance, longDay, planTime, plural, shortDay, todayISO, weekday, weight } from '../domain/format';
 import { statusOf } from '../domain/trips';
 import {
   Bars, Button, Card, CheckToggle, Chips, colors, DateField, EmptyState, Field, FieldLabel, fonts, Group, Header, Hero, HeroText, Icon, IconTile, Illustration, Loading,
-  MediaRow, Note, Press, Progress, radii, Ring, RoundButton, routeMap, routeMapTall, Row, RowView, Screen, Section, Segmented, shadows, Sheet, Stack, T, Tag, tints, Toggle, type IconName,
+  MediaRow, Note, Press, Progress, radii, Ring, RoundButton, routeArt, Row, RowView, Screen, Section, Segmented, shadows, Sheet, Stack, T, Tag, tints, Toggle, type IconName,
+  SheetActions,
+  useDirty,
 } from '../loom';
 import { requestNotifications } from '../services/notifications';
 import { summitForecast, sunrise, type SummitDay } from '../services/outdoors';
@@ -57,6 +59,19 @@ function useAdventureTrip() {
 }
 
 /* ------------------------------------------------------------------ Overview */
+
+/**
+ * Where each stage's camp sits on the drawn trail, 0 (trailhead) to 1 (summit): by altitude when the stages have
+ * heights, otherwise evenly with the summit left for the last day.
+ */
+function stageHeights(stages: { startAltitude: number; endAltitude: number }[], summit?: number): number[] {
+  const ends = stages.map((s) => s.endAltitude);
+  const base = Math.min(...stages.map((s) => s.startAltitude || s.endAltitude || 0));
+  const top = summit || 0;
+  // Altitudes only place camps against a known summit; without one the highest camp isn't the top.
+  if (stages.length && top > 0 && ends.every((e) => e > 0) && top > base) return ends.map((e) => Math.max(0.05, Math.min(1, (e - base) / (top - base))));
+  return stages.map((_, i) => (i + 1) / Math.max(stages.length + 1, 2));
+}
 
 export function AdventureScreen() {
   const { current, fallback } = useAdventureTrip();
@@ -298,6 +313,7 @@ export function AddGearSheet() {
   const [grams, setGrams] = useState(existing?.grams ? String(existing.grams) : '');
   const [missing, setMissing] = useState(existing?.missing ?? false);
   const [error, setError] = useState('');
+  const dirty = useDirty([name, group, bag, grams, missing]);
   if (!current) return <Sheet title="Add gear"><EmptyState title="No trip open" body="Open a trip first." /></Sheet>;
   const save = () => {
     if (!name.trim()) { setError('Name the item.'); return; }
@@ -306,7 +322,7 @@ export function AddGearSheet() {
     router.back();
   };
   const remove = () => { if (!existing) return; current.editExtras((d) => { d.adventure.gear = d.adventure.gear.filter((x) => x.id !== existing.id); }); router.back(); };
-  return <Sheet title={existing ? 'Edit gear' : 'Add gear'} footer={<Stack gap={10}><Button label="Save" icon="check" onPress={save} />{existing ? <Button label="Remove" icon="trash" kind="white" onPress={remove} /> : null}</Stack>}>
+  return <Sheet title={existing ? 'Edit gear' : 'Add gear'} dirty={dirty} footer={<Stack gap={10}><Button label="Save" icon="check" onPress={save} />{existing ? <Button label="Remove" icon="trash" kind="white" onPress={remove} /> : null}</Stack>}>
     <Field label="Item" value={name} onChangeText={(t) => { setName(t); setError(''); }} icon="trips" placeholder="Down jacket" maxLength={200} error={error} autoFocus={!existing} />
     <Stack gap={8}><FieldLabel>Group</FieldLabel><Chips value={GEAR_GROUPS.indexOf(group)} onChange={(i) => setGroup(GEAR_GROUPS[i])} items={GEAR_GROUPS.map((g) => ({ label: GROUP_LABEL[g], icon: GROUP_ICON[g] }))} /></Stack>
     <Stack gap={8}><FieldLabel>Carried in</FieldLabel><Segmented options={['Porter bag', 'Day pack']} value={bag === 'porter' ? 'Porter bag' : 'Day pack'} onChange={(v) => setBag(v === 'Porter bag' ? 'porter' : 'day')} /></Stack>
@@ -339,6 +355,7 @@ export function AddStageSheet() {
   const [hours, setHours] = useState(existing?.hours ? String(existing.hours) : '');
   const [done, setDone] = useState(existing?.done ?? false);
   const [error, setError] = useState('');
+  const dirty = useDirty([date, from, to, title, startAlt, endAlt, km, hours, done]);
   if (!current) return <Sheet title="Add stage"><EmptyState title="No trip open" body="Open a trip first." /></Sheet>;
   const save = () => {
     if (!to.trim() && !title.trim()) { setError('Where does this stage end?'); return; }
@@ -351,18 +368,18 @@ export function AddStageSheet() {
     router.back();
   };
   const remove = () => { if (!existing) return; current.editExtras((d) => { d.adventure.stages = d.adventure.stages.filter((x) => x.id !== existing.id); }); router.back(); };
-  return <Sheet title={existing ? 'Edit stage' : 'Add stage'} footer={<Stack gap={10}><Button label="Save" icon="check" onPress={save} />{existing ? <Button label="Remove stage" icon="trash" kind="white" onPress={remove} /> : null}</Stack>}>
+  return <Sheet title={existing ? 'Edit stage' : 'Add stage'} dirty={dirty} footer={<SheetActions primary={<Button label="Save" icon="check" onPress={save} />} actions={[!!existing && { icon: 'trash', label: 'Remove stage', onPress: remove, danger: true }]} />}>
     <DateField label="Day" value={date} onChange={setDate} min={current.trip.start} max={current.trip.end} />
     <Field label="From" value={from} onChangeText={setFrom} icon="pin" placeholder="Machame Gate" maxLength={120} />
     <Field label="To" value={to} onChangeText={(t) => { setTo(t); setError(''); }} icon="flag" placeholder="Machame Camp" maxLength={120} error={error} />
     <Field label="Name (optional)" value={title} onChangeText={setTitle} icon="edit" placeholder="Into the rainforest" maxLength={200} />
     <RowView align="flex-start">
-      <Field flex label={`Start, ${ft ? 'ft' : 'm'}`} value={startAlt} onChangeText={setStartAlt} kind="number" icon="mountain" />
-      <Field flex label={`End, ${ft ? 'ft' : 'm'}`} value={endAlt} onChangeText={setEndAlt} kind="number" icon="mountain" />
+      <Field flex label={`Start, ${ft ? 'ft' : 'm'}`} value={startAlt} onChangeText={setStartAlt} kind="count" icon="mountain" placeholder={ft ? '5,900' : '1,800'} />
+      <Field flex label={`End, ${ft ? 'ft' : 'm'}`} value={endAlt} onChangeText={setEndAlt} kind="count" icon="mountain" placeholder={ft ? '9,800' : '3,000'} />
     </RowView>
     <RowView align="flex-start">
-      <Field flex label={ft ? 'Miles' : 'Kilometres'} value={km} onChangeText={setKm} kind="number" icon="walk" />
-      <Field flex label="Hours" value={hours} onChangeText={setHours} kind="number" icon="clock" />
+      <Field flex label={ft ? 'Miles' : 'Kilometres'} value={km} onChangeText={setKm} kind="number" icon="walk" placeholder={ft ? '7' : '11'} />
+      <Field flex label="Hours" value={hours} onChangeText={setHours} kind="number" icon="clock" placeholder="6" />
     </RowView>
     {existing ? <Group><Row icon="check" title="Walked" trailing={<Toggle value={done} onChange={setDone} label="Walked" />} /></Group> : null}
   </Sheet>;
@@ -405,8 +422,8 @@ export function SafetyScreen() {
     <Header title="Safety" right={<RoundButton icon="edit" label="Edit safety details" href="/safety-details" />} />
     <View style={{ backgroundColor: colors.card, borderRadius: radii.hero, overflow: 'hidden', boxShadow: shadows.lift }}>
       <Press href="/trail-map" label="Open route" style={{ height: 160 }}>
-        <SvgXml xml={routeMap} width="100%" height="100%" />
-        <View style={{ position: 'absolute', top: 12, left: 12 }}><Tag text="Saved on this phone" tint="mint" /></View>
+        <SvgXml xml={routeArt('wide', stageHeights([...a.stages].sort((x, y) => x.date.localeCompare(y.date)), a.summitAltitude))} width="100%" height="100%" />
+        {a.stages.length ? <View style={{ position: 'absolute', top: 12, left: 12 }}><Tag text="Saved on this phone" tint="mint" /></View> : null}
       </Press>
       <RowView style={{ justifyContent: 'space-between', padding: 14, paddingHorizontal: 16 }}>
         <View style={{ gap: 2, flex: 1 }}><T v="row" style={{ fontSize: 15 }}>Route</T><T v="meta">{a.stages.length ? `${distance(totalKm, prefs.unit)} over ${plural(a.stages.length, 'stage')}` : 'Add stages to build the route'}</T></View>
@@ -426,7 +443,7 @@ export function SafetyScreen() {
         onPress={() => (a.emergency.phone ? call(a.emergency.phone, a.emergency.name || 'your contact') : router.push('/safety-details' as never))} />
       {a.guide.phone ? <Row icon="users" title={`Guide · ${a.guide.name || a.guide.phone}`} meta={a.guide.phone} onPress={() => call(a.guide.phone, a.guide.name || 'your guide')} /> : null}
       <Row icon="heart" title="Altitude check-in" meta={last ? `Last ${shortDay(last.at.slice(0, 10))} · SpO₂ ${last.spo2}%` : 'Log oxygen, pulse and symptoms each evening'} href="/altitude-check-in" />
-      <Row icon="bell" title="Evening reminder" meta="19:30 on each day of the trek" trailing={<Toggle value={a.checkInReminders} onChange={(on) => void reminders(on)} label="Evening check-in reminder" />} />
+      <Row icon="bell" title="Evening reminder" meta={`${planTime('19:30')} on each day of the trek`} trailing={<Toggle value={a.checkInReminders} onChange={(on) => void reminders(on)} label="Evening check-in reminder" />} />
     </Group>
     {checkIns.length ? <Section title="Check-ins">
       <Group>{checkIns.slice(0, 7).map((c) => <Row key={c.id} icon="heart" tint={assess(c).tint} title={`SpO₂ ${c.spo2}% · ${c.heartRate} bpm`}
@@ -451,6 +468,7 @@ export function SafetyDetailsSheet() {
   const [relation, setRelation] = useState(a?.emergency.relation ?? '');
   const [contactPhone, setContactPhone] = useState(a?.emergency.phone ?? '');
   const [rescue, setRescue] = useState(a?.rescuePhone ?? '');
+  const dirty = useDirty([summitName, summitAlt, porter, guideName, guidePhone, contactName, relation, contactPhone, rescue]);
   if (!current) return <Sheet title="Summit and safety"><EmptyState title="No trip open" body="Open a trip first." /></Sheet>;
   const save = () => {
     current.editExtras((d) => {
@@ -463,7 +481,7 @@ export function SafetyDetailsSheet() {
     });
     router.back();
   };
-  return <Sheet title="Summit and safety" footer={<Button label="Save" icon="check" onPress={save} />}>
+  return <Sheet title="Summit and safety" dirty={dirty} footer={<Button label="Save" icon="check" onPress={save} />}>
     <Section title="Summit">
       <Field label="Name" value={summitName} onChangeText={setSummitName} icon="flag" placeholder="Uhuru Peak" maxLength={120} />
       <RowView align="flex-start">
@@ -511,6 +529,7 @@ export function AltitudeCheckInSheet() {
   const [hr, setHr] = useState(last?.heartRate ?? 72);
   const [score, setScore] = useState(0);
   const [note, setNote] = useState('');
+  const dirty = useDirty([spo2, hr, score, note]);
   if (!current) return <Sheet title="Altitude check-in"><EmptyState title="No trip open" body="Open a trip first." /></Sheet>;
   const alt = stage?.endAltitude ?? 0;
   const result = assess({ spo2, score, altitude: alt });
@@ -518,7 +537,7 @@ export function AltitudeCheckInSheet() {
     current.editExtras((d) => { d.adventure.checkIns.push({ id: uid(), at: new Date().toISOString(), altitude: alt, spo2, heartRate: hr, score, note: note.trim().slice(0, 500) }); });
     router.back();
   };
-  return <Sheet title="Altitude check-in" footer={<Button label="Save check-in" icon="check" onPress={save} />}>
+  return <Sheet title="Altitude check-in" dirty={dirty} footer={<Button label="Save check-in" icon="check" onPress={save} />}>
     <RowView gap={12} style={{ paddingHorizontal: 4, flexWrap: 'wrap' }}>
       <Tag text={stage ? `${stage.to || stage.title || shortDay(stage.date)}${alt ? ` · ${altitude(alt, prefs.unit)}` : ''}` : longDay(today)} tint="lavender" />
     </RowView>
@@ -560,7 +579,7 @@ export function TrailMapScreen() {
   const walked = stages.filter((s) => s.done).length;
   const climb = stage ? stage.endAltitude - stage.startAltitude : 0;
   return <View style={{ flex: 1, backgroundColor: tints.lavender.bg }}>
-    <SvgXml xml={routeMapTall} width="100%" height="100%" style={{ position: 'absolute' }} />
+    <SvgXml xml={routeArt('tall', stageHeights(stages, current?.extras.adventure.summitAltitude), stages.length ? index : -1)} width="100%" height="100%" style={{ position: 'absolute' }} />
     <RowView style={{ position: 'absolute', top: insets.top + 10, left: 16, right: 16, justifyContent: 'space-between' }}>
       <RoundButton icon="back" back label="Back" />
       <View style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: radii.button, backgroundColor: colors.card, boxShadow: shadows.button, flexShrink: 1 }}>
@@ -570,10 +589,10 @@ export function TrailMapScreen() {
     </RowView>
     <View style={{ position: 'absolute', left: 16, right: 16, bottom: insets.bottom + 16, gap: 10 }}>
       {stages.length && stage ? <>
-        <RowView gap={8} style={{ flexWrap: 'wrap' }}>{stages.map((s, i) => <Pressable key={s.id} accessibilityRole="button" accessibilityState={{ selected: i === index }} accessibilityLabel={`Stage ${i + 1}, ${shortDay(s.date)}`} onPress={() => setPicked(i)}
+        {stages.length > 1 ? <RowView gap={8} style={{ flexWrap: 'wrap' }}>{stages.map((s, i) => <Pressable key={s.id} accessibilityRole="button" accessibilityState={{ selected: i === index }} accessibilityLabel={`Stage ${i + 1}, ${shortDay(s.date)}`} onPress={() => setPicked(i)}
           style={{ minWidth: 44, minHeight: 44, justifyContent: 'center', paddingHorizontal: 10, borderRadius: radii.tile, alignItems: 'center', backgroundColor: i === index ? colors.inkButton : colors.card, boxShadow: shadows.button }}>
           <T v="meta" color={i === index ? '#FFFFFF' : s.done ? colors.stone : colors.ink} style={{ fontFamily: fonts.semibold }}>D{i + 1}</T>
-        </Pressable>)}</RowView>
+        </Pressable>)}</RowView> : null}
         <Card lifted padding={18} style={{ borderRadius: radii.hero }}>
           <RowView align="flex-start" style={{ justifyContent: 'space-between' }}>
             <View style={{ gap: 2, flex: 1 }}>

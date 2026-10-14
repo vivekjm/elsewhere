@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import Animated, { Easing, ReduceMotion, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
+import React from 'react';
+import Animated, { useAnimatedProps } from 'react-native-reanimated';
+import { useEased } from './motion';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop, SvgXml } from 'react-native-svg';
 import { iconPaths, type IconName } from './iconPaths';
@@ -62,11 +63,10 @@ export function Ring({ pct, size = 64, thickness = 7, color = '#FFFFFF', track =
 }) {
   const r = (size - thickness) / 2;
   const c = 2 * Math.PI * r;
-  const shown = useSharedValue(0);
-  useEffect(() => {
-    shown.value = withTiming(Math.max(0, Math.min(100, pct)), { duration: 800, easing: Easing.out(Easing.cubic), reduceMotion: ReduceMotion.System });
-  }, [pct, shown]);
-  const arc = useAnimatedProps(() => ({ strokeDasharray: [(c * shown.value) / 100, c] }));
+  // Complete on the first frame; eases only when the value changes.
+  const shown = useEased(Math.max(0, Math.min(100, pct)));
+  // At 0% a round cap would still draw a dot; hide the arc until there is some progress.
+  const arc = useAnimatedProps(() => ({ strokeDasharray: [(c * shown.value) / 100, c], strokeOpacity: shown.value > 0.5 ? 1 : 0 }));
   return <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
     <Svg width={size} height={size} style={{ position: 'absolute' }}>
       <Circle cx={size / 2} cy={size / 2} r={r - thickness / 2} fill={inner} />

@@ -6,9 +6,10 @@ import { Icon, type IconName } from './graphics';
 import { colors, fonts, radii, shadows } from './tokens';
 import { FieldLabel } from './ui';
 
-function Shell({ label, icon, flex, children, onPress, a11y }: { label: string; icon: IconName; flex?: boolean; children: React.ReactNode; onPress?: () => void; a11y: string }) {
-  const body = <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 56, paddingHorizontal: 16, paddingRight: Platform.OS === 'ios' ? 8 : 16, borderRadius: radii.field, backgroundColor: colors.card, boxShadow: shadows.rest }}>
-    <Icon name={icon} size={18} color={colors.stone} />
+function Shell({ label, icon, flex, children, onPress, a11y, bare }: { label: string; icon: IconName; flex?: boolean; children: React.ReactNode; onPress?: () => void; a11y: string; bare?: boolean }) {
+  // `bare`: a half-width field holding the native date pill, which is too wide to share the row with an icon.
+  const body = <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 56, paddingHorizontal: bare ? 6 : 16, paddingRight: bare ? 6 : Platform.OS === 'ios' ? 8 : 16, justifyContent: bare ? 'center' : undefined, borderRadius: radii.field, backgroundColor: colors.card, boxShadow: shadows.rest }}>
+    {bare ? null : <Icon name={icon} size={18} color={colors.stone} />}
     {children}
   </View>;
   return <View style={[{ gap: 6 }, flex ? { flex: 1 } : null]}>
@@ -25,8 +26,8 @@ export function DateField({ label, value, onChange, min, max, flex }: { label: s
   const date = toDate(value || fromDate(new Date()));
   const handle = (_: unknown, picked?: Date) => { if (picked) onChange(fromDate(picked)); };
   if (Platform.OS === 'ios') {
-    return <Shell label={label} icon="calendar" flex={flex} a11y={`${label}: ${shortDay(value)}`}>
-      <View style={{ flex: 1 }} />
+    return <Shell label={label} icon="calendar" flex={flex} bare={flex} a11y={`${label}: ${shortDay(value)}`}>
+      {flex ? null : <View style={{ flex: 1 }} />}
       <DateTimePicker value={date} mode="date" display="compact" onValueChange={handle} accentColor={colors.ember}
         minimumDate={min ? toDate(min) : undefined} maximumDate={max ? toDate(max) : undefined} accessibilityLabel={label} />
     </Shell>;

@@ -5,10 +5,14 @@
 import { useMemo } from 'react';
 import { useRouter as useExpoRouter } from 'expo-router';
 
+/** Set while the app itself closes a screen (after Save or Delete), so an unsaved-changes guard lets it through. */
+let intentional = 0;
+export const closingOnPurpose = () => Date.now() - intentional < 800;
+
 export function useRouter() {
   const router = useExpoRouter();
   return useMemo(() => ({
     ...router,
-    back: () => (router.canGoBack() ? router.back() : router.replace('/home' as never)),
+    back: () => { intentional = Date.now(); return router.canGoBack() ? router.back() : router.replace('/home' as never); },
   }), [router]);
 }

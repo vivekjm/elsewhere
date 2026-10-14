@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700Bold, useFonts } from '@expo-google-fonts/figtree';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as SystemUI from 'expo-system-ui';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { SafeAreaFrameContext, SafeAreaInsetsContext, SafeAreaProvider } from 'react-native-safe-area-context';
@@ -14,6 +15,9 @@ import { DEV_FRAME, DEV_PREVIEW } from '../src/devStart';
 import { Button, colors, Loading, T } from '../src/loom';
 
 void SplashScreen.preventAutoHideAsync().catch(() => { /* Already hidden in a fast refresh. */ });
+// The window behind every screen. iOS shows it for a frame at the start of a zoom transition and in sheet
+// corners; left at its default it flashed black.
+void SystemUI.setBackgroundColorAsync(colors.canvas).catch(() => {});
 
 export { AppErrorBoundary as ErrorBoundary };
 

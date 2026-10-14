@@ -5,12 +5,14 @@ import { useRouter } from '../core/nav';
 import * as WebBrowser from 'expo-web-browser';
 import { reportError, useCurrentTrip, usePrefs, useSelection, useTrips } from '../core/state';
 import { ACTIVITY_TYPES, blankDay, EXPENSE_CATEGORIES, safeLink, TRIP_KINDS, TRIP_MOODS, tripDates, uid, useExtras, type Activity, type Trip, type TripKind } from '../data';
-import { clockTime, dateRange, dayOfMonth, daysFromToday, localDay, longDay, money, plural, shortDay, todayISO, weekday } from '../domain/format';
+import { clockTime, dateRange, planTimes, dayOfMonth, daysFromToday, localDay, longDay, money, plural, shortDay, todayISO, weekday } from '../domain/format';
 import { budgetOf, CATEGORY, convert, EXPENSE_LABEL, countdownLabel, coverOf, KIND_LABEL, KIND_MOOD, KIND_TINT, MOOD_ART, MOOD_LABEL, packingOf, planArt, plannedDays, plansOn, statusOf, type Mood } from '../domain/trips';
 import {
   CoverParallax,
   Button, Card, Checkbox, Chips, colors, CurrencyField, Dashed, DateField, EmptyState, Field, FieldLabel, fonts, Group, Header, Hero, HeroRule, HeroText, Icon,
   Illustration, Loading, MediaRow, Note, PlaceField, radii, RoundButton, Row, RowView, Screen, Section, shadows, Sheet, Stack, Swatches, T, Tag, TimeField, Toggle,
+  SheetActions,
+  useDirty,
 } from '../loom';
 import { useRates } from '../services/currency';
 import { exportCalendar, exportItineraryPDF, exportTravelBook } from '../services/exports';
@@ -70,19 +72,19 @@ export function TripScreen() {
     </View>
     </Link.AppleZoomTarget>
     <Stack>
-      {status.phase === 'past' ? <MediaRow index={0} ill="compass" eyebrow="Recap" tint="peach" title="How was it?" meta="Highlights, totals and your rating" href="/recap" /> : null}
-      {extras.kind === 'trek' ? <MediaRow index={1} ill="summit" eyebrow="Adventure" tint="mint" title="Route, gear and safety" meta="Stages, porter bag, check-ins" onPress={() => router.replace('/adventure' as never)} /> : null}
-      <MediaRow index={2} ill="suitcase" eyebrow="Packing" tint="mint" title={pack?.total ? `${pack.packed} of ${pack.total} packed` : 'Start your list'}
-        meta={pack?.total ? `${(pack.packedGrams / 1000).toFixed(1)} kg packed${trip.weightLimit ? ` of ${trip.weightLimit} kg` : ''}` : 'Outfits and essentials add themselves'} href="/trip/packing" />
-      <MediaRow index={3} ill="receipt" eyebrow="Budget" tint="rose" title={budget.limit ? `${money(budget.planned, trip.currency)} of ${money(budget.limit, trip.currency)}` : budget.planned ? `${money(budget.planned, trip.currency)} planned` : 'No budget yet'}
+      {status.phase === 'past' ? <MediaRow ill="compass" eyebrow="Recap" tint="peach" title="How was it?" meta="Highlights, totals and your rating" href="/recap" /> : null}
+      {extras.kind === 'trek' ? <MediaRow ill="summit" eyebrow="Adventure" tint="mint" title="Route, gear and safety" meta="Stages, porter bag, check-ins" onPress={() => router.replace('/adventure' as never)} /> : null}
+      <MediaRow ill="suitcase" eyebrow="Packing" tint="mint" title={pack?.total ? `${pack.packed} of ${pack.total} packed` : 'Start your list'}
+        meta={pack?.total ? (pack.packedGrams || trip.weightLimit ? `${(pack.packedGrams / 1000).toFixed(1)} kg packed${trip.weightLimit ? ` of ${trip.weightLimit} kg` : ''}` : `${pack.total - pack.packed} still to pack`) : 'Outfits and essentials add themselves'} href="/trip/packing" />
+      <MediaRow ill="receipt" eyebrow="Budget" tint="rose" title={budget.limit ? `${money(budget.planned, trip.currency)} of ${money(budget.limit, trip.currency)}` : budget.planned ? `${money(budget.planned, trip.currency)} planned` : 'No budget yet'}
         meta={budget.spent ? `${money(budget.spent, trip.currency)} spent so far` : 'Plans with a price and expenses count here'} href="/trip/budget" />
-      <MediaRow index={4} ill="peaks" eyebrow="Map" tint="mint" title="Your places on a map" meta="Day routes, check-ins, save for offline" href="/trip/map" />
-      <MediaRow index={5} ill="compass" eyebrow="Essentials" tint="lavender" title={`Local time, plugs and money`} meta="Emergency number, driving side, tipping" href="/essentials" />
-      <MediaRow index={6} ill="passport" eyebrow="Documents" tint="lavender" title={extras.documents.length ? plural(extras.documents.length, 'document') : 'No documents yet'}
+      <MediaRow ill="peaks" eyebrow="Map" tint="mint" title="Your places on a map" meta="Day routes, check-ins, save for offline" href="/trip/map" />
+      <MediaRow ill="compass" eyebrow="Essentials" tint="lavender" title={`Local time, plugs and money`} meta="Emergency number, driving side, tipping" href="/essentials" />
+      <MediaRow ill="passport" eyebrow="Documents" tint="lavender" title={extras.documents.length ? plural(extras.documents.length, 'document') : 'No documents yet'}
         meta={extras.documents.length ? extras.documents.slice(0, 2).map((d) => d.title).join(' · ') : 'Tickets, bookings, insurance'} href="/trip/documents" />
-      <MediaRow index={7} ill="stay" eyebrow="People" tint="peach" title={extras.people.length ? `You and ${plural(extras.people.length, 'other')}` : trip.travellers > 1 ? plural(trip.travellers, 'traveller') : 'Just you'}
+      <MediaRow ill="stay" eyebrow="People" tint="peach" title={extras.people.length ? `You and ${plural(extras.people.length, 'other')}` : trip.travellers > 1 ? plural(trip.travellers, 'traveller') : 'Just you'}
         meta={trip.travellers > extras.people.length + 1 ? `Add ${trip.travellers - extras.people.length - 1 === 1 ? 'their name' : 'their names'} to split costs and vote` : extras.people.length ? 'Split costs and vote on plans' : 'Add friends to split costs'} href="/people" />
-      {extras.kind === 'dive' || extras.kind === 'beach' ? <MediaRow index={8} ill="tide" eyebrow="Tides & dives" tint="mint" title="Tides & stops" meta="Tide curve and dive log" href="/trip/tides" /> : null}
+      {extras.kind === 'dive' || extras.kind === 'beach' ? <MediaRow ill="tide" eyebrow="Tides" tint="mint" title={extras.kind === 'dive' ? 'Tides and your dive log' : 'Today’s tides'} meta={extras.kind === 'dive' ? 'Best windows to dive, and every dive logged' : 'High and low water for each beach day'} href="/trip/tides" /> : null}
     </Stack>
   </Screen>;
 }
@@ -221,6 +223,7 @@ export function EditTripSheet() {
   const router = useRouter();
   const [draft, setDraft] = useState<TripDraft | null>(current ? draftFromTrip(current.trip, current.extras.kind) : null);
   const [errors, setErrors] = useState<TripErrors>({});
+  const dirty = useDirty([draft]);
   if (!current || !draft) return <Sheet title="Edit trip"><EmptyState title="No trip" body="Open a trip first." /></Sheet>;
   const save = () => {
     const e = validateTrip(draft);
@@ -239,7 +242,7 @@ export function EditTripSheet() {
       ]);
     } else commit();
   };
-  return <Sheet title="Edit trip" footer={<Button label="Save" icon="check" onPress={save} />}>
+  return <Sheet title="Edit trip" dirty={dirty} footer={<Button label="Save" icon="check" onPress={save} />}>
     <TripForm draft={draft} set={(patch) => setDraft({ ...draft, ...patch })} errors={errors} />
   </Sheet>;
 }
@@ -276,7 +279,11 @@ export function DayStrip({ dates, value, onChange, weather }: { dates: string[];
         style={{ width: 54, paddingTop: 10, paddingBottom: 8, borderRadius: radii.tile, alignItems: 'center', gap: 1, backgroundColor: on ? colors.inkButton : colors.card, boxShadow: shadows.button, borderWidth: d === today && !on ? 1.5 : 0, borderColor: colors.ember }}>
         <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: fonts.medium, fontSize: 11, color: on ? 'rgba(255,255,255,0.7)' : '#8A8A8A' }}>{weekday(d)}</Text>
         <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: fonts.semibold, fontSize: 18, color: on ? '#FFFFFF' : colors.ink }}>{dayOfMonth(d)}</Text>
-        {weather?.[d] ? <Icon name={weatherIcon(weather[d].code)} size={12} color={on ? '#FFFFFF' : colors.stone} /> : <View style={{ height: 12 }} />}
+        {/* One fixed slot whether or not the forecast has arrived: swapping an icon for a flattened spacer
+            changed the native child order mid-animation and crashed (unmount index mismatch). */}
+        <View collapsable={false} style={{ height: 12, width: 12 }}>
+          {weather?.[d] ? <Icon name={weatherIcon(weather[d].code)} size={12} color={on ? '#FFFFFF' : colors.stone} /> : null}
+        </View>
       </Pressable>;
     })}
   </ScrollView>;
@@ -309,7 +316,7 @@ export function DaysScreen() {
       <View style={{ flex: 1 }}><T v="section">{longDay(day)}</T><T v="meta">Day {dates.indexOf(day) + 1} of {dates.length}{info?.title ? ` · ${info.title}` : ''}</T></View>
       {wx ? <RowView gap={6}><Icon name={weatherIcon(wx.code)} size={18} color={colors.stone} /><T v="small" style={{ fontSize: 14 }}>{t(wx.high)} / {t(wx.low)}{wx.typical ? ' · usually' : ''}</T></RowView> : null}
     </RowView>
-    {plans.length ? <Stack>{plans.map((a, i) => <MediaRow index={i} key={a.id} ill={planArt(trip, a)} eyebrow={`${CATEGORY[a.category].label}${a.time ? ` · ${a.time}${a.endTime ? `–${a.endTime}` : ''}` : ''}`} tint={CATEGORY[a.category].tint}
+    {plans.length ? <Stack>{plans.map((a, i) => <MediaRow key={a.id} ill={planArt(trip, a)} eyebrow={`${CATEGORY[a.category].label}${a.time ? ` · ${planTimes(a.time, a.endTime)}` : ''}`} tint={CATEGORY[a.category].tint}
       title={a.title} meta={[a.place, a.cost ? money(a.cost, trip.currency) : ''].filter(Boolean).join(' · ') || 'Tap to add details'}
       onPress={() => router.push({ pathname: '/add-plan', params: { id: a.id } } as never)}
       trailing={<Pressable accessibilityRole="checkbox" accessibilityState={{ checked: !!a.completed }} accessibilityLabel={`${a.title} done`} hitSlop={10} onPress={() => toggleDone(a)}><Checkbox checked={!!a.completed} /></Pressable>} />)}</Stack>
@@ -338,6 +345,7 @@ export function DaySheet() {
   const [title, setTitle] = useState(info?.title ?? '');
   const [notes, setNotes] = useState(info?.notes ?? '');
   const [allNights, setAllNights] = useState(false);
+  const dirty = useDirty([stay, title, notes, allNights]);
   if (!current) return <Sheet title="Day"><EmptyState title="No trip" body="Open a trip first." /></Sheet>;
   const save = () => {
     if (current.editTrip((t) => {
@@ -346,7 +354,7 @@ export function DaySheet() {
       t.days[date] = { ...(t.days[date] ?? blankDay()), stay: stay.trim().slice(0, 200), title: title.trim().slice(0, 200), notes: notes.slice(0, 5000) };
     })) router.back();
   };
-  return <Sheet title={longDay(date)} footer={<Button label="Save" icon="check" onPress={save} />}>
+  return <Sheet title={longDay(date)} dirty={dirty} footer={<Button label="Save" icon="check" onPress={save} />}>
     <Field label="Where you’re staying" value={stay} onChangeText={setStay} icon="bed" placeholder="Hotel, flat, refuge…" maxLength={200} />
     {date < current.trip.end ? <Group><Row icon="calendar" title="Same stay for the rest of the trip" meta="Fills every later night" trailing={<Toggle value={allNights} onChange={setAllNights} label="Same stay for later nights" />} /></Group> : null}
     <Field label="Day title" value={title} onChangeText={setTitle} icon="edit" placeholder="Arrival day, a day at the beach" maxLength={200} />
@@ -374,6 +382,7 @@ export function AddPlanSheet() {
   const [notes, setNotes] = useState(existing?.notes ?? '');
   const [done, setDone] = useState(!!existing?.completed);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const dirty = useDirty([title, category, date, time, endTime, place, cost, link, notes, done]);
   if (!current) return <Sheet title="Add a plan"><EmptyState title="No trip" body="Open a trip first." /></Sheet>;
   const { trip, editTrip } = current;
   const save = () => {
@@ -398,12 +407,11 @@ export function AddPlanSheet() {
   const remove = () => Alert.alert('Delete this plan?', existing?.title, [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => {
     if (editTrip((t) => { t.activities = t.activities.filter((a) => a.id !== existing!.id); })) router.back();
   } }]);
-  return <Sheet title={existing ? 'Edit plan' : 'Add a plan'} footer={<Stack gap={10}>
-    <Button label={existing ? 'Save' : `Add to ${weekday(date)}`} icon={existing ? 'check' : 'plus'} onPress={save} />
-    {existing && isFlightPlan({ category, title, notes }) ? <Button label="Live flight status" icon="plane" kind="white" onPress={() => router.push({ pathname: '/flight', params: { id: existing.id } } as never)} /> : null}
-    {existing && place.trim() ? <Button label="Directions" icon="map" kind="white" onPress={() => void openRoute([place], current.trip.destination.split(',')[0].trim()).catch((e) => reportError(e, 'Couldn’t open Maps'))} /> : null}
-    {existing ? <Button label="Delete plan" icon="trash" kind="white" onPress={remove} /> : null}
-  </Stack>}>
+  return <Sheet title={existing ? 'Edit plan' : 'Add a plan'} dirty={dirty} footer={<SheetActions primary={<Button label={existing ? 'Save' : `Add to ${weekday(date)}`} icon={existing ? 'check' : 'plus'} onPress={save} />} actions={[
+    !!existing && isFlightPlan({ category, title, notes }) && { icon: 'plane', label: 'Live flight status', onPress: () => router.push({ pathname: '/flight', params: { id: existing.id } } as never) },
+    !!existing && !!place.trim() && { icon: 'map', label: 'Directions', onPress: () => void openRoute([place], current.trip.destination.split(',')[0].trim()).catch((e) => reportError(e, 'Couldn’t open Maps')) },
+    !!existing && { icon: 'trash', label: 'Delete plan', onPress: remove, danger: true },
+  ]} />}>
     <Field label="What" value={title} onChangeText={(v) => { setTitle(v); setErrors({ ...errors, title: '' }); if (!picked) { const g = guessPlanKind(v); if (g) setCategory(g); } }} icon="edit" placeholder="Museum visit, dinner, a walking tour" maxLength={200} error={errors.title} autoFocus={!existing} />
     <Stack gap={8}><FieldLabel>Kind</FieldLabel><Chips value={ACTIVITY_TYPES.indexOf(category)} onChange={(i) => { setPicked(true); setCategory(ACTIVITY_TYPES[i]); }} items={ACTIVITY_TYPES.map((k) => ({ label: CATEGORY[k].label, icon: CATEGORY[k].icon }))} /></Stack>
     <DateField label="Day" value={date} onChange={setDate} min={trip.start} max={trip.end} />
@@ -442,7 +450,10 @@ export function RecapScreen() {
   const outfits = new Set(Object.values(trip.days).map((d) => d.outfitId).filter(Boolean)).size;
   const done = trip.activities.filter((a) => a.completed);
   const highlights = (done.length ? done : trip.activities).filter((a) => a.category === 'Explore' || a.category === 'Event' || a.category === 'Food & drink').slice(0, 4);
-  const stat = (value: string, label: string) => <View style={{ flex: 1, gap: 2 }}><HeroText v="title" style={{ fontSize: 22, letterSpacing: -0.4 }}>{value}</HeroText><HeroText v="meta" style={{ opacity: 0.85 }}>{label}</HeroText></View>;
+  // One line per number: long totals ("₹1,21,900") shrink to fit instead of wrapping mid-number.
+  const stat = (value: string, label: string, wide?: boolean) => <View style={{ flex: wide ? 1.6 : 1, gap: 2, minWidth: 0 }}>
+    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} maxFontSizeMultiplier={1.4} style={{ fontFamily: fonts.semibold, fontSize: 22, letterSpacing: -0.4, color: '#FFFFFF' }}>{value}</Text>
+    <HeroText v="meta" lines={1} style={{ opacity: 0.85 }}>{label}</HeroText></View>;
   return <Screen>
     <Header title="Recap" right={<RoundButton icon="share" label="Share itinerary PDF" onPress={() => void exportItineraryPDF(trip).catch((e) => reportError(e, 'Couldn’t share'))} />} />
     <Hero>
@@ -455,7 +466,7 @@ export function RecapScreen() {
         <Illustration name={coverOf(trip)} width={84} height={84} radius={radii.card} />
       </RowView>
       <HeroRule />
-      <RowView gap={8}>{stat(String(st.totalDays), st.totalDays === 1 ? 'day' : 'days')}{stat(String(trip.activities.length), 'plans')}{stat(String(outfits), 'outfits')}{stat(money(budget.planned, trip.currency, true), 'total')}</RowView>
+      <RowView gap={8}>{stat(String(st.totalDays), st.totalDays === 1 ? 'day' : 'days')}{stat(String(trip.activities.length), 'plans')}{stat(String(outfits), 'outfits')}{stat(money(budget.planned, trip.currency, true), 'total', true)}</RowView>
     </Hero>
     <Card>
       <RowView style={{ justifyContent: 'space-between' }}>
@@ -466,7 +477,7 @@ export function RecapScreen() {
       <Field label="A note for next time" value={note} onChangeText={setNote} onBlur={() => editExtras((d) => { d.recapNote = note; })} multiline maxLength={2000} placeholder="What you’d do again, or differently" />
     </Card>
     {highlights.length ? <Section title="Highlights">
-      <Stack>{highlights.map((a, i) => <MediaRow index={i} key={a.id} ill={planArt(trip, a)} eyebrow={longDay(a.date)} tint={CATEGORY[a.category].tint} title={a.title} meta={a.place || CATEGORY[a.category].label} trailing={null} />)}</Stack>
+      <Stack>{highlights.map((a, i) => <MediaRow key={a.id} ill={planArt(trip, a)} eyebrow={longDay(a.date)} tint={CATEGORY[a.category].tint} title={a.title} meta={a.place || CATEGORY[a.category].label} trailing={null} />)}</Stack>
     </Section> : null}
     {budget.limit ? <Note>Budget {money(budget.limit, trip.currency)} · {budget.remaining >= 0 ? `${money(budget.remaining, trip.currency)} under` : `${money(-budget.remaining, trip.currency)} over`}</Note> : null}
     {extras.journal.length ? <Section title="Where you went">

@@ -11,7 +11,7 @@ import { Camera, GeoJSONSource, Layer, Map, Marker, OfflineManager, type CameraR
 import { useRouter } from '../core/nav';
 import { reportError, useCurrentTrip, useTrips } from '../core/state';
 import { tripDates, uid, type Activity } from '../data';
-import { clockTime, localDay, longDay, shortDay, weekday } from '../domain/format';
+import { clockTime, localDay, longDay, planTime, shortDay, weekday } from '../domain/format';
 import { plansOn, sortPlans } from '../domain/trips';
 import { Button, Card, colors, EmptyState, fonts, Header, HScroll, Icon, Loading, Note, Pill, radii, RowView, Screen, shadows, Stack, T, tints } from '../loom';
 import { bearing, flightStatus, parseFlightNumber, type FlightStatus } from '../services/flights';
@@ -181,7 +181,7 @@ export function TripMapScreen() {
       {stops.map((s, i) => <Pressable key={s.a.id} accessibilityRole="button" accessibilityLabel={`Open ${s.a.title}`} onPress={() => router.push({ pathname: '/add-plan', params: { id: s.a.id } } as never)}>
         <RowView gap={12}>
           <Pin label={String(i + 1)} color={colors.ember} />
-          <View style={{ flex: 1 }}><T v="row" style={{ fontSize: 15 }} lines={1}>{s.a.title}</T><T v="meta" lines={1}>{[day ? '' : shortDay(s.a.date), s.a.time, s.a.place].filter(Boolean).join(' · ')}</T></View>
+          <View style={{ flex: 1 }}><T v="row" style={{ fontSize: 15 }} lines={1}>{s.a.title}</T><T v="meta" lines={1}>{[day ? '' : shortDay(s.a.date), planTime(s.a.time), s.a.place].filter(Boolean).join(' · ')}</T></View>
           {i > 0 ? <T v="meta">{distanceKm(stops[i - 1].at, s.at).toFixed(1)} km</T> : null}
         </RowView>
       </Pressable>)}
@@ -249,7 +249,7 @@ export function FlightScreen() {
   const live = status?.live;
   const phaseText = !status ? 'Couldn’t reach flight data. Check your connection.' :
     status.phase === 'airborne' ? (status.etaMinutes ? `In the air · lands in about ${fmtMinutes(status.etaMinutes)}` : 'In the air') :
-    status.phase === 'scheduled' ? `Scheduled · departs ${longDay(plan.date)} at ${plan.time}` :
+    status.phase === 'scheduled' ? `Scheduled · departs ${longDay(plan.date)} at ${planTime(plan.time)}` :
     status.phase === 'landed' ? 'Probably landed' : live?.onGround ? 'On the ground' : 'Not tracked right now';
   const line = r ? { type: 'Feature' as const, properties: {}, geometry: { type: 'LineString' as const, coordinates: [[r.origin.lng, r.origin.lat], [r.destination.lng, r.destination.lat]] } } : null;
   const bounds = r ? boundsOf([r.origin, r.destination, ...(live ? [live] : [])], 80) : live ? boundsOf([live], 200) : null;
@@ -258,7 +258,7 @@ export function FlightScreen() {
     <Header title={status?.number ?? 'Flight'} />
     <Card padding={16} gap={6}>
       <T v="eyebrow">{r?.airline ?? 'Flight'}</T>
-      <T v="title">{r ? `${r.origin.iata} → ${r.destination.iata}` : plan.title}</T>
+      <T v="title">{r ? `${r.origin.iata} → ${r.destination.iata}` : status?.mismatch ? `${status.mismatch.from} → ${status.mismatch.to}` : plan.title}</T>
       {r ? <T v="small">{r.origin.city || r.origin.name} to {r.destination.city || r.destination.name}</T> : null}
       <RowView gap={8} style={{ marginTop: 6 }}><Icon name="plane" size={16} color={status?.phase === 'airborne' ? colors.ember : colors.stone} /><T v="row" style={{ fontSize: 15, flex: 1 }}>{phaseText}</T></RowView>
     </Card>
@@ -279,6 +279,7 @@ export function FlightScreen() {
       {status?.progress != null ? <View style={{ height: 6, borderRadius: 3, backgroundColor: colors.rule, overflow: 'hidden' }}><View style={{ width: `${Math.round(status.progress * 100)}%`, height: 6, backgroundColor: colors.ember }} /></View> : null}
       <T v="meta">{[live.aircraft, live.registration].filter(Boolean).join(' · ')}{checkedAt ? ` · updated ${clockTime(checkedAt.toISOString())}` : ''}</T>
     </Card> : null}
+    {status?.mismatch ? <Note>{status.number} usually flies {status.mismatch.usual}, not the {status.mismatch.from} → {status.mismatch.to} in your plan, so live tracking is off to avoid showing the wrong plane. Check the flight number on your booking.</Note> : null}
     <Note>Live positions come from volunteer ADS-B receivers (adsb.lol) and routes from adsbdb. Gate, delay and baggage details aren’t included; check your airline’s app for those.</Note>
   </Screen>;
 }

@@ -15,15 +15,16 @@ import {
   CATEGORIES, CURRENCIES, DOCUMENT_KINDS, EXPENSE_CATEGORIES, EXTRA_CATEGORIES, ME, packing, tripDates, uid, useWorkspace,
   type DocumentKind, type Expense, type ExpenseCategory, type Extra, type Item, type PackRow,
 } from '../data';
-import { dayOfMonth, initials, longDay, money, plural, shortDay, todayISO, weekday, weight } from '../domain/format';
+import { dayOfMonth, initials, longDay, money, planTime, plural, shortDay, todayISO, weekday, weight } from '../domain/format';
 import { applyStyle, combinations, styleTrip } from '../domain/stylist';
 import { budgetOf, convert, EXPENSE_ICON, EXPENSE_LABEL, EXPENSE_TINT, nameOf } from '../domain/trips';
 import {
   Avatar, Bars, Button, Card, Checkbox, CheckToggle, Chips, colors, CurrencyField, DateField, EmptyState, Field, FieldLabel, fonts, Group, Header, Hero, HeroText,
   Icon, IconTile, Loading, Note, Press, Progress, Radio, radii, Ring, RoundButton, Row, RowView, Screen, Section, Segmented, shadows, Sheet, Stack, SwatchRow, T, Tag,
-  tints, type IconName, CountUp, VARIANTS, enterItem, haptic, listLayout, PressScale,
+  tints, type IconName, HScroll, haptic, PressScale,
+  SheetActions,
+  useDirty,
 } from '../loom';
-import Animated, { FadeIn, FadeOut, FadeOutLeft } from 'react-native-reanimated';
 import { convertLabel, useRates } from '../services/currency';
 import { tides, type TideDay } from '../services/outdoors';
 import { summary, useTripWeather, weatherIcon } from '../services/weather';
@@ -59,7 +60,7 @@ export function WardrobeScreen() {
   for (let i = 0; i < items.length; i += 2) pairs.push(items.slice(i, i + 2));
   return <Screen bar="tabs">
     <Header title="Wardrobe" right={<RoundButton icon="plus" dark label="Add a piece" href="/add-piece" />} />
-    <Chips value={filter} onChange={setFilter} items={filters.map((c) => ({ label: c ? `${c} · ${workspace.items.filter((i) => i.category === c).length}` : `All · ${workspace.items.length}` }))} />
+    {workspace.items.length ? <Chips value={filter} onChange={setFilter} items={filters.map((c) => ({ label: c ? `${c} · ${workspace.items.filter((i) => i.category === c).length}` : `All · ${workspace.items.length}` }))} /> : null}
     {workspace.items.length ? <Press href="/trip/stylist" label="AI stylist" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14, paddingHorizontal: 16, borderRadius: radii.card, backgroundColor: colors.inkButton, boxShadow: shadows.dark }}>
       <IconTile icon="sparkle" bg="rgba(255,255,255,0.14)" color="#FFFFFF" />
       <View style={{ flex: 1, gap: 2 }}><T v="row" style={{ fontSize: 15 }} color="#FFFFFF">Stylist</T><T v="meta" color="rgba(255,255,255,0.8)">{combinations(workspace.items) ? `${plural(combinations(workspace.items), 'combination')} from ${plural(workspace.items.length, 'piece')}, dressed for the forecast` : 'Add tops and bottoms to get outfits for each day'}</T></View>
@@ -92,6 +93,7 @@ export function AddPieceSheet() {
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const dirty = useDirty([name, category, color, grams, notes, image, preview]);
   const pick = async (camera: boolean) => {
     const perm = camera ? await ImagePicker.requestCameraPermissionsAsync() : { granted: true };
     if (!perm.granted) { Alert.alert('Camera access is off', 'Allow camera access for Trips Loom in Settings, or choose a photo instead.'); return; }
@@ -130,21 +132,23 @@ export function AddPieceSheet() {
     })) router.back();
   } }]);
   const shown: Item = { id: 'preview', name, category, weight: 0, image, color };
-  return <Sheet title={existing ? 'Edit piece' : 'Add a piece'} footer={<Stack gap={10}>
-    <Button label={uploading ? 'Uploading photo…' : 'Save'} icon={uploading ? undefined : 'check'} leading={uploading ? <ActivityIndicator color="#FFFFFF" /> : undefined} onPress={save} />
-    {existing ? <Button label="Remove from wardrobe" icon="trash" kind="white" onPress={remove} /> : null}
-  </Stack>}>
+  return <Sheet title={existing ? 'Edit piece' : 'Add a piece'} dirty={dirty} footer={<SheetActions primary={<Button label={uploading ? 'Uploading photo…' : 'Save'} icon={uploading ? undefined : 'check'} leading={uploading ? <ActivityIndicator color="#FFFFFF" /> : undefined} onPress={save} />}
+    actions={[!!existing && { icon: 'trash', label: 'Remove from wardrobe', onPress: remove, danger: true }]} />}>
     <Pressable accessibilityRole="button" accessibilityLabel={image || preview ? 'Change photo' : 'Add a photo'} onPress={choosePhoto} style={{ alignSelf: 'center' }}>
       {preview ? <Image source={{ uri: preview }} style={{ width: 140, height: 140, borderRadius: radii.card }} /> : <ItemPhoto item={shown} size={140} radius={radii.card} />}
+      {!preview && !image ? <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 14, alignItems: 'center' }}>
+        <T v="meta" color="rgba(30,30,30,0.6)">Add a photo</T>
+      </View> : null}
       <View style={{ position: 'absolute', right: -6, bottom: -6, width: 40, height: 40, borderRadius: radii.button, backgroundColor: colors.inkButton, alignItems: 'center', justifyContent: 'center' }}><Icon name="camera" size={18} color="#FFFFFF" /></View>
     </Pressable>
     <Field label="Name" value={name} onChangeText={(t) => { setName(t); setError(''); }} icon="wardrobe" placeholder="Linen overshirt" maxLength={200} error={error} />
     <Stack gap={8}><FieldLabel>Kind</FieldLabel><Chips value={CATEGORIES.indexOf(category)} onChange={(i) => setCategory(CATEGORIES[i])} items={CATEGORIES.map((c) => ({ label: c }))} /></Stack>
     <Stack gap={8}><FieldLabel>Colour</FieldLabel>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-        {PALETTE.map((c) => <Pressable key={c} accessibilityRole="radio" accessibilityState={{ checked: color === c }} accessibilityLabel={PALETTE_NAMES[c] ?? 'Colour'} onPress={() => setColor(c)}
+      {/* One even row that scrolls, instead of a ragged second line. */}
+      <HScroll gap={10}>
+        {PALETTE.map((c) => <Pressable key={c} accessibilityRole="radio" accessibilityState={{ checked: color === c }} accessibilityLabel={PALETTE_NAMES[c] ?? 'Colour'} onPress={() => { haptic.select(); setColor(c); }}
           style={{ width: 40, height: 40, borderRadius: radii.round, backgroundColor: c, borderWidth: color === c ? 3 : 1, borderColor: color === c ? colors.ember : colors.rule }} />)}
-      </View>
+      </HScroll>
     </Stack>
     <Field label="Weight (grams)" value={grams} onChangeText={setGrams} icon="trips" kind="count" placeholder="e.g. 320" />
     <Field label="Notes" value={notes} onChangeText={setNotes} multiline maxLength={5000} placeholder="Fabric, care, what it goes with" />
@@ -241,11 +245,10 @@ export function PackingScreen() {
     <Header title="Packing" right={<RoundButton icon="plus" dark label="Add an item" href="/add-item" />} />
     <Hero padding={18}>
       <RowView gap={16}>
-        <Ring pct={pct}><CountUp value={pct} format={(n) => `${Math.round(n)}%`} maxFontSizeMultiplier={1.3} style={{ fontFamily: fonts.bold, fontSize: 15, color: '#FFFFFF' }} /></Ring>
+        <Ring pct={pct}><HeroText v="row" style={{ fontFamily: fonts.bold, fontSize: 15 }}>{pct}%</HeroText></Ring>
         <View style={{ flex: 1, gap: 6 }}>
-          <CountUp value={done} format={(n) => `${Math.round(n)} of ${total} packed`} maxFontSizeMultiplier={1.4}
-            style={{ fontFamily: fonts.semibold, fontSize: 24, lineHeight: 28, letterSpacing: -0.4, color: '#FFFFFF' }} />
-          <HeroText v="small" style={{ fontSize: 14 }}>{weight(grams, prefs.unit)}{limit ? ` of ${weight(limit, prefs.unit)}` : ''} · {total - done === 0 ? (total ? 'all packed' : 'nothing on the list') : `${total - done} to go`}</HeroText>
+          <HeroText v="title" style={{ fontSize: 24, lineHeight: 28, letterSpacing: -0.4 }}>{done} of {total} packed</HeroText>
+          <HeroText v="small" style={{ fontSize: 14 }}>{grams || limit ? `${weight(grams, prefs.unit)}${limit ? ` of ${weight(limit, prefs.unit)}` : ''} · ` : ''}{total - done === 0 ? (total ? 'all packed' : 'nothing on the list') : `${total - done} to go`}</HeroText>
           <Progress pct={limit ? Math.min(100, (grams / limit) * 100) : pct} color={limit && grams > limit ? '#FFE0D6' : '#FFFFFF'} track="rgba(255,255,255,0.35)" />
         </View>
       </RowView>
@@ -253,8 +256,8 @@ export function PackingScreen() {
     {limit && grams > limit ? <Note>Over the bag limit by {weight(grams - limit, prefs.unit)}.</Note> : null}
     <Button label="Suggest items for this trip" icon="sparkle" kind="white" height={48} href="/pack-suggest" />
     <Chips value={filter} onChange={setFilter} items={FILTERS.map((f, i) => ({ label: i === 0 ? `${f} · ${total}` : i === 1 ? `${f} · ${total - done}` : i === 2 ? `${f} · ${done}` : f }))} />
-    {groups.map((group) => <Animated.View key={group} layout={listLayout} entering={FadeIn.duration(200)} exiting={FadeOut.duration(160)}><Section title={group}>
-      <Stack>{visible.filter((r) => r.category === group).map((r, i) => <Animated.View key={r.id} entering={enterItem(i)} exiting={FadeOutLeft.duration(220)} layout={listLayout}>{r.automatic
+    {groups.map((group) => <Section key={group} title={group}>
+      <Stack>{visible.filter((r) => r.category === group).map((r) => <React.Fragment key={r.id}>{r.automatic
         ? <SwatchRow color={r.color || '#8b8b73'} eyebrow={r.packed ? 'Packed' : `For ${r.dates.slice(0, 3).map((d) => weekday(d)).join(', ')}${r.dates.length > 3 ? '…' : ''}`} tint={r.packed ? 'mint' : 'grey'}
           title={r.name} meta={r.weight ? weight(r.weight, prefs.unit) : 'From your outfits'} trailing={<CheckToggle label={`${r.name} packed`} checked={r.packed} onChange={() => toggle(r)} />} />
         : <PressScale accessibilityRole="button" accessibilityLabel={`Edit ${r.name}`} onPress={() => router.push({ pathname: '/add-item', params: { id: r.id } } as never)}>
@@ -263,8 +266,8 @@ export function PackingScreen() {
             <View style={{ flex: 1, gap: 2 }}><T v="row" style={{ fontSize: 15 }}>{r.quantity > 1 ? `${r.quantity} × ` : ''}{r.name}</T><T v="meta">{r.packed ? 'Packed' : 'To pack'}{r.weight ? ` · ${weight(r.weight * r.quantity, prefs.unit)}` : ''}</T></View>
             <CheckToggle label={`${r.name} packed`} checked={r.packed} onChange={() => toggle(r)} />
           </RowView></Card>
-        </PressScale>}</Animated.View>)}</Stack>
-    </Section></Animated.View>)}
+        </PressScale>}</React.Fragment>)}</Stack>
+    </Section>)}
     {!rows.length ? <EmptyState art="suitcase" title="Nothing to pack yet" body="Style your days and the clothes appear here. Add essentials like chargers and passports yourself."
       action={<Stack gap={10}><Button label="Suggest items" icon="sparkle" href="/pack-suggest" /><Button label="Add an item" icon="plus" kind="white" href="/add-item" /></Stack>} />
       : !visible.length ? <Card><T v="small">{filter === 1 ? 'Everything is packed. Have a good trip.' : filter === 2 ? 'Nothing packed yet.' : 'Nothing needed in the first two days.'}</T></Card> : null}
@@ -284,6 +287,7 @@ export function AddItemSheet() {
   const [grams, setGrams] = useState(existing?.weight ? String(existing.weight) : '');
   const [error, setError] = useState('');
   const [added, setAdded] = useState<string[]>([]);
+  const dirty = useDirty([name, category, quantity, grams]);
   if (!current) return <Sheet title="Add an item"><EmptyState title="No trip" body="Open a trip first." /></Sheet>;
   const save = (preset?: string) => {
     const n = (preset ?? name).trim();
@@ -300,14 +304,14 @@ export function AddItemSheet() {
     if (ok && preset) { setName(''); setAdded((list) => [...list, preset]); }
   };
   const remove = () => current.editTrip((t) => { t.extras = t.extras.filter((e) => e.id !== existing!.id); }) && router.back();
-  const already = new Set(current.trip.extras.map((e) => e.name.toLowerCase()));
-  return <Sheet title={existing ? 'Edit item' : 'Add an item'} footer={<Stack gap={10}>
-    <Button label="Save" icon="check" onPress={() => save()} />
-    {existing ? <Button label="Remove from list" icon="trash" kind="white" onPress={remove} /> : null}
-  </Stack>}>
+  // "Passport or ID" already covers "Passport"; "Travel adapter" covers "Adapter". Compare by words.
+  const words = (n: string) => n.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3);
+  const have = current.trip.extras.map((e) => words(e.name));
+  const covered = (q: string) => words(q).some((w) => have.some((h) => h.includes(w)));
+  return <Sheet title={existing ? 'Edit item' : 'Add an item'} dirty={dirty} footer={<SheetActions primary={<Button label="Save" icon="check" onPress={() => save()} />} actions={[!!existing && { icon: 'trash', label: 'Remove from list', onPress: () => { remove(); }, danger: true }]} />}>
     <Field label="Item" value={name} onChangeText={(t) => { setName(t); setError(''); }} icon="trips" placeholder="Phone charger" maxLength={200} error={error} autoFocus={!existing} />
     {!existing ? <Stack gap={8}><FieldLabel>Quick add</FieldLabel>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{QUICK_ADD.filter((q) => !already.has(q.toLowerCase())).map((q) => <Pressable key={q} accessibilityRole="button" accessibilityLabel={`Add ${q}`} onPress={() => save(q)}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{QUICK_ADD.filter((q) => !covered(q)).map((q) => <Pressable key={q} accessibilityRole="button" accessibilityLabel={`Add ${q}`} onPress={() => save(q)}
         style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderRadius: radii.button, backgroundColor: colors.card, boxShadow: shadows.button }}>
         <Icon name="plus" size={14} /><T v="small" color={colors.ink} style={{ fontSize: 14 }}>{q}</T></Pressable>)}</View>
       {added.length ? <RowView gap={6}><Icon name="check" size={14} color={tints.mint.fg} /><T v="meta" color={tints.mint.fg} style={{ flex: 1 }}>Added {added.join(', ')}</T></RowView> : null}
@@ -343,8 +347,7 @@ export function BudgetScreen() {
     <Hero>
       <Stack gap={4}>
         <HeroText faint style={{ fontSize: 14 }}>Total planned</HeroText>
-        <CountUp value={b.planned} format={(n) => money(Math.round(n), trip.currency)} maxFontSizeMultiplier={1.3} numberOfLines={1}
-          style={[VARIANTS.hero, { lineHeight: 40, letterSpacing: -1, color: '#FFFFFF' }]} />
+        <HeroText v="hero" lines={1} style={{ lineHeight: 40, letterSpacing: -1 }}>{money(b.planned, trip.currency)}</HeroText>
         <HeroText faint style={{ fontSize: 14 }}>{b.limit ? `of ${money(b.limit, trip.currency)} · ${Math.round((b.planned / b.limit) * 100)}%` : 'No budget set'}{b.spent ? ` · ${money(b.spent, trip.currency)} spent` : ''}</HeroText>
       </Stack>
       {b.limit ? <Progress pct={pct} color={b.remaining < 0 ? '#FFE0D6' : '#FFFFFF'} track="rgba(255,255,255,0.35)" /> : null}
@@ -380,13 +383,13 @@ export function BudgetScreen() {
     })()}
     <Section title={day ? longDay(day) : 'Expenses'}>
       {expenses.length ? <Group>{expenses.map((e) => <Row key={e.id} icon={EXPENSE_ICON[e.category]} tint={EXPENSE_TINT[e.category]} title={e.title}
-        meta={[EXPENSE_LABEL[e.category], e.date ? shortDay(e.date) : '', extras.people.length ? `${nameOf(extras.people, e.paidBy)} paid${e.splitWith.length > 1 ? ` · split ${e.splitWith.length} ways` : ''}` : ''].filter(Boolean).join(' · ')}
+        meta={[e.date ? shortDay(e.date) : '', extras.people.length ? `${nameOf(extras.people, e.paidBy)} paid${e.splitWith.length > 1 ? ` · ÷${e.splitWith.length}` : ''}` : ''].filter(Boolean).join(' · ')}
         onPress={() => router.push({ pathname: '/add-expense', params: { id: e.id } } as never)}
         trailing={<View style={{ alignItems: 'flex-end' }}><T v="row" style={{ fontSize: 15 }}>{money(e.amount, e.currency)}</T>{e.currency !== trip.currency ? <T v="meta">{convertLabel(e.amount, e.currency, trip.currency, rates)}</T> : null}</View>} />)}</Group>
         : <Card><T v="small">{day ? 'No expenses on this day.' : 'Log what you spend as you go. Split costs with the people on the trip.'}</T></Card>}
     </Section>
     {priced.length ? <Section title="Plans with a price">
-      <Group>{priced.map((a) => <Row key={a.id} icon="calendar" title={a.title} meta={`${shortDay(a.date)}${a.time ? ` · ${a.time}` : ''}`} onPress={() => router.push({ pathname: '/add-plan', params: { id: a.id } } as never)}
+      <Group>{priced.map((a) => <Row key={a.id} icon="calendar" title={a.title} meta={`${shortDay(a.date)}${a.time ? ` · ${planTime(a.time)}` : ''}`} onPress={() => router.push({ pathname: '/add-plan', params: { id: a.id } } as never)}
         trailing={<T v="row" style={{ fontSize: 15 }}>{money(a.cost, trip.currency)}</T>} />)}</Group>
     </Section> : null}
   </Screen>;
@@ -418,6 +421,7 @@ export function AddExpenseSheet() {
   const [split, setSplit] = useState<string[]>(existing?.splitWith.length ? existing.splitWith : everyone.length > 1 ? everyone : []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [scanning, setScanning] = useState(false);
+  const dirty = useDirty([amount, currency, title, category, date, paidBy, split]);
   const rates = useRates(current?.trip.currency ?? 'EUR');
   // Read a receipt photo on the device and fill in what it finds.
   const scan = async (camera: boolean) => {
@@ -460,10 +464,8 @@ export function AddExpenseSheet() {
     editExtras((d) => { d.expenses = d.expenses.filter((x) => x.id !== existing!.id); }); router.back();
   } }]);
   const name = (id: string) => nameOf(extras.people, id, 'You');
-  return <Sheet title={existing ? 'Edit expense' : 'Add expense'} footer={<Stack gap={10}>
-    <Button label={existing ? 'Save' : 'Add expense'} icon={existing ? 'check' : 'plus'} onPress={save} />
-    {existing ? <Button label="Delete expense" icon="trash" kind="white" onPress={remove} /> : null}
-  </Stack>}>
+  return <Sheet title={existing ? 'Edit expense' : 'Add expense'} dirty={dirty} footer={<SheetActions primary={<Button label={existing ? 'Save' : 'Add expense'} icon={existing ? 'check' : 'plus'} onPress={save} />}
+    actions={[!!existing && { icon: 'trash', label: 'Delete expense', onPress: remove, danger: true }]} />}>
     {canScanReceipts && !existing ? <RowView gap={10}>
       <View style={{ flex: 1 }}><Button label={scanning ? 'Reading…' : 'Scan receipt'} icon="camera" kind="white" height={48} onPress={scanning ? undefined : () => void scan(true)} /></View>
       <View style={{ flex: 1 }}><Button label="From photos" icon="image" kind="white" height={48} onPress={scanning ? undefined : () => void scan(false)} /></View>
@@ -560,6 +562,7 @@ export function AddDocumentSheet() {
   const [date, setDate] = useState(existing?.date ?? '');
   const [file, setFile] = useState(existing?.file);
   const [error, setError] = useState('');
+  const dirty = useDirty([kind, title, detail, date, file]);
   if (!current) return <Sheet title="Add document"><EmptyState title="No trip" body="Open a trip first." /></Sheet>;
   const id = existing?.id ?? uid();
   const attach = async (source: 'files' | 'photos') => {
@@ -596,10 +599,7 @@ export function AddDocumentSheet() {
     current.editExtras((d) => { d.documents = d.documents.filter((x) => x.id !== existing!.id); });
     router.back();
   } }]);
-  return <Sheet title={existing ? 'Edit document' : 'Add document'} footer={<Stack gap={10}>
-    <Button label="Save" icon="check" onPress={save} />
-    {existing ? <Button label="Delete document" icon="trash" kind="white" onPress={remove} /> : null}
-  </Stack>}>
+  return <Sheet title={existing ? 'Edit document' : 'Add document'} dirty={dirty} footer={<SheetActions primary={<Button label="Save" icon="check" onPress={save} />} actions={[!!existing && { icon: 'trash', label: 'Delete document', onPress: remove, danger: true }]} />}>
     <Stack gap={8}><FieldLabel>Kind</FieldLabel><Chips value={DOCUMENT_KINDS.indexOf(kind)} onChange={(i) => setKind(DOCUMENT_KINDS[i])} items={DOCUMENT_KINDS.map((k) => ({ label: DOC_LABEL[k], icon: DOC_ICON[k] }))} /></Stack>
     <Field label="Name" value={title} onChangeText={(t) => { setTitle(t); setError(''); }} icon="edit" placeholder={kind === 'flight' ? 'TP 1234 · LIS → KIX' : kind === 'stay' ? 'Ryokan Yoshida' : 'Travel insurance'} maxLength={200} error={error} />
     <Field label="Details" value={detail} onChangeText={setDetail} icon="file" placeholder="Seat 14A · booking ref ABC123" maxLength={500} />
@@ -682,6 +682,7 @@ export function LogDiveSheet() {
   const [minutes, setMinutes] = useState(existing ? String(existing.minutes) : '');
   const [temperature, setTemperature] = useState(existing?.temperature ? String(existing.temperature) : '');
   const [error, setError] = useState('');
+  const dirty = useDirty([site, date, depth, minutes, temperature]);
   if (!current) return <Sheet title="Log a dive"><EmptyState title="No trip" body="Open a trip first." /></Sheet>;
   const save = () => {
     if (!site.trim()) { setError('Name the dive site.'); return; }
@@ -690,7 +691,7 @@ export function LogDiveSheet() {
     router.back();
   };
   const remove = () => { current.editExtras((d) => { d.dives = d.dives.filter((x) => x.id !== existing!.id); }); router.back(); };
-  return <Sheet title={existing ? 'Edit dive' : 'Log a dive'} footer={<Stack gap={10}><Button label="Save" icon="check" onPress={save} />{existing ? <Button label="Delete dive" icon="trash" kind="white" onPress={remove} /> : null}</Stack>}>
+  return <Sheet title={existing ? 'Edit dive' : 'Log a dive'} dirty={dirty} footer={<SheetActions primary={<Button label="Save" icon="check" onPress={save} />} actions={[!!existing && { icon: 'trash', label: 'Delete dive', onPress: remove, danger: true }]} />}>
     <Field label="Site" value={site} onChangeText={(t) => { setSite(t); setError(''); }} icon="pin" placeholder="Blue Hole · The Bells" maxLength={200} error={error} autoFocus={!existing} />
     <DateField label="Day" value={date} onChange={setDate} min={current.trip.start} max={current.trip.end} />
     <RowView align="flex-start">

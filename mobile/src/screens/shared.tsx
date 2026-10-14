@@ -10,6 +10,7 @@ import { balances, coverOf, nameOf, transfers } from '../domain/trips';
 import {
   Avatar, Button, Card, colors, CurrencyField, DateField, EmptyState, Field, FieldLabel, Group, Header, Icon, IconTile, Illustration, Note, Progress, Radio,
   radii, RoundButton, Row, RowView, Screen, Section, Sheet, Stack, T, tints, type Tint,
+  useDirty,
 } from '../loom';
 import { useRates } from '../services/currency';
 import { acceptInvite, decodeInvite, encodeInvite, inviteLink, makeInvite, MAX_LINK, type Invite } from '../services/invite';
@@ -182,6 +183,7 @@ export function StartVoteSheet() {
   const [options, setOptions] = useState(['', '']);
   const [closes, setCloses] = useState('');
   const [error, setError] = useState('');
+  const dirty = useDirty([question, options, closes]);
   if (!current) return <Sheet title="Start a vote"><EmptyState title="No trip" body="Open a trip first." /></Sheet>;
   const save = () => {
     const opts = options.map((o) => o.trim()).filter(Boolean);
@@ -192,7 +194,7 @@ export function StartVoteSheet() {
     });
     router.back();
   };
-  return <Sheet title="Start a vote" footer={<Button label="Start vote" icon="vote" onPress={save} />}>
+  return <Sheet title="Start a vote" dirty={dirty} footer={<Button label="Start vote" icon="vote" onPress={save} />}>
     <Field label="Question" value={question} onChangeText={(t) => { setQuestion(t); setError(''); }} icon="help" placeholder="Where should we eat on Friday?" maxLength={200} />
     <Stack gap={8}><FieldLabel>Choices</FieldLabel>
       {options.map((o, i) => <Field key={i} label={`Choice ${i + 1}`} value={o} onChangeText={(t) => setOptions((list) => list.map((x, j) => j === i ? t : x))} maxLength={120}
@@ -215,6 +217,7 @@ export function SettleUpSheet() {
   const [to, setTo] = useState(params.to ?? current?.extras.people[0]?.id ?? '');
   const [amount, setAmount] = useState(params.amount ?? '');
   const [currency, setCurrency] = useState<string>(current?.trip.currency ?? 'EUR');
+  const dirty = useDirty([from, to, amount, currency]);
   if (!current) return <Sheet title="Record a payment"><EmptyState title="No trip" body="Open a trip first." /></Sheet>;
   const everyone = [{ id: ME, name: 'You' }, ...current.extras.people];
   const value = Number(amount.replace(',', '.'));
@@ -227,7 +230,7 @@ export function SettleUpSheet() {
   const picker = (label: string, value: string, set: (id: string) => void, exclude: string) => <Stack gap={8}><FieldLabel>{label}</FieldLabel>
     <Group>{everyone.filter((p) => p.id !== exclude).map((p) => <Row key={p.id} leading={<Avatar initials={initials(p.name)} tint={tintFor(p.id)} size={40} />}
       title={p.name} trailing={<Radio on={value === p.id} />} onPress={() => set(p.id)} />)}</Group></Stack>;
-  return <Sheet title="Record a payment" footer={<Button label="Save payment" icon="check" onPress={save} />}>
+  return <Sheet title="Record a payment" dirty={dirty} footer={<Button label="Save payment" icon="check" onPress={save} />}>
     {picker('Who paid', from, (id) => { setFrom(id); if (id === to) setTo(''); }, '')}
     {picker('Paid to', to, setTo, from)}
     <RowView align="flex-start">

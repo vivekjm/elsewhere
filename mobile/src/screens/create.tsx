@@ -8,11 +8,12 @@ import { usePrefs, useSelection, useTrips } from '../core/state';
 import { addDays, CURRENCIES, emptyExtras, uid, useExtras, type Activity, type Trip, type TripKind } from '../data';
 import { templateDraft, type Draft } from '../domain/drafter';
 import { parseBookings, type ParsedBooking } from '../domain/bookings';
-import { dateRange, fromDate, plural, shortDay, toDate, todayISO } from '../domain/format';
+import { dateRange, fromDate, planTime, plural, shortDay, toDate, todayISO } from '../domain/format';
 import { CATEGORY, coverOf, KIND_LABEL, KIND_MOOD, KIND_TINT, MOOD_ART, upcomingTrips } from '../domain/trips';
 import {
   Button, Card, CheckToggle, colors, DateField, EmptyState, Field, FieldLabel, fonts, Group, Header, Hero, HeroText, Icon, IconTile, Illustration,
   Note, Radio, radii, RoundButton, Row, RowView, Screen, Section, shadows, Stack, T, Tag,
+  inputText, singleLine,
 } from '../loom';
 import { draftWithModel, onDeviceModelAvailable } from '../services/intelligence';
 import { TripForm, validateTrip, type TripDraft, type TripErrors } from './trip';
@@ -115,7 +116,7 @@ export function PlannerScreen() {
     <View style={{ minHeight: 150, padding: 16, borderRadius: radii.card, backgroundColor: colors.card, boxShadow: shadows.rest }}>
       <TextInput multiline value={prompt} onChangeText={setPrompt} accessibilityLabel="Describe your trip" placeholderTextColor={colors.placeholder} maxLength={600} autoFocus={!params.prompt}
         placeholder="A week in Portugal in April, food and tiles, slow mornings, one beach day. Three friends, no driving." maxFontSizeMultiplier={1.6}
-        style={{ fontFamily: fonts.medium, fontSize: 17, lineHeight: 26, color: colors.ink, minHeight: 118, textAlignVertical: 'top' }} />
+        style={[inputText, { fontSize: 17, minHeight: 118, textAlignVertical: 'top' }]} />
     </View>
     <Stack gap={8}><FieldLabel>Try</FieldLabel>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{SUGGESTIONS.map((s) => <Pressable key={s} accessibilityRole="button" onPress={() => setPrompt(s)}
@@ -179,7 +180,7 @@ export function PlannerDraftScreen() {
         <RowView style={{ justifyContent: 'space-between' }}><T v="eyebrow">Day {i + 1} · {shortDay(addDays(draft.start, i))}</T>
           {draft.plan.length > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`Remove day ${i + 1}`} hitSlop={8} onPress={() => setDraft({ ...draft, days: draft.days - 1, plan: draft.plan.filter((_, j) => j !== i) })}><Icon name="trash" size={16} color={colors.stone} /></Pressable> : null}</RowView>
         <T v="row">{day.title}</T>
-        {day.stops.length ? day.stops.map((s, j) => <RowView key={j} gap={10}><T v="meta" style={{ width: 44 }}>{s.time}</T><Tag text={CATEGORY[s.category].label} tint={CATEGORY[s.category].tint} /><T v="small" style={{ flex: 1 }}>{s.title}</T></RowView>)
+        {day.stops.length ? day.stops.map((s, j) => <RowView key={j} gap={10}><T v="meta" style={{ width: 60 }} lines={1}>{planTime(s.time)}</T><Tag text={CATEGORY[s.category].label} tint={CATEGORY[s.category].tint} /><T v="small" style={{ flex: 1 }}>{s.title}</T></RowView>)
           : <T v="small">Nothing planned — add plans after saving.</T>}
       </Card>)}</Stack>
     </Section>

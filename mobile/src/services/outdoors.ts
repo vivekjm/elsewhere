@@ -90,7 +90,7 @@ export async function sunrise(destination: string, date: string): Promise<string
     const at = solarSunrise(date, place.latitude, place.longitude);
     if (!at) return null;
     try {
-      return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: place.timeZone || undefined }).format(at);
+      return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', timeZone: place.timeZone || undefined }).format(at);
     } catch {
       return null;
     }

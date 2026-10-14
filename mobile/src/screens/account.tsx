@@ -15,6 +15,7 @@ import { lookup } from '../services/places';
 import {
   Avatar, Button, Card, colors, CurrencyField, EmptyState, Field, FieldLabel, fonts, Group, Header, Hero, HeroText, Icon, IconTile, PlaceField, Radio, radii,
   RoundButton, Row, RowView, Screen, Section, Segmented, shadows, Sheet, Stack, T, Tag, Toggle,
+  useDirty,
 } from '../loom';
 import { exportBackup } from '../services/exports';
 import { notificationPermission, requestNotifications, type PermissionState } from '../services/notifications';
@@ -202,6 +203,7 @@ export function FeedbackSheet() {
   const [kind, setKind] = useState<FeedbackKind>(params.kind ?? 'issue');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const dirty = useDirty([kind, message]);
   const send = async () => {
     setBusy(true);
     try {
@@ -210,7 +212,7 @@ export function FeedbackSheet() {
       router.back();
     } catch (e) { reportError(e, 'Couldn’t send'); } finally { setBusy(false); }
   };
-  return <Sheet title="Send feedback" footer={<Button label="Send" icon="mail" leading={busy ? <ActivityIndicator color="#FFFFFF" /> : undefined} onPress={() => void send()} />}>
+  return <Sheet title="Send feedback" dirty={dirty} footer={<Button label="Send" icon="mail" leading={busy ? <ActivityIndicator color="#FFFFFF" /> : undefined} onPress={() => void send()} />}>
     <Group>{KINDS.map((k) => <Row key={k.kind} title={k.label} trailing={<Radio on={kind === k.kind} />} onPress={() => setKind(k.kind)} />)}</Group>
     <Field label="Message" value={message} onChangeText={setMessage} multiline maxLength={4000} placeholder={kind === 'issue' ? 'What happened, and what did you expect?' : 'Tell us more…'}
       hint={`${message.trim().length}/4000 · at least 10 characters. We include the app version and language, never your trips.`} />
@@ -298,10 +300,12 @@ function Feature({ icon, title, sub }: { icon: 'sparkle' | 'doc' | 'shared' | 'm
 }
 
 function Plan({ name, price, sub, on, onPress }: { name: string; price: string; sub: string; on: boolean; onPress: () => void }) {
-  return <Pressable accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={`${name}, ${price}, ${sub}`} onPress={onPress}
+  return <Pressable accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={`${name}, ${price || 'price shown at checkout'}, ${sub}`} onPress={onPress}
     style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: radii.card, backgroundColor: on ? colors.inkButton : colors.card, boxShadow: on ? shadows.lift : shadows.rest }}>
     <View style={{ flex: 1, gap: 2 }}><T v="row" color={on ? '#FFFFFF' : undefined}>{name}</T><T v="meta" color={on ? 'rgba(255,255,255,0.8)' : undefined}>{sub}</T></View>
-    <T v="title" style={{ fontSize: 18 }} color={on ? '#FFFFFF' : undefined}>{price || '—'}</T>
+    {/* Until the store answers (or when it can't), say so instead of a bare dash. */}
+    {price ? <T v="title" style={{ fontSize: 18 }} color={on ? '#FFFFFF' : undefined}>{price}</T>
+      : <T v="meta" color={on ? 'rgba(255,255,255,0.7)' : undefined}>Price at checkout</T>}
     <Radio on={on} />
   </Pressable>;
 }

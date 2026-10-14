@@ -298,3 +298,67 @@ Everything runs on the UI thread with Reanimated 4.7, which was already in the n
 - **Trip cover:** parallax while scrolling, and it stretches when pulled down.
 
 **Fixed while building:** the count-up formatter was called on the animation thread and crashed the app. It now formats on the JS thread.
+
+## Screen-by-screen UI pass (2026-10-14)
+
+I went through every route in the simulator as Vivek, with real data: 4 tabs, 9 trip screens, 5 trek screens, about 20 sheets and modals, the pages, Pro and onboarding. I also checked the main screens in an iPhone SE-sized frame (375 × 667). Nothing was cut off there.
+
+### Fixed
+
+- **Sheet tops:** the clock showed over the dimmed screen behind every sheet. The status bar now hides while a sheet is open.
+- **Two native crashes ("unmount a view which has a different index"):**
+  - The keyboard hook used LayoutAnimation, which reorders native views on the new architecture. It crashed when moving from a text field to a number field inside a sheet, and when closing the itinerary. Removed.
+  - Day chips swapped a forecast icon for a spacer mid-update. They now use one fixed slot.
+- **Unsaved work:** swiping a form sheet down, tapping X or going back silently threw away what was typed. All 15 form sheets now ask "Discard changes?". Save and Delete close without asking.
+- **Times:**
+  - Plan times showed as 24-hour text ("19:00") on a 12-hour phone. Times now follow the phone's setting everywhere: itinerary, Home, map, budget, flight, notifications, PDFs, AI draft, tides and the trek reminder.
+- **Layout and data:**
+  - Recap total wrapped mid-number ("₹21,90 / 0"). It now stays on one line and shrinks to fit.
+  - Half-width date fields pushed the date pill to the edge. It is now centred.
+  - Half-width currency fields were truncated ("INR · Indian…"). They now show the code.
+  - Home: the status-bar area had no backing, so text ran under the clock when scrolling. It now gets a frosted band.
+  - Trek route art showed six made-up stops. Stops now come from the trek's real stages, placed by altitude when the summit height is known. The single-stage "D1" picker is hidden. The readiness ring no longer shows a dot at 0%.
+- **Wording and empty states:**
+  - Pro plans showed "—" for prices. They now say "Price at checkout".
+  - Packing showed "0 g" and "0.0 kg packed" when nothing has a weight. It now shows "N still to pack".
+  - Quick add offered "Passport" and "Wallet" when "Passport or ID" and "Wallet and cards" were already listed.
+  - Wardrobe filters all read "· 0" when empty, so they are hidden. The piece photo now says "Add a photo". Colour swatches are one even row.
+  - Expense rows wrapped "split 3 / ways". They are compact now.
+  - The "Tides & stops" row now reads correctly for beach and dive trips.
+  - The trek stage form's number fields now have placeholders.
+- **Links:** recap, essentials, help, privacy, preferences, trail map and flight now open from links instead of falling back to Home.
+
+### Not product bugs
+
+- The simulator's typing tool once killed the app while typing into a number pad. The same input tapped on the keypad works. (The separate real crash above is fixed.)
+- The development menu's floating gear button sits over some screens. It isn't in release builds.
+
+## Motion and stability pass (2026-10-14)
+
+Reported problems: janky animations, graphs not smooth, layout shifts during transitions, screens sometimes empty, placeholder misalignment, rubbery lists.
+
+**Root causes and fixes.** The rules now live at the top of `src/loom/motion.tsx`, so new screens follow them too.
+- **Empty screens:** rows, cards and onboarding content faded in from opacity 0. Hidden tabs and fast navigation could skip the animation, leaving content invisible. Nothing mounts hidden any more; every entering and exiting animation is removed.
+- **Rubbery lists:** spring layout reflow (`LinearTransition.springify`) and spring presses, toggles and radios are removed. Every state change uses one 220 ms ease-out; presses use a 110 ms dim with a 98% scale.
+- **Janky numbers and graphs:**
+  - Count-ups re-rendered text on the JS thread every frame. Numbers now render directly.
+  - Bars, rings and fills grew from zero on every mount. They now render complete on the first frame and ease only when the value changes (`useEased`).
+  - Fills are absolutely positioned, so a change never re-lays out the card.
+- **Layout shifts:**
+  - Form footers unmounted when the keyboard opened, resizing the content. They now stay put under the keyboard.
+  - The onboarding header eased between sizes instead of jumping; its decorations fade instead of unmounting.
+  - The tab-switch shift animation is removed, so tabs switch instantly as in iOS.
+- **Placeholder alignment:**
+  - Inputs used vertical padding to place text, which set the placeholder at a different height from typed text.
+  - All inputs now share `inputText`/`singleLine`: no vertical padding, stretched to the row, and centred by iOS.
+  - Multi-line fields fill their box.
+  - The focused field, notes included, now scrolls fully above the keyboard.
+
+**Verified by recording and frame-by-frame review:** switching days, tabs and packing filters, going back to Home, and the budget chart. There were no blank frames, no slide-ins and no reflow bounce. Typed text sits exactly on the placeholder line (checked at full resolution). Close (X) asks "Discard changes?" on a form with typing.
+
+**Follow-up (2026-10-14):**
+- **Opening Itinerary:** it is a tab inside the trip, and the tab switch was an instant cut. Tabs now cross-fade in 180 ms; opacity only, so nothing shifts.
+- **Black corners when opening a trip:**
+  - iOS zooms a snapshot of the card's wrapper, which was a square transparent box. The wrapper now has the card's rounded corners.
+  - The zoom's first frame showed the window's default black background. The window background is now set to the app's canvas colour at startup.
+  - Verified frame by frame: no black at any point.

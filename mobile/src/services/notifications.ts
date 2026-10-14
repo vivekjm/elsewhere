@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import type { TripExtras } from '../data/extras';
 import { tripDates, type Trip } from '../data/model';
-import { daysFromToday, todayISO, toDate } from '../domain/format';
+import { daysFromToday, planTime, todayISO, toDate } from '../domain/format';
 import { sortPlans } from '../domain/trips';
 
 Notifications.setNotificationHandler({
@@ -46,7 +46,7 @@ export function plannedReminders(trips: Trip[], extras: (id: string) => TripExtr
       if (plans.length) {
         const first = plans[0];
         out.push({ id: `day-${trip.id}-${date}`, tripId: trip.id, at: morning, title: `Today in ${trip.destination.split(',')[0]}`, url: '/trip/days',
-          body: `${first.time ? `${first.time} · ` : ''}${first.title}${plans.length > 1 ? ` and ${plans.length - 1} more` : ''}` });
+          body: `${first.time ? `${planTime(first.time)} · ` : ''}${first.title}${plans.length > 1 ? ` and ${plans.length - 1} more` : ''}` });
       }
       // Flight check-in usually opens 24 hours before departure (TripIt-style reminder).
       for (const plan of plans) {
@@ -54,7 +54,7 @@ export function plannedReminders(trips: Trip[], extras: (id: string) => TripExtr
         const departs = toDate(date); const [h, m] = plan.time.split(':').map(Number); departs.setHours(h || 0, m || 0, 0, 0);
         const checkIn = new Date(departs.getTime() - 24 * 3600000);
         if (checkIn > now) out.push({ id: `checkin-${trip.id}-${plan.id}`, tripId: trip.id, at: checkIn, title: `Check in for ${plan.title}`.slice(0, 120),
-          url: '/trip/days', body: `Online check-in usually opens now, 24 hours before your ${plan.time} departure. Choose your seat early.` });
+          url: '/trip/days', body: `Online check-in usually opens now, 24 hours before your ${planTime(plan.time)} departure. Choose your seat early.` });
       }
       if (x.kind === 'trek' && x.adventure.checkInReminders) {
         const evening = toDate(date); evening.setHours(19, 30, 0, 0);
