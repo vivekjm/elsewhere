@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Linking, Pressable, Text, View } from 'react-native';
+import { Alert, Linking, Text, View } from 'react-native';
+import { CoverImage } from '../core/cover';
+import { ExpandTarget } from '../core/expand';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '../core/nav';
 import { SvgXml } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { reportError, useCurrentTrip, usePrefs, useTrips } from '../core/state';
-import { GEAR_GROUPS, tripDates, uid, type Adventure, type CheckIn, type GearGroup, type Stage } from '../data';
+import { GEAR_GROUPS, tripDates, uid, type Adventure, type Trip, type TripExtras, type CheckIn, type GearGroup, type Stage } from '../data';
 import { altitude, dateRange, distance, longDay, planTime, plural, shortDay, todayISO, weekday, weight } from '../domain/format';
 import { statusOf } from '../domain/trips';
 import {
   Bars, Button, Card, CheckToggle, Chips, colors, DateField, EmptyState, Field, FieldLabel, fonts, Group, Header, Hero, HeroText, Icon, IconTile, Illustration, Loading,
   MediaRow, Note, Press, Progress, radii, Ring, RoundButton, routeArt, Row, RowView, Screen, Section, Segmented, shadows, Sheet, Stack, T, Tag, tints, Toggle, type IconName,
-  SheetActions,
-  useDirty,
+  SheetActions, Swap, MotionSurface, Selectable,
+  useDirty, PressScale,
 } from '../loom';
 import { requestNotifications } from '../services/notifications';
 import { summitForecast, sunrise, type SummitDay } from '../services/outdoors';
@@ -73,6 +75,47 @@ function stageHeights(stages: { startAltitude: number; endAltitude: number }[], 
   return stages.map((_, i) => (i + 1) / Math.max(stages.length + 1, 2));
 }
 
+export function AdventureHeader() {
+  return <Header title="Your trip" right={<RoundButton icon="edit" label="Summit and safety details" href="/safety-details" />} />;
+}
+
+/** The trek's main card (summit cover, name, readiness). Also drawn by the shared transition from Home. */
+export function AdventureCard({ trip, extras }: { trip: Trip; extras: TripExtras }) {
+  const prefs = usePrefs();
+  const router = useRouter();
+  const a = extras.adventure;
+  const st = statusOf(trip);
+  const r = readiness(a);
+  const stages = [...a.stages].sort((x, y) => x.date.localeCompare(y.date));
+  const totalKm = stages.reduce((s, x) => s + x.distanceKm, 0);
+  const facts = [a.summitAltitude ? altitude(a.summitAltitude, prefs.unit) : '', totalKm ? distance(totalKm, prefs.unit) : '', stages.length ? plural(stages.length, 'stage') : 'No stages yet'].filter(Boolean).join(' · ');
+  return <View style={{ backgroundColor: colors.card, borderRadius: radii.hero, overflow: 'hidden', boxShadow: shadows.lift }}>
+    <View style={{ height: 190 }}>
+      <CoverImage trip={trip} extras={extras} art="summit" />
+      <View style={{ position: 'absolute', top: 12, right: 12 }}><RoundButton icon="camera" label="Change cover" href="/edit-trip" size={40} /></View>
+      <View style={{ position: 'absolute', left: 16, bottom: 12 }}><Tag text={`Trek · ${plural(st.totalDays, 'day')}`} tint="mint" /></View>
+    </View>
+    <View style={{ padding: 16, paddingTop: 12, gap: 12 }}>
+      <T v="display" style={{ lineHeight: 34 }}>{trip.name}</T>
+      <RowView gap={16} align="flex-start">
+        <Stack gap={6} style={{ flex: 1 }}>
+          <RowView align="flex-start"><Icon name="calendar" size={18} color={colors.stone} /><T v="body" style={{ flex: 1 }}>{dateRange(trip.start, trip.end)}</T></RowView>
+          <RowView align="flex-start"><Icon name="mountain" size={18} color={colors.stone} /><T v="body" style={{ flex: 1 }}>{facts}</T></RowView>
+        </Stack>
+        <PressScale accessibilityRole="button" accessibilityLabel={`Readiness ${r.score} of 100`} onPress={() => router.push('/adventure/prepare' as never)} style={{ alignItems: 'center', gap: 2 }}>
+          <Ring pct={r.score} color={colors.ink} track={colors.track}><T v="title" style={{ fontSize: 18 }}>{r.score}</T></Ring>
+          <T v="meta">readiness</T>
+        </PressScale>
+      </RowView>
+      <RowView gap={8}>
+        <Button label="Route" icon="map" full={false} height={48} href="/trail-map" />
+        <RoundButton icon="share" label="Share trip" href="/invite" />
+        <RoundButton icon="more" label="Trip options" href="/trip-actions" />
+      </RowView>
+    </View>
+  </View>;
+}
+
 export function AdventureScreen() {
   const { current, fallback } = useAdventureTrip();
   const prefs = usePrefs();
@@ -80,37 +123,10 @@ export function AdventureScreen() {
   if (!current) return fallback;
   const { trip, extras } = current;
   const a = extras.adventure;
-  const st = statusOf(trip);
-  const r = readiness(a);
   const stages = [...a.stages].sort((x, y) => x.date.localeCompare(y.date));
-  const totalKm = stages.reduce((s, x) => s + x.distanceKm, 0);
-  const facts = [a.summitAltitude ? altitude(a.summitAltitude, prefs.unit) : '', totalKm ? distance(totalKm, prefs.unit) : '', stages.length ? plural(stages.length, 'stage') : 'No stages yet'].filter(Boolean).join(' · ');
   return <Screen bar="tabs">
-    <Header title="Your trip" right={<RoundButton icon="edit" label="Summit and safety details" href="/safety-details" />} />
-    <View style={{ backgroundColor: colors.card, borderRadius: radii.hero, overflow: 'hidden', boxShadow: shadows.lift }}>
-      <View style={{ height: 190 }}>
-        <Illustration name="summit" width="100%" height="100%" />
-        <View style={{ position: 'absolute', left: 16, bottom: 12 }}><Tag text={`Trek · ${plural(st.totalDays, 'day')}`} tint="mint" /></View>
-      </View>
-      <View style={{ padding: 16, paddingTop: 12, gap: 12 }}>
-        <T v="display" style={{ lineHeight: 34 }}>{trip.name}</T>
-        <RowView gap={16} align="flex-start">
-          <Stack gap={6} style={{ flex: 1 }}>
-            <RowView align="flex-start"><Icon name="calendar" size={18} color={colors.stone} /><T v="body" style={{ flex: 1 }}>{dateRange(trip.start, trip.end)}</T></RowView>
-            <RowView align="flex-start"><Icon name="mountain" size={18} color={colors.stone} /><T v="body" style={{ flex: 1 }}>{facts}</T></RowView>
-          </Stack>
-          <Pressable accessibilityRole="button" accessibilityLabel={`Readiness ${r.score} of 100`} onPress={() => router.push('/adventure/prepare' as never)} style={{ alignItems: 'center', gap: 2 }}>
-            <Ring pct={r.score} color={colors.ember} track={colors.rule} inner="#FFFFFF"><T v="title" style={{ fontSize: 18 }}>{r.score}</T></Ring>
-            <T v="meta">readiness</T>
-          </Pressable>
-        </RowView>
-        <RowView gap={8}>
-          <Button label="Route" icon="map" full={false} height={48} href="/trail-map" />
-          <RoundButton icon="share" label="Share trip" href="/invite" />
-          <RoundButton icon="more" label="Trip options" href="/trip-actions" />
-        </RowView>
-      </View>
-    </View>
+    <AdventureHeader />
+    <ExpandTarget id="adventure"><AdventureCard trip={trip} extras={extras} /></ExpandTarget>
     <Press href="/adventure/safety" label="Safety" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, paddingHorizontal: 16, backgroundColor: colors.card, borderRadius: radii.card, boxShadow: shadows.rest }}>
       <IconTile icon="shield" tint={a.emergency.phone ? 'mint' : 'rose'} />
       <View style={{ flex: 1, gap: 2 }}><T v="row" style={{ fontSize: 15 }}>Safety</T><T v="meta">{a.emergency.phone ? `Emergency contact: ${a.emergency.name || a.emergency.phone}` : 'Add an emergency contact before you go'}</T></View>
@@ -277,7 +293,7 @@ export function GearScreen() {
     <Header title="Gear" right={<RoundButton icon="plus" dark label="Add gear" href="/add-gear" />} />
     <Hero padding={18}>
       <RowView gap={16}>
-        <Ring pct={Math.min(100, pct)}><HeroText v="row" style={{ fontFamily: fonts.bold, fontSize: 15 }}>{pct}%</HeroText></Ring>
+        <Ring pct={Math.min(100, pct)}><HeroText v="row" style={{ fontFamily: fonts.semibold, fontSize: 15 }}>{pct}%</HeroText></Ring>
         <View style={{ flex: 1, gap: 6 }}>
           <HeroText faint style={{ fontSize: 13 }}>Porter bag</HeroText>
           <HeroText v="title" style={{ fontSize: 24, lineHeight: 28, letterSpacing: -0.5 }}>{weight(porter, prefs.unit)} of {weight(limit, prefs.unit)}</HeroText>
@@ -288,6 +304,7 @@ export function GearScreen() {
     </Hero>
     {limit && porter > limit ? <Note>Over the porter limit by {weight(porter - limit, prefs.unit)}. Move something to your day pack or leave it behind.</Note> : null}
     {a.gear.length ? <Chips value={filter} onChange={setFilter} items={[{ label: `All · ${a.gear.length}` }, { label: 'Porter bag' }, { label: 'Day pack' }, { label: `To buy · ${toBuy}` }]} /> : null}
+    <Swap k={filter} style={{ gap: 16 }}>
     {GEAR_GROUPS.map((group) => {
       const items = visible.filter((g) => g.group === group);
       return items.length ? <Section key={group} title={GROUP_LABEL[group]}>
@@ -299,6 +316,7 @@ export function GearScreen() {
     })}
     {!a.gear.length ? <EmptyState art="suitcase" title="No gear yet" body="List what goes in the porter bag and what you carry, with weights, so you stay under the limit." action={<Button label="Add gear" icon="plus" href="/add-gear" />} />
       : !visible.length ? <Note center>Nothing here.</Note> : null}
+    </Swap>
   </Screen>;
 }
 
@@ -508,7 +526,7 @@ function Stepper({ label, value, set, unit, min, max }: { label: string; value: 
   return <RowView style={{ justifyContent: 'space-between', padding: 14, paddingHorizontal: 16, borderRadius: radii.card, backgroundColor: colors.card, boxShadow: shadows.rest }}>
     <View style={{ gap: 2, flex: 1 }}>
       <T v="label">{label}</T>
-      <T v="display" style={{ fontSize: 28, lineHeight: 32 }}>{value} <Text style={{ fontFamily: fonts.medium, fontSize: 14, color: colors.stone }}>{unit}</Text></T>
+      <T v="display" style={{ fontSize: 28, lineHeight: 32 }}>{value} <Text style={{ fontFamily: fonts.regular, fontSize: 14, color: colors.stone }}>{unit}</Text></T>
     </View>
     <RowView gap={8}>
       <RoundButton icon="minus" size={44} label={`Lower ${label}`} onPress={() => set(Math.max(min, value - 1))} />
@@ -547,11 +565,13 @@ export function AltitudeCheckInSheet() {
       <T v="label" style={{ paddingLeft: 4 }}>Headache, nausea, dizziness or poor sleep</T>
       <RowView gap={8}>{SCORES.map((t, i) => {
         const on = i === score;
-        return <Pressable key={t} accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={`Symptoms ${t}`} onPress={() => setScore(i)}
-          style={{ flex: 1, alignItems: 'center', gap: 4, paddingVertical: 12, borderRadius: radii.tile, backgroundColor: on ? colors.inkButton : colors.card, boxShadow: shadows.rest }}>
-          <T v="title" color={on ? '#FFFFFF' : undefined}>{i}</T>
-          <T v="meta" color={on ? 'rgba(255,255,255,0.8)' : undefined}>{t}</T>
-        </Pressable>;
+        return <PressScale key={t} accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={`Symptoms ${t}`} onPress={() => setScore(i)}
+          style={{ flex: 1, borderRadius: radii.tile, boxShadow: shadows.rest }}>
+          <Selectable on={on} render={(chosen) => <View style={{ flexGrow: 1, alignItems: 'center', gap: 4, paddingVertical: 12, borderRadius: radii.tile, backgroundColor: chosen ? colors.inkButton : colors.card }}>
+            <T v="title" color={chosen ? '#FFFFFF' : undefined}>{i}</T>
+            <T v="meta" color={chosen ? 'rgba(255,255,255,0.8)' : undefined}>{t}</T>
+          </View>} />
+        </PressScale>;
       })}</RowView>
     </Stack>
     <RowView gap={14} align="flex-start" style={{ padding: 12, paddingHorizontal: 16, borderRadius: radii.card, backgroundColor: tints[result.tint].bg }}>
@@ -578,7 +598,7 @@ export function TrailMapScreen() {
   const stage = stages[index];
   const walked = stages.filter((s) => s.done).length;
   const climb = stage ? stage.endAltitude - stage.startAltitude : 0;
-  return <View style={{ flex: 1, backgroundColor: tints.lavender.bg }}>
+  return <MotionSurface enter={false}><View style={{ flex: 1, backgroundColor: tints.lavender.bg }}>
     <SvgXml xml={routeArt('tall', stageHeights(stages, current?.extras.adventure.summitAltitude), stages.length ? index : -1)} width="100%" height="100%" style={{ position: 'absolute' }} />
     <RowView style={{ position: 'absolute', top: insets.top + 10, left: 16, right: 16, justifyContent: 'space-between' }}>
       <RoundButton icon="back" back label="Back" />
@@ -589,11 +609,13 @@ export function TrailMapScreen() {
     </RowView>
     <View style={{ position: 'absolute', left: 16, right: 16, bottom: insets.bottom + 16, gap: 10 }}>
       {stages.length && stage ? <>
-        {stages.length > 1 ? <RowView gap={8} style={{ flexWrap: 'wrap' }}>{stages.map((s, i) => <Pressable key={s.id} accessibilityRole="button" accessibilityState={{ selected: i === index }} accessibilityLabel={`Stage ${i + 1}, ${shortDay(s.date)}`} onPress={() => setPicked(i)}
-          style={{ minWidth: 44, minHeight: 44, justifyContent: 'center', paddingHorizontal: 10, borderRadius: radii.tile, alignItems: 'center', backgroundColor: i === index ? colors.inkButton : colors.card, boxShadow: shadows.button }}>
-          <T v="meta" color={i === index ? '#FFFFFF' : s.done ? colors.stone : colors.ink} style={{ fontFamily: fonts.semibold }}>D{i + 1}</T>
-        </Pressable>)}</RowView> : null}
-        <Card lifted padding={18} style={{ borderRadius: radii.hero }}>
+        {stages.length > 1 ? <RowView gap={8} style={{ flexWrap: 'wrap' }}>{stages.map((s, i) => <PressScale key={s.id} accessibilityRole="button" accessibilityState={{ selected: i === index }} accessibilityLabel={`Stage ${i + 1}, ${shortDay(s.date)}`} onPress={() => setPicked(i)}
+          style={{ borderRadius: radii.tile, boxShadow: shadows.button }}>
+          <Selectable on={i === index} render={(on) => <View style={{ minWidth: 44, minHeight: 44, justifyContent: 'center', paddingHorizontal: 10, borderRadius: radii.tile, alignItems: 'center', backgroundColor: on ? colors.inkButton : colors.card }}>
+            <T v="meta" color={on ? '#FFFFFF' : s.done ? colors.stone : colors.ink} style={{ fontFamily: fonts.medium }}>D{i + 1}</T>
+          </View>} />
+        </PressScale>)}</RowView> : null}
+        <Swap k={index}><Card lifted padding={18} style={{ borderRadius: radii.hero }}>
           <RowView align="flex-start" style={{ justifyContent: 'space-between' }}>
             <View style={{ gap: 2, flex: 1 }}>
               <T v="eyebrow">Stage {index + 1} · {shortDay(stage.date)}{stage.date === todayISO() ? ' · today' : ''}</T>
@@ -608,8 +630,8 @@ export function TrailMapScreen() {
             <T v="meta" style={{ flexShrink: 1, textAlign: 'right' }}>{stage.to || 'Finish'}{stage.endAltitude ? ` · ${altitude(stage.endAltitude, prefs.unit)}` : ''}</T>
           </RowView>
           <Button label="Edit stage" icon="edit" kind="white" height={44} onPress={() => router.push({ pathname: '/add-stage', params: { id: stage.id } } as never)} />
-        </Card>
+        </Card></Swap>
       </> : <Card lifted padding={18}><T v="title">No route yet</T><T v="small">Add each day’s stage and it shows here.</T><Button label="Add a stage" icon="plus" href="/add-stage" /></Card>}
     </View>
-  </View>;
+  </View></MotionSurface>;
 }

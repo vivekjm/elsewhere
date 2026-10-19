@@ -66,7 +66,14 @@ export const iconPaths = {
   "chevDown": "<path d=\"M6 9l6 6 6-6\"/>",
   "users": "<circle cx=\"9\" cy=\"8\" r=\"3.5\"/><path d=\"M2.5 20a6.5 6.5 0 0 1 13 0\"/><path d=\"M16 4.5a3.5 3.5 0 0 1 0 7\"/><path d=\"M18 13.5a6.5 6.5 0 0 1 3.5 6.5\"/>",
   "vote": "<path d=\"M4 20h16\"/><path d=\"M6 20V10h4v10\"/><path d=\"M14 20V4h4v16\"/>",
-  "crown": "<path d=\"M3 8l4 4 5-7 5 7 4-4-2 11H5z\"/>"
+  "crown": "<path d=\"M3 8l4 4 5-7 5 7 4-4-2 11H5z\"/>",
+  "mic": "<rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0\"/><path d=\"M12 18v3\"/>",
+  "bolt": "<path d=\"M13 3L5 13.5h6L10 21l8-10.5h-6z\"/>",
+  "expand": "<path d=\"M14 4h6v6\"/><path d=\"M20 4l-6 6\"/><path d=\"M10 20H4v-6\"/><path d=\"M4 20l6-6\"/>",
+  "arrowUpRight": "<path d=\"M7 17L17 7\"/><path d=\"M9 7h8v8\"/>",
+  "arrowUp": "<path d=\"M12 19V5\"/><path d=\"M6 11l6-6 6 6\"/>",
+  "message": "<path d=\"M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-4 3v-3H6a2 2 0 0 1-2-2z\"/><path d=\"M9 10.5h.01\"/><path d=\"M12 10.5h.01\"/><path d=\"M15 10.5h.01\"/>",
+  "locate": "<circle cx=\"12\" cy=\"12\" r=\"7\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/><path d=\"M12 2v3\"/><path d=\"M12 19v3\"/><path d=\"M2 12h3\"/><path d=\"M19 12h3\"/>"
 } as const;
 
 export type IconName = keyof typeof iconPaths;

@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, AppState, Linking, Platform, Pressable, Share, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Linking, Platform, Share, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '../core/nav';
 import * as Application from 'expo-application';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as StoreReview from 'expo-store-review';
 import * as WebBrowser from 'expo-web-browser';
-import { FREE_DOCUMENTS_PER_TRIP, FREE_DRAFTS_PER_MONTH, PRO_MONTHLY, PRO_YEARLY, usePro } from '../core/pro';
+import { FREE_DOCUMENTS_PER_TRIP, PRO_MONTHLY, PRO_YEARLY, usePro } from '../core/pro';
+import { track } from '../core/analytics';
 import { reportError, usePrefs, useTrips } from '../core/state';
-import { useAuth, useExtras, type FeedbackKind } from '../data';
+import { isUpiId, useAuth, useExtras, type FeedbackKind } from '../data';
 import { initials, plural } from '../domain/format';
 import { travelStats } from '../domain/trips';
 import { lookup } from '../services/places';
 import {
   Avatar, Button, Card, colors, CurrencyField, EmptyState, Field, FieldLabel, fonts, Group, Header, Hero, HeroText, Icon, IconTile, PlaceField, Radio, radii,
   RoundButton, Row, RowView, Screen, Section, Segmented, shadows, Sheet, Stack, T, Tag, Toggle,
-  useDirty,
+  useDirty, Selectable, type IconName, PressScale,
 } from '../loom';
 import { exportBackup } from '../services/exports';
 import { notificationPermission, requestNotifications, type PermissionState } from '../services/notifications';
@@ -99,11 +100,11 @@ export function ProfileScreen() {
       </Section>;
     })() : null}
     {pro.isPro ? <Card><RowView gap={12}><IconTile icon="crown" tint="mint" /><View style={{ flex: 1, gap: 2 }}>
-      <T v="row" style={{ fontSize: 15 }}>Trips Loom Pro</T><T v="meta">Unlimited AI drafts and documents. Thank you.</T></View>
-      <Pressable accessibilityRole="button" onPress={pro.manage} hitSlop={8}><T v="small" style={{ fontFamily: fonts.semibold }}>Manage</T></Pressable></RowView></Card>
+      <T v="row" style={{ fontSize: 15 }}>Trips Loom Pro</T><T v="meta">Organiser tools and unlimited documents on every trip. Thank you.</T></View>
+      <PressScale accessibilityRole="button" onPress={pro.manage} hitSlop={8}><T v="small" style={{ fontFamily: fonts.medium }}>Manage</T></PressScale></RowView></Card>
       : <Hero padding={18}>
         <RowView style={{ justifyContent: 'space-between', gap: 12 }}>
-          <View style={{ flex: 1, gap: 4 }}><HeroText v="row" style={{ fontSize: 18 }}>Trips Loom Pro</HeroText><HeroText v="small">Unlimited AI drafts and documents{pro.draftsLeft !== null ? ` · ${pro.draftsLeft} of ${FREE_DRAFTS_PER_MONTH} drafts left this month` : ''}</HeroText></View>
+          <View style={{ flex: 1, gap: 4 }}><HeroText v="row" style={{ fontSize: 18 }}>Trips Loom Pro</HeroText><HeroText v="small">Organiser tools for every trip you run: Ready Check nudges, the trip kitty and unlimited documents</HeroText></View>
           <Button label="See plans" kind="white" full={false} height={44} href="/paywall" />
         </RowView>
       </Hero>}
@@ -131,13 +132,17 @@ export function PreferencesScreen() {
   const [unit, setUnit] = useState(prefs.unit);
   const [currency, setCurrency] = useState(prefs.currency);
   const [tripTimeZone, setTripTimeZone] = useState(prefs.native.tripTimeZone);
+  const [upiId, setUpiId] = useState(prefs.native.upiId);
+  const [shareLanguage, setShareLanguage] = useState(prefs.native.shareLanguage);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [upiError, setUpiError] = useState('');
   const save = async () => {
     if (!name.trim()) { setError('Enter your name.'); return; }
+    if (upiId.trim() && !isUpiId(upiId)) { setUpiError('That doesn’t look like a UPI ID. It looks like name@bank.'); return; }
     setBusy(true);
     try {
-      await prefs.update({ display_name: name, home_base: homeBase, unit, native: { currency, tripTimeZone } });
+      await prefs.update({ display_name: name, home_base: homeBase, unit, native: { currency, tripTimeZone, upiId: upiId.trim().toLowerCase(), shareLanguage } });
       router.back();
     } catch (e) { reportError(e); } finally { setBusy(false); }
   };
@@ -152,6 +157,14 @@ export function PreferencesScreen() {
     </Section>
     <Section title="Units"><Segmented options={['Metric', 'Imperial']} value={unit === 'metric' ? 'Metric' : 'Imperial'} onChange={(v) => setUnit(v === 'Metric' ? 'metric' : 'imperial')} /></Section>
     <CurrencyField label="Home currency" value={currency} onChange={setCurrency} />
+    <Section title="Messages to your group">
+      <Segmented options={['English', 'Hinglish']} value={shareLanguage === 'hinglish' ? 'Hinglish' : 'English'} onChange={(v) => setShareLanguage(v === 'Hinglish' ? 'hinglish' : 'en')} />
+      <T v="small" style={{ paddingHorizontal: 4 }}>Invites, ready-check nudges and day plans you send to the group chat.</T>
+    </Section>
+    <Section title="Getting paid back">
+      <Field label="Your UPI ID" value={upiId} onChangeText={(t) => { setUpiId(t.replace(/\s/g, '')); setUpiError(''); }} icon="card" kind="email" placeholder="yourname@okbank" maxLength={100} error={upiError}
+        hint="Friends on your trips can pay you back in one tap from their UPI app. Only you can set this." />
+    </Section>
     <Group>
       <Row icon="clock" title="Trip time zone" meta="Show plan times in the destination’s time" trailing={<Toggle value={tripTimeZone} onChange={setTripTimeZone} label="Trip time zone" />} />
       <Row icon="cloud" title="Temperatures" meta={unit === 'metric' ? 'Celsius, from your units' : 'Fahrenheit, from your units'} trailing={null} />
@@ -168,7 +181,7 @@ export function HelpScreen() {
     <Header title="Help & feedback" />
     <Section title="Getting started">
       <Group>
-        <Row icon="sparkle" title="Draft a trip with AI" meta="Describe it, get days and packing" href="/planner" />
+        <Row icon="sparkle" title="Quick start a trip" meta="Describe it in a sentence, get a day-by-day outline" href="/planner" />
         <Row icon="wardrobe" title="Build your wardrobe" meta="Outfits come from what you own" href="/trip/wardrobe" />
         <Row icon="shared" title="Share a trip" meta="Split costs and vote on plans" href="/shared" />
         <Row icon="mail" title="Import bookings" meta="Paste a confirmation email" href="/import-bookings" />
@@ -269,6 +282,10 @@ export function PrivacyScreen() {
           trailing={busy === 'export' ? <ActivityIndicator color={colors.ember} /> : 'chev'} />
         <Row icon="lock" title="Lock documents" meta={biometrics ? `Ask for ${biometrics} to open documents` : 'Ask for your passcode to open documents'}
           trailing={<Toggle value={prefs.native.lockDocuments} onChange={(on) => void setLock(on)} label="Lock documents" />} />
+        <Row icon="activity" title="Help improve Trips Loom" meta="Anonymous usage counts (which screens and buttons), never what’s in your trips"
+          trailing={<Toggle value={prefs.native.analytics} onChange={(on) => void prefs.update({ native: { analytics: on } }).catch((e) => reportError(e))} label="Help improve Trips Loom" />} />
+        <Row icon="sparkle" title="Cloud AI for planning" meta={prefs.native.cloudAi === 'ask' ? 'Asked the first time planning would use it' : prefs.native.cloudAi === 'on' ? 'Allowed: posts’ text and trip ideas go to DeepSeek (servers in China)' : 'Off: only AI on this phone, when it has Apple Intelligence'}
+          trailing={<Toggle value={prefs.native.cloudAi === 'on'} onChange={(on) => void prefs.update({ native: { cloudAi: on ? 'on' : 'off' } }).catch((e) => reportError(e))} label="Cloud AI for planning" />} />
       </Group>
     </Section>
     <Section title="Permissions">
@@ -282,7 +299,9 @@ export function PrivacyScreen() {
       <Group>
         <Row icon="cloud" title="Weather, places and tides" meta="Open-Meteo · only the destination is sent" trailing={null} />
         <Row icon="card" title="Exchange rates" meta="open.er-api.com · only the currency is sent" trailing={null} />
-        <Row icon="sparkle" title="AI drafts" meta="Written on this phone where supported; prompts aren’t stored" trailing={null} />
+        <Row icon="sparkle" title="Quick start" meta="Built on this phone; what you type isn’t sent or stored" trailing={null} />
+        <Row icon="camera" title="Planning and reels" meta="Your phone opens each shared post’s public preview (caption, hashtags, cover). Places are checked on OpenStreetMap (Photon)." trailing={null} />
+        <Row icon="sparkle" title="Cloud AI (DeepSeek)" meta="Only with your permission: the posts’ text and what you typed, and for ideas the destination, the board’s places and the group’s size, food and budget. Never the video, your name or other trips." trailing={null} />
         <Row icon="doc" title="Documents" meta="Files stay on this phone; only their names sync" trailing={null} />
       </Group>
     </Section>
@@ -295,31 +314,34 @@ export function PrivacyScreen() {
 
 /* ------------------------------------------------------------------ Paywall */
 
-function Feature({ icon, title, sub }: { icon: 'sparkle' | 'doc' | 'shared' | 'map'; title: string; sub: string }) {
+function Feature({ icon, title, sub }: { icon: IconName; title: string; sub: string }) {
   return <RowView gap={14}><IconTile icon={icon} tint="peach" /><View style={{ flex: 1, gap: 2 }}><T v="row" style={{ fontSize: 15 }}>{title}</T><T v="meta">{sub}</T></View></RowView>;
 }
 
 function Plan({ name, price, sub, on, onPress }: { name: string; price: string; sub: string; on: boolean; onPress: () => void }) {
-  return <Pressable accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={`${name}, ${price || 'price shown at checkout'}, ${sub}`} onPress={onPress}
-    style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: radii.card, backgroundColor: on ? colors.inkButton : colors.card, boxShadow: on ? shadows.lift : shadows.rest }}>
-    <View style={{ flex: 1, gap: 2 }}><T v="row" color={on ? '#FFFFFF' : undefined}>{name}</T><T v="meta" color={on ? 'rgba(255,255,255,0.8)' : undefined}>{sub}</T></View>
-    {/* Until the store answers (or when it can't), say so instead of a bare dash. */}
-    {price ? <T v="title" style={{ fontSize: 18 }} color={on ? '#FFFFFF' : undefined}>{price}</T>
-      : <T v="meta" color={on ? 'rgba(255,255,255,0.7)' : undefined}>Price at checkout</T>}
-    <Radio on={on} />
-  </Pressable>;
+  return <PressScale accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={`${name}, ${price || 'price shown at checkout'}, ${sub}`} onPress={onPress}
+    style={{ borderRadius: radii.card, boxShadow: on ? shadows.lift : shadows.rest }}>
+    <Selectable on={on} render={(chosen) => <View style={{ flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: radii.card, backgroundColor: chosen ? colors.inkButton : colors.card }}>
+      <View style={{ flex: 1, gap: 2 }}><T v="row" color={chosen ? '#FFFFFF' : undefined}>{name}</T><T v="meta" color={chosen ? 'rgba(255,255,255,0.8)' : undefined}>{sub}</T></View>
+      {/* Until the store answers (or when it can't), say so instead of a bare dash. */}
+      {price ? <T v="title" style={{ fontSize: 18 }} color={chosen ? '#FFFFFF' : undefined}>{price}</T>
+        : <T v="meta" color={chosen ? 'rgba(255,255,255,0.7)' : undefined}>Price at checkout</T>}
+      <Radio on={on} />
+    </View>} />
+  </PressScale>;
 }
 
 export function PaywallScreen() {
   const router = useRouter();
   const pro = usePro();
+  useEffect(() => { track('paywall_viewed'); }, []);
   const [plan, setPlan] = useState(PRO_YEARLY);
   const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
   const buy = async () => {
     setBusy('buy');
     const ok = await pro.buy(plan);
     setBusy(null);
-    if (ok) { Alert.alert('Welcome to Pro', 'Unlimited drafts and documents are on.'); router.back(); }
+    if (ok) { track('purchase_completed', { plan: plan === PRO_YEARLY ? 'yearly' : 'monthly' }); Alert.alert('Welcome to Pro', 'Organiser tools and unlimited documents are on.'); router.back(); }
   };
   const restore = async () => {
     setBusy('restore');
@@ -341,21 +363,21 @@ export function PaywallScreen() {
       leading={busy === 'buy' ? <ActivityIndicator color="#FFFFFF" /> : undefined} onPress={() => void buy()} />}
     <T v="meta" center>{terms} · renews automatically until cancelled in Settings</T>
     <RowView gap={16} style={{ justifyContent: 'center' }}>
-      <Pressable accessibilityRole="button" onPress={() => void restore()} hitSlop={8}><T v="meta" color={colors.ink} style={{ fontFamily: fonts.semibold }}>{busy === 'restore' ? 'Restoring…' : 'Restore purchases'}</T></Pressable>
-      <Pressable accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(TERMS_URL)} hitSlop={8}><T v="meta" color={colors.ink} style={{ fontFamily: fonts.semibold }}>Terms</T></Pressable>
-      <Pressable accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(PRIVACY_URL)} hitSlop={8}><T v="meta" color={colors.ink} style={{ fontFamily: fonts.semibold }}>Privacy</T></Pressable>
+      <PressScale accessibilityRole="button" onPress={() => void restore()} hitSlop={8}><T v="meta" color={colors.ink} style={{ fontFamily: fonts.medium }}>{busy === 'restore' ? 'Restoring…' : 'Restore purchases'}</T></PressScale>
+      <PressScale accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(TERMS_URL)} hitSlop={8}><T v="meta" color={colors.ink} style={{ fontFamily: fonts.medium }}>Terms</T></PressScale>
+      <PressScale accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(PRIVACY_URL)} hitSlop={8}><T v="meta" color={colors.ink} style={{ fontFamily: fonts.medium }}>Privacy</T></PressScale>
     </RowView>
   </>}>
     <RowView style={{ justifyContent: 'flex-end' }}><RoundButton icon="x" label="Close" onPress={() => router.back()} /></RowView>
     <Hero gap={10}>
-      <HeroText faint style={{ fontFamily: fonts.semibold, fontSize: 14 }}>Trips Loom Pro</HeroText>
+      <HeroText faint style={{ fontFamily: fonts.medium, fontSize: 14 }}>Trips Loom Pro</HeroText>
       <HeroText v="display" style={{ fontSize: 34, lineHeight: 38, letterSpacing: -0.8 }}>Plan less.{'\n'}Go further.</HeroText>
-      <HeroText v="small" style={{ fontSize: 14 }}>{pro.isPro ? 'You’re on Pro. Thank you for supporting Trips Loom.' : 'Unlimited AI drafts and documents on every trip.'}</HeroText>
+      <HeroText v="small" style={{ fontSize: 14 }}>{pro.isPro ? 'You’re on Pro. Thank you for supporting Trips Loom.' : 'Organiser tools for every trip you run.'}</HeroText>
     </Hero>
     <Card>
-      <Feature icon="sparkle" title="Unlimited AI planning" sub={`Free accounts get ${FREE_DRAFTS_PER_MONTH} drafts a month`} />
+      <Feature icon="shared" title="Organiser tools on every trip" sub="Ready Check nudges, the trip kitty and the group recap book" />
       <Feature icon="doc" title="Unlimited documents" sub={`Free accounts keep ${FREE_DOCUMENTS_PER_TRIP} per trip`} />
-      <Feature icon="shared" title="Everything else stays free" sub="Shared trips, packing, budgets, widgets and reminders" />
+      <Feature icon="check" title="Everything else stays free" sub="Shared trips, votes, splitting and settling up, packing, widgets" />
     </Card>
     {!pro.isPro ? <Stack gap={10}>
       <Plan name={saving >= 5 ? `Yearly · save ${saving}%` : 'Yearly'} price={yearly} sub={yearlyTrial ? `${yearlyTrial} free trial, then billed yearly` : 'Billed yearly, cancel any time'} on={plan === PRO_YEARLY} onPress={() => setPlan(PRO_YEARLY)} />

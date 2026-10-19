@@ -32,7 +32,7 @@ function fromB64url(token: string): Uint8Array {
 }
 
 /** Builds an invite from your copy: "you" becomes your name so everyone sees who paid. */
-export function makeInvite(trip: Trip, extras: TripExtras, senderName: string): Invite {
+export function makeInvite(trip: Trip, extras: TripExtras, senderName: string, senderUpi = ''): Invite {
   const sender = senderName.trim() || 'Trip organiser';
   const senderId = `p-${uid()}`;
   const swap = (id: string) => id === ME ? senderId : id;
@@ -43,7 +43,7 @@ export function makeInvite(trip: Trip, extras: TripExtras, senderName: string): 
   };
   const shared: TripExtras = {
     ...extras,
-    people: [{ id: senderId, name: sender }, ...extras.people],
+    people: [{ id: senderId, name: sender, ...(senderUpi ? { upi: senderUpi } : {}) }, ...extras.people],
     expenses: extras.expenses.map((e) => ({ ...e, paidBy: swap(e.paidBy), splitWith: e.splitWith.map(swap) })),
     settlements: extras.settlements.map((s) => ({ ...s, from: swap(s.from), to: swap(s.to) })),
     polls: extras.polls.map((p) => ({ ...p, votes: Object.fromEntries(Object.entries(p.votes).map(([k, v]) => [swap(k), v])) })),

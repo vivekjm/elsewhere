@@ -4,7 +4,7 @@
  * Map data © OpenStreetMap contributors; the attribution button stays on.
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { Camera, GeoJSONSource, Layer, Map, Marker, OfflineManager, type CameraRef, type OfflinePack } from '@maplibre/maplibre-react-native';
@@ -12,15 +12,17 @@ import { useRouter } from '../core/nav';
 import { reportError, useCurrentTrip, useTrips } from '../core/state';
 import { tripDates, uid, type Activity } from '../data';
 import { clockTime, localDay, longDay, planTime, shortDay, weekday } from '../domain/format';
-import { plansOn, sortPlans } from '../domain/trips';
-import { Button, Card, colors, EmptyState, fonts, Header, HScroll, Icon, Loading, Note, Pill, radii, RowView, Screen, shadows, Stack, T, tints } from '../loom';
+import { placeOf, plansOn, sortPlans } from '../domain/trips';
+import { Button, Card, colors, EmptyState, fonts, GlassFill, Header, HScroll, Icon, Loading, Note, Pill, radii, RowView, Screen, shadows, Stack, T, tints, PressScale, useMapStyle,
+} from '../loom';
 import { bearing, flightStatus, parseFlightNumber, type FlightStatus } from '../services/flights';
 import { boundsOf, currentPosition, distanceKm, geocodePlace, placeName, type LatLng } from '../services/geo';
 import { lookup } from '../services/places';
 import { openRoute } from '../services/maps';
 import { NoTrip } from './trip';
 
-export const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
+/** For offline packs: the dark style's tiles, which the warm style the maps draw with reads too. */
+export const MAP_STYLE = 'https://tiles.openfreemap.org/styles/dark';
 const PACK_PREFIX = 'trip-';
 
 /* ------------------------------------------------------------------ geocoding */
@@ -56,13 +58,14 @@ const placeQuery = (a: Activity, destination: string) => `v2|${a.place.trim()}|$
 /* ------------------------------------------------------------------ trip map */
 
 function Pin({ label, color }: { label: string; color: string }) {
-  return <View style={{ minWidth: 28, height: 28, paddingHorizontal: 6, borderRadius: 14, backgroundColor: color, borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', boxShadow: shadows.button }}>
-    <Text style={{ fontFamily: fonts.bold, fontSize: 12, color: '#FFFFFF' }}>{label}</Text>
+  return <View style={{ minWidth: 24, height: 24, paddingHorizontal: 5, borderRadius: radii.chip, backgroundColor: color, borderWidth: 2, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center' }}>
+    <Text style={{ fontFamily: fonts.semibold, fontSize: 11, color: colors.onLight }}>{label}</Text>
   </View>;
 }
 
 export function TripMapScreen() {
   const current = useCurrentTrip();
+  const mapStyle = useMapStyle();
   const { status } = useTrips();
   const router = useRouter();
   const camera = useRef<CameraRef>(null);
@@ -162,29 +165,30 @@ export function TripMapScreen() {
       <Pill label="All days" active={day === null} onPress={() => setDay(null)} />
       {dates.map((d) => <Pill key={d} label={`${weekday(d)} ${shortDay(d).split(' ').slice(-2).join(' ')}`} active={day === d} onPress={() => setDay(d)} />)}
     </HScroll>
-    <View style={{ height: 380, borderRadius: radii.hero, overflow: 'hidden', backgroundColor: colors.mist, boxShadow: shadows.rest }}>
-      <Map style={{ flex: 1 }} mapStyle={MAP_STYLE} logo={false} attribution attributionPosition={{ bottom: 8, right: 8 }} accessibilityLabel={`Map of ${trip.name}`} onDidFinishLoadingMap={() => setLoaded(true)}>
+    <View style={{ height: 380, borderRadius: radii.hero, overflow: 'hidden', backgroundColor: '#1a1814', borderWidth: 1, borderColor: colors.hairline }}>
+      <Map style={{ flex: 1 }} mapStyle={mapStyle as never} tintColor={colors.inkFaint} logo={false} attribution attributionPosition={{ bottom: 8, right: 8 }} accessibilityLabel={`Map of ${trip.name}`} onDidFinishLoadingMap={() => setLoaded(true)}>
         <Camera ref={camera} initialViewState={{ center, zoom: focus ? 12 : 1.5 }} />
         {line ? <GeoJSONSource id="day-route" data={line}>
-          <Layer id="day-route-line" type="line" paint={{ 'line-color': colors.ember, 'line-width': 3, 'line-dasharray': [1.5, 1.5] }} layout={{ 'line-cap': 'round' }} />
+          <Layer id="day-route-line" type="line" paint={{ 'line-color': colors.ink, 'line-width': 1.5, 'line-dasharray': [2.5, 2] }} />
         </GeoJSONSource> : null}
         {stops.map((s, i) => <Marker key={s.a.id} id={`plan-${s.a.id}`} lngLat={[s.at.lng, s.at.lat]} onPress={() => router.push({ pathname: '/add-plan', params: { id: s.a.id } } as never)}>
-          <Pin label={String(i + 1)} color={colors.ember} />
+          <Pin label={String(i + 1)} color={colors.ink} />
         </Marker>)}
         {steps.map((s) => <Marker key={s.id} id={`step-${s.id}`} lngLat={[s.lng, s.lat]}><Pin label="●" color={tints.lavender.fg} /></Marker>)}
       </Map>
-      {!points.length ? <View pointerEvents="none" style={{ position: 'absolute', left: 16, right: 16, bottom: 16, padding: 12, borderRadius: radii.card, backgroundColor: 'rgba(255,255,255,0.94)' }}>
+      {!points.length ? <View pointerEvents="none" style={{ position: 'absolute', left: 16, right: 16, bottom: 16, padding: 12, borderRadius: radii.card }}>
+        <GlassFill kind="strong" radius={radii.card} />
         <T v="small">{locating ? 'Finding your places on the map…' : withPlace.length ? 'Couldn’t find these places. Try a fuller address in each plan’s “Where”.' : `Add a “Where” to your plans and they’ll appear here. You can save ${destination.split(',')[0] || 'the area'} for offline now.`}</T>
       </View> : null}
     </View>
     {stops.length ? <Card padding={14} gap={10}>
-      {stops.map((s, i) => <Pressable key={s.a.id} accessibilityRole="button" accessibilityLabel={`Open ${s.a.title}`} onPress={() => router.push({ pathname: '/add-plan', params: { id: s.a.id } } as never)}>
+      {stops.map((s, i) => <PressScale key={s.a.id} accessibilityRole="button" accessibilityLabel={`Open ${s.a.title}`} onPress={() => router.push({ pathname: '/add-plan', params: { id: s.a.id } } as never)}>
         <RowView gap={12}>
           <Pin label={String(i + 1)} color={colors.ember} />
-          <View style={{ flex: 1 }}><T v="row" style={{ fontSize: 15 }} lines={1}>{s.a.title}</T><T v="meta" lines={1}>{[day ? '' : shortDay(s.a.date), planTime(s.a.time), s.a.place].filter(Boolean).join(' · ')}</T></View>
+          <View style={{ flex: 1 }}><T v="row" style={{ fontSize: 15 }} lines={1}>{s.a.title}</T><T v="meta" lines={1}>{[day ? '' : shortDay(s.a.date), planTime(s.a.time), placeOf(s.a)].filter(Boolean).join(' · ')}</T></View>
           {i > 0 ? <T v="meta">{distanceKm(stops[i - 1].at, s.at).toFixed(1)} km</T> : null}
         </RowView>
-      </Pressable>)}
+      </PressScale>)}
       {walk ? <T v="meta">{day ? `${walk.toFixed(1)} km between stops, about ${Math.round((walk / 4.5) * 60)} min on foot` : `${walk.toFixed(1)} km between all stops`}</T> : null}
     </Card> : null}
     <Stack gap={10}>
@@ -192,7 +196,7 @@ export function TripMapScreen() {
       <Button label={checking ? 'Finding you…' : 'Check in here'} icon="pin" kind="white" onPress={() => void checkIn()} />
       {pack.state === 'saved'
         ? <Card padding={14}><RowView gap={12}><Icon name="check" size={18} color={tints.mint.fg} /><View style={{ flex: 1 }}><T v="row" style={{ fontSize: 15 }}>Saved for offline</T><T v="meta">{pack.mb.toFixed(0)} MB on this phone · works without signal</T></View>
-          <Pressable accessibilityRole="button" onPress={removeOffline} hitSlop={8}><T v="small" style={{ fontFamily: fonts.semibold }}>Remove</T></Pressable></RowView></Card>
+          <PressScale accessibilityRole="button" onPress={removeOffline} hitSlop={8}><T v="small" style={{ fontFamily: fonts.medium }}>Remove</T></PressScale></RowView></Card>
         : <Button label={pack.state === 'downloading' ? `Saving map… ${pack.percent}%` : 'Save map for offline'} icon="export" kind="white" onPress={pack.state === 'downloading' ? undefined : () => void saveOffline()} />}
     </Stack>
     {steps.length ? <Card padding={14} gap={10}>
@@ -210,9 +214,9 @@ export function TripMapScreen() {
 
 /** A top-down plane pointing along its heading (0 = north). */
 function PlaneMarker({ heading }: { heading: number }) {
-  return <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.ember, borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', boxShadow: shadows.button }}>
+  return <View style={{ width: 32, height: 32, borderRadius: radii.chip, backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.ground, alignItems: 'center', justifyContent: 'center', boxShadow: shadows.glow }}>
     <Svg width={20} height={20} viewBox="0 0 24 24" style={{ transform: [{ rotate: `${Math.round(heading)}deg` }] }}>
-      <Path fill="#FFFFFF" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+      <Path fill={colors.onLight} d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
     </Svg>
   </View>;
 }
@@ -222,6 +226,7 @@ const fmtMinutes = (m: number) => (m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} 
 /** Live flight status for one plan (a Travel plan with a flight number). Refreshes every 30 seconds. */
 export function FlightScreen() {
   const current = useCurrentTrip();
+  const mapStyle = useMapStyle();
   const { status: tripsStatus } = useTrips();
   const params = useLocalSearchParams<{ id?: string }>();
   const plan = current?.trip.activities.find((a) => a.id === params.id);
@@ -262,10 +267,10 @@ export function FlightScreen() {
       {r ? <T v="small">{r.origin.city || r.origin.name} to {r.destination.city || r.destination.name}</T> : null}
       <RowView gap={8} style={{ marginTop: 6 }}><Icon name="plane" size={16} color={status?.phase === 'airborne' ? colors.ember : colors.stone} /><T v="row" style={{ fontSize: 15, flex: 1 }}>{phaseText}</T></RowView>
     </Card>
-    {bounds ? <View style={{ height: 300, borderRadius: radii.hero, overflow: 'hidden', backgroundColor: colors.mist, boxShadow: shadows.rest }}>
-      <Map style={{ flex: 1 }} mapStyle={MAP_STYLE} logo={false} attribution attributionPosition={{ bottom: 8, right: 8 }} accessibilityLabel="Flight map">
+    {bounds ? <View style={{ height: 300, borderRadius: radii.hero, overflow: 'hidden', backgroundColor: '#1a1814', borderWidth: 1, borderColor: colors.hairline }}>
+      <Map style={{ flex: 1 }} mapStyle={mapStyle as never} tintColor={colors.inkFaint} logo={false} attribution attributionPosition={{ bottom: 8, right: 8 }} accessibilityLabel="Flight map">
         <Camera initialViewState={{ bounds, padding: { top: 40, bottom: 40, left: 40, right: 40 } }} />
-        {line ? <GeoJSONSource id="flight-route" data={line}><Layer id="flight-route-line" type="line" paint={{ 'line-color': colors.stone, 'line-width': 2, 'line-dasharray': [2, 2] }} /></GeoJSONSource> : null}
+        {line ? <GeoJSONSource id="flight-route" data={line}><Layer id="flight-route-line" type="line" paint={{ 'line-color': colors.ink, 'line-width': 1.5, 'line-dasharray': [2.5, 2] }} /></GeoJSONSource> : null}
         {r ? <Marker id="origin" lngLat={[r.origin.lng, r.origin.lat]}><Pin label={r.origin.iata || 'A'} color={colors.inkButton} /></Marker> : null}
         {r ? <Marker id="destination" lngLat={[r.destination.lng, r.destination.lat]}><Pin label={r.destination.iata || 'B'} color={colors.inkButton} /></Marker> : null}
         {live ? <Marker id="plane" lngLat={[live.lng, live.lat]}><PlaneMarker heading={live.track ?? (r ? bearing(live, r.destination) : 0)} /></Marker> : null}

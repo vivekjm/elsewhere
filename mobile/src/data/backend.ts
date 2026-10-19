@@ -1,4 +1,5 @@
 import 'react-native-url-polyfill/auto';
+import { File } from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
 import { uid } from './model';
 
@@ -52,9 +53,10 @@ export async function apiFetch(
   path: string,
   token: string | null,
   init: RequestInit = {},
+  timeoutMs = 20000,
 ): Promise<Response> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 20000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   const method = (init.method || 'GET').toUpperCase();
   try {
     return await fetch(`${API_BASE_URL}${path}`, {
@@ -99,9 +101,11 @@ export async function uploadPhoto(uri: string, token: string | null, mimeType = 
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(mimeType)) {
     throw new Error('Choose a JPEG, PNG or WebP image.');
   }
-  const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
   const form = new FormData();
-  form.append('image', { uri, name: `wardrobe.${extension}`, type: mimeType } as unknown as Blob);
+  // Expo's fetch only sends a file part that can give up its bytes (an expo-file-system File); React Native's
+  // `{ uri, name, type }` part fails with "Unsupported FormDataPart implementation". The server reads the type
+  // from the bytes, and the part carries the file's own name.
+  form.append('image', new File(uri) as unknown as Blob);
   const response = await apiFetch('/api/images', token, { method: 'POST', body: form });
   const data = await responseJson<{ url?: unknown }>(response);
   if (typeof data.url !== 'string' || !/^\/api\/images\/[a-f0-9-]{36}$/i.test(data.url)) {

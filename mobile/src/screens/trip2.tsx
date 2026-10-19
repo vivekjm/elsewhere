@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Keyboard, Pressable, Text, View, type ImageStyle, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Alert, Image, Keyboard, Text, View, type ImageStyle, type ViewStyle } from 'react-native';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useRouter } from '../core/nav';
+import { useOpenTripPage, useRouter } from '../core/nav';
 import * as DocumentPicker from 'expo-document-picker';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
@@ -9,6 +9,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import * as Sharing from 'expo-sharing';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { FREE_DOCUMENTS_PER_TRIP, usePro } from '../core/pro';
+import { track } from '../core/analytics';
 import { reportError, useCurrentTrip, usePrefs, useTrips } from '../core/state';
 import { canScanReceipts, scanReceipt } from '../services/intelligence';
 import {
@@ -21,7 +22,7 @@ import { budgetOf, convert, EXPENSE_ICON, EXPENSE_LABEL, EXPENSE_TINT, nameOf } 
 import {
   Avatar, Bars, Button, Card, Checkbox, CheckToggle, Chips, colors, CurrencyField, DateField, EmptyState, Field, FieldLabel, fonts, Group, Header, Hero, HeroText,
   Icon, IconTile, Loading, Note, Press, Progress, Radio, radii, Ring, RoundButton, Row, RowView, Screen, Section, Segmented, shadows, Sheet, Stack, SwatchRow, T, Tag,
-  tints, type IconName, HScroll, haptic, PressScale,
+  tints, type IconName, HScroll, haptic, PressScale, Arrive, DrawIn, Swap, Selectable, Toggle,
   SheetActions,
   useDirty,
 } from '../loom';
@@ -29,7 +30,7 @@ import { convertLabel, useRates } from '../services/currency';
 import { tides, type TideDay } from '../services/outdoors';
 import { summary, useTripWeather, weatherIcon } from '../services/weather';
 import { DayStrip, initialDay, NoTrip } from './trip';
-import { tintFor } from './shared';
+import { tintFor } from '../domain/people';
 
 /* ------------------------------------------------------------------ Wardrobe */
 
@@ -66,16 +67,18 @@ export function WardrobeScreen() {
       <View style={{ flex: 1, gap: 2 }}><T v="row" style={{ fontSize: 15 }} color="#FFFFFF">Stylist</T><T v="meta" color="rgba(255,255,255,0.8)">{combinations(workspace.items) ? `${plural(combinations(workspace.items), 'combination')} from ${plural(workspace.items.length, 'piece')}, dressed for the forecast` : 'Add tops and bottoms to get outfits for each day'}</T></View>
       <Icon name="chev" size={18} color="#FFFFFF" />
     </Press> : null}
+    <Swap k={filter}>
     {items.length ? <Stack>{pairs.map((pair, r) => <RowView key={r} align="stretch">
-      {pair.map((item) => <Press key={item.id} label={`${item.name}, ${CATEGORY_LABEL[item.category]}`} onPress={() => router.push({ pathname: '/add-piece', params: { id: item.id } } as never)}
+      {pair.map((item) => <Arrive key={item.id} style={{ flex: 1 }}><Press label={`${item.name}, ${CATEGORY_LABEL[item.category]}`} onPress={() => router.push({ pathname: '/add-piece', params: { id: item.id } } as never)}
         style={{ flex: 1, backgroundColor: colors.card, borderRadius: radii.card, overflow: 'hidden', boxShadow: shadows.rest }}>
         <ItemPhoto item={item} size="100%" />
         <View style={{ padding: 12, paddingHorizontal: 14, gap: 2 }}><T v="row" lines={1} style={{ fontSize: 15 }}>{item.name}</T><T v="meta">{CATEGORY_LABEL[item.category]}{item.weight ? ` · ${weight(item.weight)}` : ''}</T></View>
-      </Press>)}
+      </Press></Arrive>)}
       {pair.length === 1 ? <View style={{ flex: 1 }} /> : null}
     </RowView>)}</Stack>
       : <EmptyState art="suitcase" title={chosen ? `No ${chosen.toLowerCase()} yet` : 'Your wardrobe is empty'} body="Add the clothes you travel with. Outfits and packing lists are built from them."
         action={<Button label="Add a piece" icon="plus" href="/add-piece" />} />}
+    </Swap>
   </Screen>;
 }
 
@@ -134,19 +137,19 @@ export function AddPieceSheet() {
   const shown: Item = { id: 'preview', name, category, weight: 0, image, color };
   return <Sheet title={existing ? 'Edit piece' : 'Add a piece'} dirty={dirty} footer={<SheetActions primary={<Button label={uploading ? 'Uploading photo…' : 'Save'} icon={uploading ? undefined : 'check'} leading={uploading ? <ActivityIndicator color="#FFFFFF" /> : undefined} onPress={save} />}
     actions={[!!existing && { icon: 'trash', label: 'Remove from wardrobe', onPress: remove, danger: true }]} />}>
-    <Pressable accessibilityRole="button" accessibilityLabel={image || preview ? 'Change photo' : 'Add a photo'} onPress={choosePhoto} style={{ alignSelf: 'center' }}>
+    <PressScale accessibilityRole="button" accessibilityLabel={image || preview ? 'Change photo' : 'Add a photo'} onPress={choosePhoto} style={{ alignSelf: 'center' }}>
       {preview ? <Image source={{ uri: preview }} style={{ width: 140, height: 140, borderRadius: radii.card }} /> : <ItemPhoto item={shown} size={140} radius={radii.card} />}
       {!preview && !image ? <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 14, alignItems: 'center' }}>
         <T v="meta" color="rgba(30,30,30,0.6)">Add a photo</T>
       </View> : null}
       <View style={{ position: 'absolute', right: -6, bottom: -6, width: 40, height: 40, borderRadius: radii.button, backgroundColor: colors.inkButton, alignItems: 'center', justifyContent: 'center' }}><Icon name="camera" size={18} color="#FFFFFF" /></View>
-    </Pressable>
+    </PressScale>
     <Field label="Name" value={name} onChangeText={(t) => { setName(t); setError(''); }} icon="wardrobe" placeholder="Linen overshirt" maxLength={200} error={error} />
     <Stack gap={8}><FieldLabel>Kind</FieldLabel><Chips value={CATEGORIES.indexOf(category)} onChange={(i) => setCategory(CATEGORIES[i])} items={CATEGORIES.map((c) => ({ label: c }))} /></Stack>
     <Stack gap={8}><FieldLabel>Colour</FieldLabel>
       {/* One even row that scrolls, instead of a ragged second line. */}
       <HScroll gap={10}>
-        {PALETTE.map((c) => <Pressable key={c} accessibilityRole="radio" accessibilityState={{ checked: color === c }} accessibilityLabel={PALETTE_NAMES[c] ?? 'Colour'} onPress={() => { haptic.select(); setColor(c); }}
+        {PALETTE.map((c) => <PressScale key={c} accessibilityRole="radio" accessibilityState={{ checked: color === c }} accessibilityLabel={PALETTE_NAMES[c] ?? 'Colour'} onPress={() => { haptic.select(); setColor(c); }}
           style={{ width: 40, height: 40, borderRadius: radii.round, backgroundColor: c, borderWidth: color === c ? 3 : 1, borderColor: color === c ? colors.ember : colors.rule }} />)}
       </HScroll>
     </Stack>
@@ -162,6 +165,7 @@ export function StylistScreen() {
   const ws = useTrips();
   const prefs = usePrefs();
   const router = useRouter();
+  const openTrip = useOpenTripPage();
   const params = useLocalSearchParams<{ date?: string }>();
   const weather = useTripWeather(current?.trip ?? null);
   const [date, setDate] = useState(current ? initialDay(current.trip, params.date) : '');
@@ -197,6 +201,7 @@ export function StylistScreen() {
   return <Screen bar="tabs">
     <Header title="Stylist" right={<RoundButton icon="sparkle" dark label={styled ? 'Restyle every day' : 'Style every day'} onPress={styleAll} />} />
     <DayStrip dates={dates} value={day} onChange={setDate} weather={weather} />
+    <Swap k={day} style={{ gap: 16 }}>
     <Hero>
       <RowView align="flex-start" style={{ justifyContent: 'space-between' }}>
         <View style={{ gap: 4, flex: 1 }}><HeroText faint style={{ fontSize: 14 }}>{longDay(day)}</HeroText><HeroText v="display" style={{ fontSize: 26, lineHeight: 30 }}>Day {dates.indexOf(day) + 1} outfit</HeroText></View>
@@ -209,10 +214,11 @@ export function StylistScreen() {
     {!outfit ? <Button label={styled ? 'Style this trip again' : 'Style every day'} icon="sparkle" onPress={styleAll} /> : null}
     {pieces.length ? <Section title="Pieces" action="Change day’s look" onAction={styleAll}>
       <Group>{pieces.map((p) => <Row key={p.id} leading={<ItemPhoto item={p} size={44} radius={radii.iconTile} />} title={p.name} meta={`${CATEGORY_LABEL[p.category]} · tap to swap`}
-        onPress={() => swap(p)} trailing={<Pressable accessibilityRole="button" accessibilityLabel={`Remove ${p.name} from this outfit`} hitSlop={10} onPress={() => remove(p)}><Icon name="x" size={18} color={colors.stone} /></Pressable>} />)}</Group>
+        onPress={() => swap(p)} trailing={<PressScale accessibilityRole="button" accessibilityLabel={`Remove ${p.name} from this outfit`} hitSlop={10} onPress={() => remove(p)}><Icon name="x" size={18} color={colors.stone} /></PressScale>} />)}</Group>
     </Section> : null}
+    </Swap>
     <Note>{styled} of {dates.length} days styled. Packing lists pick these pieces up automatically.</Note>
-    <Button label="See the packing list" icon="chev" kind="white" onPress={() => router.push('/trip/packing' as never)} />
+    <Button label="See the packing list" icon="chev" kind="white" onPress={() => openTrip('/trip/packing')} />
   </Screen>;
 }
 
@@ -245,17 +251,19 @@ export function PackingScreen() {
     <Header title="Packing" right={<RoundButton icon="plus" dark label="Add an item" href="/add-item" />} />
     <Hero padding={18}>
       <RowView gap={16}>
-        <Ring pct={pct}><HeroText v="row" style={{ fontFamily: fonts.bold, fontSize: 15 }}>{pct}%</HeroText></Ring>
+        <Ring pct={pct}><HeroText v="row" style={{ fontFamily: fonts.semibold, fontSize: 15 }}>{pct}%</HeroText></Ring>
         <View style={{ flex: 1, gap: 6 }}>
           <HeroText v="title" style={{ fontSize: 24, lineHeight: 28, letterSpacing: -0.4 }}>{done} of {total} packed</HeroText>
           <HeroText v="small" style={{ fontSize: 14 }}>{grams || limit ? `${weight(grams, prefs.unit)}${limit ? ` of ${weight(limit, prefs.unit)}` : ''} · ` : ''}{total - done === 0 ? (total ? 'all packed' : 'nothing on the list') : `${total - done} to go`}</HeroText>
-          <Progress pct={limit ? Math.min(100, (grams / limit) * 100) : pct} color={limit && grams > limit ? '#FFE0D6' : '#FFFFFF'} track="rgba(255,255,255,0.35)" />
+          <Progress pct={limit ? Math.min(100, (grams / limit) * 100) : pct} color={limit && grams > limit ? colors.danger : '#FFFFFF'} track="rgba(255,255,255,0.35)" />
         </View>
       </RowView>
     </Hero>
     {limit && grams > limit ? <Note>Over the bag limit by {weight(grams - limit, prefs.unit)}.</Note> : null}
     <Button label="Suggest items for this trip" icon="sparkle" kind="white" height={48} href="/pack-suggest" />
+    {!ws.workspace.items.length ? <Button label="Plan outfits from your wardrobe" icon="wardrobe" kind="white" height={48} href="/trip/wardrobe" /> : null}
     <Chips value={filter} onChange={setFilter} items={FILTERS.map((f, i) => ({ label: i === 0 ? `${f} · ${total}` : i === 1 ? `${f} · ${total - done}` : i === 2 ? `${f} · ${done}` : f }))} />
+    <Swap k={filter} style={{ gap: 16 }}>
     {groups.map((group) => <Section key={group} title={group}>
       <Stack>{visible.filter((r) => r.category === group).map((r) => <React.Fragment key={r.id}>{r.automatic
         ? <SwatchRow color={r.color || '#8b8b73'} eyebrow={r.packed ? 'Packed' : `For ${r.dates.slice(0, 3).map((d) => weekday(d)).join(', ')}${r.dates.length > 3 ? '…' : ''}`} tint={r.packed ? 'mint' : 'grey'}
@@ -271,6 +279,7 @@ export function PackingScreen() {
     {!rows.length ? <EmptyState art="suitcase" title="Nothing to pack yet" body="Style your days and the clothes appear here. Add essentials like chargers and passports yourself."
       action={<Stack gap={10}><Button label="Suggest items" icon="sparkle" href="/pack-suggest" /><Button label="Add an item" icon="plus" kind="white" href="/add-item" /></Stack>} />
       : !visible.length ? <Card><T v="small">{filter === 1 ? 'Everything is packed. Have a good trip.' : filter === 2 ? 'Nothing packed yet.' : 'Nothing needed in the first two days.'}</T></Card> : null}
+    </Swap>
   </Screen>;
 }
 
@@ -311,9 +320,9 @@ export function AddItemSheet() {
   return <Sheet title={existing ? 'Edit item' : 'Add an item'} dirty={dirty} footer={<SheetActions primary={<Button label="Save" icon="check" onPress={() => save()} />} actions={[!!existing && { icon: 'trash', label: 'Remove from list', onPress: () => { remove(); }, danger: true }]} />}>
     <Field label="Item" value={name} onChangeText={(t) => { setName(t); setError(''); }} icon="trips" placeholder="Phone charger" maxLength={200} error={error} autoFocus={!existing} />
     {!existing ? <Stack gap={8}><FieldLabel>Quick add</FieldLabel>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{QUICK_ADD.filter((q) => !covered(q)).map((q) => <Pressable key={q} accessibilityRole="button" accessibilityLabel={`Add ${q}`} onPress={() => save(q)}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{QUICK_ADD.filter((q) => !covered(q)).map((q) => <PressScale key={q} accessibilityRole="button" accessibilityLabel={`Add ${q}`} onPress={() => save(q)}
         style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderRadius: radii.button, backgroundColor: colors.card, boxShadow: shadows.button }}>
-        <Icon name="plus" size={14} /><T v="small" color={colors.ink} style={{ fontSize: 14 }}>{q}</T></Pressable>)}</View>
+        <Icon name="plus" size={14} /><T v="small" color={colors.ink} style={{ fontSize: 14 }}>{q}</T></PressScale>)}</View>
       {added.length ? <RowView gap={6}><Icon name="check" size={14} color={tints.mint.fg} /><T v="meta" color={tints.mint.fg} style={{ flex: 1 }}>Added {added.join(', ')}</T></RowView> : null}
     </Stack> : null}
     <Stack gap={8}><FieldLabel>Kind</FieldLabel><Chips value={EXTRA_CATEGORIES.indexOf(category ?? 'Essentials')} onChange={(i) => setCategory(EXTRA_CATEGORIES[i])} items={EXTRA_CATEGORIES.map((c) => ({ label: c }))} /></Stack>
@@ -350,7 +359,7 @@ export function BudgetScreen() {
         <HeroText v="hero" lines={1} style={{ lineHeight: 40, letterSpacing: -1 }}>{money(b.planned, trip.currency)}</HeroText>
         <HeroText faint style={{ fontSize: 14 }}>{b.limit ? `of ${money(b.limit, trip.currency)} · ${Math.round((b.planned / b.limit) * 100)}%` : 'No budget set'}{b.spent ? ` · ${money(b.spent, trip.currency)} spent` : ''}</HeroText>
       </Stack>
-      {b.limit ? <Progress pct={pct} color={b.remaining < 0 ? '#FFE0D6' : '#FFFFFF'} track="rgba(255,255,255,0.35)" /> : null}
+      {b.limit ? <Progress pct={pct} color={b.remaining < 0 ? colors.danger : '#FFFFFF'} track="rgba(255,255,255,0.35)" /> : null}
       <RowView style={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
         <HeroText v="small">{home ? `${home} at today’s rate` : b.missingRates ? 'Some currencies couldn’t be converted offline' : ' '}</HeroText>
         {b.limit ? <HeroText v="small" style={{ flexShrink: 1, textAlign: 'right' }}>{b.remaining >= 0 ? `${money(b.perDayLeft, trip.currency)} a day left` : `${money(-b.remaining, trip.currency)} over`}</HeroText> : null}
@@ -361,9 +370,9 @@ export function BudgetScreen() {
       <Card>
         <Bars values={b.byDay.map((d) => d.amount)} labels={b.byDay.map((d) => dates.length > 7 ? dayOfMonth(d.date) : weekday(d.date))} active={selected ?? undefined} />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-          {dates.length <= 14 ? dates.map((d, i) => <Pressable key={d} accessibilityRole="button" accessibilityState={{ selected: selected === i }} accessibilityLabel={`Show ${longDay(d)}`} onPress={() => setSelected(selected === i ? null : i)}
-            style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: radii.chip, backgroundColor: selected === i ? colors.inkButton : colors.mist }}>
-            <Text maxFontSizeMultiplier={1.4} style={{ fontFamily: fonts.semibold, fontSize: 11, color: selected === i ? '#FFFFFF' : colors.ink }}>{shortDay(d)}</Text></Pressable>) : null}
+          {dates.length <= 14 ? dates.map((d, i) => <PressScale key={d} accessibilityRole="button" accessibilityState={{ selected: selected === i }} accessibilityLabel={`Show ${longDay(d)}`} onPress={() => { haptic.select(); setSelected(selected === i ? null : i); }}>
+            <Selectable on={selected === i} render={(on) => <View style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: radii.chip, backgroundColor: on ? colors.inkButton : colors.mist }}>
+              <Text maxFontSizeMultiplier={1.4} style={{ fontFamily: fonts.medium, fontSize: 11, color: on ? '#FFFFFF' : colors.ink }}>{shortDay(d)}</Text></View>} /></PressScale>) : null}
         </View>
         {dates.length <= 14 ? <T v="meta">Tap a day to see only its costs.</T> : null}
       </Card>
@@ -381,13 +390,13 @@ export function BudgetScreen() {
         </Stack>)}</Card>
       </Section> : null;
     })()}
-    <Section title={day ? longDay(day) : 'Expenses'}>
+    <Swap k={selected ?? -1}><Section title={day ? longDay(day) : 'Expenses'}>
       {expenses.length ? <Group>{expenses.map((e) => <Row key={e.id} icon={EXPENSE_ICON[e.category]} tint={EXPENSE_TINT[e.category]} title={e.title}
-        meta={[e.date ? shortDay(e.date) : '', extras.people.length ? `${nameOf(extras.people, e.paidBy)} paid${e.splitWith.length > 1 ? ` · ÷${e.splitWith.length}` : ''}` : ''].filter(Boolean).join(' · ')}
+        meta={[e.date ? shortDay(e.date) : '', extras.people.length ? `${e.fromKitty ? 'From the kitty' : `${nameOf(extras.people, e.paidBy)} paid`}${e.splitWith.length > 1 ? ` · ÷${e.splitWith.length}` : ''}` : ''].filter(Boolean).join(' · ')}
         onPress={() => router.push({ pathname: '/add-expense', params: { id: e.id } } as never)}
         trailing={<View style={{ alignItems: 'flex-end' }}><T v="row" style={{ fontSize: 15 }}>{money(e.amount, e.currency)}</T>{e.currency !== trip.currency ? <T v="meta">{convertLabel(e.amount, e.currency, trip.currency, rates)}</T> : null}</View>} />)}</Group>
         : <Card><T v="small">{day ? 'No expenses on this day.' : 'Log what you spend as you go. Split costs with the people on the trip.'}</T></Card>}
-    </Section>
+    </Section></Swap>
     {priced.length ? <Section title="Plans with a price">
       <Group>{priced.map((a) => <Row key={a.id} icon="calendar" title={a.title} meta={`${shortDay(a.date)}${a.time ? ` · ${planTime(a.time)}` : ''}`} onPress={() => router.push({ pathname: '/add-plan', params: { id: a.id } } as never)}
         trailing={<T v="row" style={{ fontSize: 15 }}>{money(a.cost, trip.currency)}</T>} />)}</Group>
@@ -419,6 +428,7 @@ export function AddExpenseSheet() {
   const [date, setDate] = useState(existing?.date || (current ? initialDay(current.trip) : todayISO()));
   const [paidBy, setPaidBy] = useState(existing?.paidBy ?? ME);
   const [split, setSplit] = useState<string[]>(existing?.splitWith.length ? existing.splitWith : everyone.length > 1 ? everyone : []);
+  const [fromKitty, setFromKitty] = useState(!!existing?.fromKitty);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [scanning, setScanning] = useState(false);
   const dirty = useDirty([amount, currency, title, category, date, paidBy, split]);
@@ -456,8 +466,12 @@ export function AddExpenseSheet() {
     if (!title.trim()) e.title = 'What was it for?';
     setErrors(e);
     if (Object.keys(e).length) return;
-    const item: Expense = { id: existing?.id ?? uid(), title: title.trim().slice(0, 200), amount: Math.round(value * 100) / 100, currency, category, date, paidBy, splitWith: split.length > 1 ? split : [], createdAt: existing?.createdAt ?? new Date().toISOString() };
+    // From the kitty: paid by whoever holds it, shared by everyone.
+    const kitty = current.extras.kitty && fromKitty ? current.extras.kitty : null;
+    const item: Expense = { id: existing?.id ?? uid(), title: title.trim().slice(0, 200), amount: Math.round(value * 100) / 100, currency, category, date,
+      paidBy: kitty ? kitty.holder : paidBy, splitWith: kitty ? everyone : split.length > 1 ? split : [], createdAt: existing?.createdAt ?? new Date().toISOString(), ...(kitty ? { fromKitty: true } : {}) };
     editExtras((d) => { const i = d.expenses.findIndex((x) => x.id === item.id); if (i >= 0) d.expenses[i] = item; else d.expenses.push(item); });
+    if (!existing) track('expense_added', { category, split: split.length });
     router.back();
   };
   const remove = () => Alert.alert('Delete this expense?', existing?.title, [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => {
@@ -478,7 +492,9 @@ export function AddExpenseSheet() {
     <Field label="What" value={title} onChangeText={(t) => { setTitle(t); setErrors({ ...errors, title: '' }); if (!picked) { const g = guess(t); if (g) setCategory(g); } }} icon="edit" placeholder="Dinner with friends" maxLength={200} error={errors.title} />
     <Stack gap={8}><FieldLabel>Kind</FieldLabel><Chips value={EXPENSE_CATEGORIES.indexOf(category)} onChange={(i) => { setPicked(true); setCategory(EXPENSE_CATEGORIES[i]); }} items={EXPENSE_CATEGORIES.map((c) => ({ label: EXPENSE_LABEL[c], icon: EXPENSE_ICON[c] }))} /></Stack>
     <DateField label="Day" value={date} onChange={setDate} />
-    {extras.people.length ? <>
+    {extras.kitty ? <Group><Row icon="card" tint="mint" title="Paid from the kitty" meta={`${nameOf(extras.people, extras.kitty.holder, 'You')} paid it from the pot; everyone shares it`}
+      trailing={<Toggle value={fromKitty} onChange={setFromKitty} label="Paid from the kitty" />} /></Group> : null}
+    {extras.people.length && !(extras.kitty && fromKitty) ? <>
       <Stack gap={8}><FieldLabel>Paid by</FieldLabel>
         <Group>{everyone.map((id) => <Row key={id} leading={<Avatar initials={initials(name(id))} tint={tintFor(id)} size={36} />} title={name(id)} trailing={<Radio on={paidBy === id} />} onPress={() => setPaidBy(id)} />)}</Group>
       </Stack>
@@ -488,7 +504,7 @@ export function AddExpenseSheet() {
           meta={split.includes(id) && value > 0 ? money(value / split.length, currency) : 'Not sharing'} trailing={<Checkbox checked={split.includes(id)} />}
           onPress={() => setSplit(split.includes(id) ? split.filter((x) => x !== id) : [...split, id])} />)}</Group>
       </Stack>
-    </> : <Note>Add the people on this trip to split costs with them.</Note>}
+    </> : extras.kitty && fromKitty ? null : <Note>Add the people on this trip to split costs with them.</Note>}
   </Sheet>;
 }
 
@@ -519,7 +535,7 @@ export function DocumentsScreen() {
   if (!current) return status === 'loading' ? <Loading /> : <NoTrip />;
   const { extras, editExtras } = current;
   const add = () => {
-    if (!pro.isPro && extras.documents.length >= FREE_DOCUMENTS_PER_TRIP) {
+    if (!pro.isPro && !extras.pass && extras.documents.length >= FREE_DOCUMENTS_PER_TRIP) {
       Alert.alert('Documents are full on this trip', `Free accounts keep ${FREE_DOCUMENTS_PER_TRIP} documents per trip. Pro keeps as many as you need.`, [
         { text: 'Not now', style: 'cancel' }, { text: 'See Pro', onPress: () => router.push('/paywall' as never) },
       ]);
@@ -539,7 +555,7 @@ export function DocumentsScreen() {
   const row = (d: typeof extras.documents[number]) => <Row key={d.id} icon={DOC_ICON[d.kind]} tint={DOC_TINT[d.kind]} title={d.title}
     meta={[DOC_LABEL[d.kind], d.date ? shortDay(d.date) : '', d.detail, d.file ? 'File on this phone' : ''].filter(Boolean).join(' · ')}
     onPress={() => d.file ? void open(d.file.path, d.file.mime) : router.push({ pathname: '/add-document', params: { id: d.id } } as never)}
-    trailing={<Pressable accessibilityRole="button" accessibilityLabel={`Edit ${d.title}`} hitSlop={10} onPress={() => router.push({ pathname: '/add-document', params: { id: d.id } } as never)}><Icon name="more" size={18} color={colors.stone} /></Pressable>} />;
+    trailing={<PressScale accessibilityRole="button" accessibilityLabel={`Edit ${d.title}`} hitSlop={10} onPress={() => router.push({ pathname: '/add-document', params: { id: d.id } } as never)}><Icon name="more" size={18} color={colors.stone} /></PressScale>} />;
   return <Screen bar="tabs">
     <Header title="Documents" right={<RoundButton icon="plus" dark label="Add document" onPress={add} />} />
     {prefs.native.lockDocuments ? <Card><RowView gap={14}><IconTile icon="lock" tint="mint" /><View style={{ flex: 1, gap: 2 }}><T v="row" style={{ fontSize: 15 }}>Unlocked</T><T v="meta">Locks again when you leave this screen</T></View></RowView></Card> : null}
@@ -547,7 +563,7 @@ export function DocumentsScreen() {
     {other.length ? <Section title="Other"><Group>{other.map(row)}</Group></Section> : null}
     {!extras.documents.length ? <EmptyState art="passport" title="No documents yet" body="Keep tickets, bookings, insurance and a passport copy with the trip. Files stay on this phone."
       action={<Stack gap={10}><Button label="Add a document" icon="plus" onPress={add} /><Button label="Import from an email" icon="mail" kind="white" href="/import-bookings" /></Stack>} /> : null}
-    {!pro.isPro && extras.documents.length ? <Note>{extras.documents.length} of {FREE_DOCUMENTS_PER_TRIP} free documents on this trip.</Note> : null}
+    {!pro.isPro && !extras.pass && extras.documents.length ? <Note>{extras.documents.length} of {FREE_DOCUMENTS_PER_TRIP} free documents on this trip.</Note> : null}
   </Screen>;
 }
 
@@ -606,7 +622,7 @@ export function AddDocumentSheet() {
     {date ? <DateField label="Date" value={date} onChange={setDate} /> : <Button label="Add a date" icon="calendar" kind="mist" height={48} onPress={() => setDate(current.trip.start)} />}
     <Stack gap={8}><FieldLabel>File</FieldLabel>
       {file ? <Card padding={14}><RowView gap={12}><IconTile icon={file.mime.includes('pdf') ? 'file' : 'image'} /><View style={{ flex: 1 }}><T v="row" lines={1} style={{ fontSize: 15 }}>{file.name}</T><T v="meta">Saved on this phone only</T></View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Remove file" hitSlop={10} onPress={() => setFile(undefined)}><Icon name="x" size={18} color={colors.stone} /></Pressable></RowView></Card>
+        <PressScale accessibilityRole="button" accessibilityLabel="Remove file" hitSlop={10} onPress={() => setFile(undefined)}><Icon name="x" size={18} color={colors.stone} /></PressScale></RowView></Card>
         : <RowView><Button label="Choose file" icon="file" kind="white" height={48} style={{ flex: 1 }} onPress={() => void attach('files')} /><Button label="Photo" icon="image" kind="white" height={48} style={{ flex: 1 }} onPress={() => void attach('photos')} /></RowView>}
     </Stack>
   </Sheet>;
@@ -652,13 +668,14 @@ export function TidesScreen() {
   return <Screen bar="tabs">
     <Header title="Tides & dives" right={<RoundButton icon="plus" dark label="Log a dive" onPress={() => router.push({ pathname: '/log-dive', params: { date } } as never)} />} />
     <DayStrip dates={dates} value={date} onChange={setDate} />
+    <Swap k={date} style={{ gap: 16 }}>
     <View style={{ backgroundColor: colors.card, borderRadius: radii.hero, overflow: 'hidden', boxShadow: shadows.lift }}>
       <RowView style={{ justifyContent: 'space-between', padding: 18, paddingBottom: 6 }}>
         <View style={{ gap: 2, flex: 1 }}><T v="row" style={{ fontSize: 15 }}>Tide · {trip.destination.split(',')[0]}</T>
           <T v="meta">{tide && tide !== 'loading' && !tide.inland ? [tide.highs.length ? `high ${tide.highs.map((h) => h.time).join(', ')}` : '', tide.lows.length ? `low ${tide.lows.map((l) => l.time).join(', ')}` : ''].filter(Boolean).join(' · ') : longDay(date)}</T></View>
         {tide === 'loading' ? <ActivityIndicator color={colors.ember} /> : null}
       </RowView>
-      {tide && tide !== 'loading' && !tide.inland ? <TideChart day={tide} /> : <View style={{ padding: 18, paddingTop: 6 }}>
+      {tide && tide !== 'loading' && !tide.inland ? <DrawIn height={120}><TideChart day={tide} /></DrawIn> : <View style={{ padding: 18, paddingTop: 6 }}>
         <T v="small">{tide === 'loading' ? 'Loading the tide model…' : tide?.inland ? 'No sea at this destination in the tide model. Set the trip’s destination to the coast you’re diving.' : 'Tides load when you’re online, up to a few days ahead.'}</T>
       </View>}
     </View>
@@ -667,6 +684,7 @@ export function TidesScreen() {
         onPress={() => router.push({ pathname: '/log-dive', params: { id: d.id } } as never)} trailing={<T v="row" style={{ fontSize: 15 }}>{d.depth} m</T>} />)}</Group>
         : <Card><T v="small">No dives logged for this day.</T></Card>}
     </Section>
+    </Swap>
     {extras.dives.length ? <Note>{plural(extras.dives.length, 'dive')} logged · deepest {Math.max(...extras.dives.map((d) => d.depth))} m · {Math.round(extras.dives.reduce((s, d) => s + d.minutes, 0))} min underwater</Note> : null}
   </Screen>;
 }

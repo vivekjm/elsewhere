@@ -25,10 +25,24 @@ export type NativePreferences = {
   tripTimeZone: boolean;
   aiDraftMonth: string;
   aiDraftCount: number;
+  /** Who usually comes along; sets the defaults (onboarding asks "Who's coming?"). */
+  party: Party;
+  /** The person's own UPI ID, so friends can settle up with them in one tap (India). */
+  upiId: string;
+  /** Anonymous usage events (screens and actions, never trip content). */
+  analytics: boolean;
+  /** The language of messages you send to your group (invites, nudges, day plans). */
+  shareLanguage: 'en' | 'hinglish';
+  /** Whether planning may send text to the cloud AI provider: asked the first time it would (App Review 5.1.2(i)). */
+  cloudAi: 'ask' | 'on' | 'off';
 };
+export type Party = 'solo' | 'partner' | 'family' | 'friends';
+/** A UPI virtual payment address: name@bank. */
+export const isUpiId = (v: string) => /^[a-z0-9._-]{2,64}@[a-z][a-z0-9.-]{1,32}$/i.test(v.trim());
 export const defaultNativePreferences = (): NativePreferences => ({
   intent: 'shaping', focus: ['outfits', 'budget', 'friends'], currency: Localization.getLocales()[0]?.currencyCode ?? 'EUR',
   notifications: true, liveActivities: true, lockDocuments: false, tripTimeZone: true, aiDraftMonth: '', aiDraftCount: 0,
+  party: 'friends', upiId: '', analytics: true, shareLanguage: 'en', cloudAi: 'ask',
 });
 export function parseNativePreferences(value: unknown): NativePreferences {
   const base = defaultNativePreferences();
@@ -44,6 +58,11 @@ export function parseNativePreferences(value: unknown): NativePreferences {
     tripTimeZone: typeof v.tripTimeZone === 'boolean' ? v.tripTimeZone : base.tripTimeZone,
     aiDraftMonth: typeof v.aiDraftMonth === 'string' ? v.aiDraftMonth.slice(0, 7) : '',
     aiDraftCount: typeof v.aiDraftCount === 'number' && Number.isFinite(v.aiDraftCount) ? Math.max(0, Math.round(v.aiDraftCount)) : 0,
+    party: v.party === 'solo' || v.party === 'partner' || v.party === 'family' || v.party === 'friends' ? v.party : base.party,
+    upiId: typeof v.upiId === 'string' && isUpiId(v.upiId) ? v.upiId.trim().toLowerCase() : '',
+    analytics: typeof v.analytics === 'boolean' ? v.analytics : base.analytics,
+    shareLanguage: v.shareLanguage === 'hinglish' ? 'hinglish' : 'en',
+    cloudAi: v.cloudAi === 'on' || v.cloudAi === 'off' ? v.cloudAi : 'ask',
   };
 }
 

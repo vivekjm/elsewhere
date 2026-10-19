@@ -10,6 +10,7 @@ import { AppState } from 'react-native';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
+import { useOpenTripPage } from './nav';
 import { useAuth, useExtras, useWorkspace } from '../data';
 import { fromDate } from '../domain/format';
 import { featuredTrip } from '../domain/trips';
@@ -19,6 +20,7 @@ import { publishWidgets, syncLiveActivity } from '../widgets';
 import { nextTripTimeline, tripDayProps } from '../widgets/snapshot';
 import { DEV_PREVIEW } from '../devStart';
 import { usePrefs, useSelection } from './state';
+import { configureAnalytics, track } from './analytics';
 
 const TRIP_ID = /^[A-Za-z0-9_-]{1,80}$/;
 
@@ -43,8 +45,16 @@ export function AppServices() {
   const prefs = usePrefs();
   const { select } = useSelection();
   const router = useRouter();
+  const openTrip = useOpenTripPage();
   const signedIn = (!!auth.session && !!auth.profile?.onboarding_completed) || (__DEV__ && DEV_PREVIEW && auth.guestMode);
   const [tick, setTick] = useState(0);
+
+  // Analytics: on for signed-in accounts that haven't turned it off in Data & privacy.
+  const analyticsOn = signedIn && !!auth.session && prefs.native.analytics;
+  useEffect(() => {
+    configureAnalytics(analyticsOn ? auth.client : null, analyticsOn);
+    if (analyticsOn) track('app_opened');
+  }, [analyticsOn, auth.client]);
   const [weather, setWeather] = useState<{ tripId: string; days: Record<string, DayWeather> } | null>(null);
 
   // Refresh time-based content when the app comes back and at least every 15 minutes while it is open.
@@ -121,8 +131,10 @@ export function AppServices() {
   useEffect(() => {
     const keep = (url: string | null) => {
       const d = url && /^[a-z][a-z0-9+.-]*:\/\/\/?join\?/i.test(url) ? Linking.parse(url).queryParams?.d : null;
+      const code = url?.match(/\/t\/([A-Za-z0-9]{10,16})(?:[/?#]|$)/)?.[1];
       // Signed in, the link opens the join sheet directly.
-      if (!signedInRef.current && typeof d === 'string' && d.length <= 4000) pendingInvite.current = d;
+      if (!signedInRef.current && typeof d === 'string' && d.length <= 4000) pendingInvite.current = `d:${d}`;
+      if (!signedInRef.current && code) pendingInvite.current = `code:${code}`;
     };
     void Linking.getInitialURL().then(keep);
     const sub = Linking.addEventListener('url', ({ url }) => keep(url));
@@ -130,9 +142,10 @@ export function AppServices() {
   }, []);
   useEffect(() => {
     if (!signedIn || !pendingInvite.current) return;
-    const d = pendingInvite.current;
+    const pending = pendingInvite.current;
     pendingInvite.current = null;
-    const timer = setTimeout(() => router.push({ pathname: '/join-trip', params: { d } } as never), 600);
+    const params = pending.startsWith('code:') ? { code: pending.slice(5) } : { d: pending.slice(2) };
+    const timer = setTimeout(() => router.push({ pathname: '/join-trip', params } as never), 600);
     return () => clearTimeout(timer);
   }, [signedIn, router]);
 
@@ -145,12 +158,15 @@ export function AppServices() {
       handled.current = response.notification.request.identifier;
       const data = response.notification.request.content.data as { url?: unknown; tripId?: unknown } | undefined;
       if (typeof data?.tripId === 'string' && known.current.has(data.tripId)) select(data.tripId);
-      if (typeof data?.url === 'string' && SAFE_PATH.test(data.url)) router.push(data.url as never);
+      if (typeof data?.url === 'string' && SAFE_PATH.test(data.url)) {
+        if (/^\/(trip|adventure)\b/.test(data.url)) openTrip(data.url);
+        else router.push(data.url as never);
+      }
     };
     void Notifications.getLastNotificationResponseAsync().then(open).catch(() => {});
     const sub = Notifications.addNotificationResponseReceivedListener(open);
     return () => sub.remove();
-  }, [signedIn, router, select]);
+  }, [signedIn, router, select, openTrip]);
 
   return null;
 }

@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.dependency 'ExpoModulesCore'
   # Weak so the app still launches on iOS versions without Foundation Models.
   s.weak_frameworks = 'FoundationModels'
-  s.frameworks = 'Vision'
+  s.frameworks = 'Vision', 'PDFKit', 'MapKit'
   s.source_files   = '**/*.swift'
   s.swift_version  = '5.9'
 end

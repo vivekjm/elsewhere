@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, ScrollView, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useRouter } from '../core/nav';
+import { track } from '../core/analytics';
 import * as WebBrowser from 'expo-web-browser';
-import { useAuth, type NativePreferences } from '../data';
+import { useAuth, type NativePreferences, type Party } from '../data';
 import { usePrefs } from '../core/state';
 import { setPendingLanding } from '../core/landing';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  Button, Checkbox, colors, CurrencySheet, EmberBackdrop, Field, FieldLabel, fonts, Group, HeroText, Icon, IconTile, Illustration,
-  maxScale, Note, PlaceField, Radio, radii, ThreadBead, useKeyboardOpen, ease, RoundButton, RowView, Screen, Segmented, shadows, Stack, Steps, T, Title, type IconName,
+  Button, colors, CurrencySheet, EmberBackdrop, Field, FieldLabel, fonts, Group, HeroText, Icon, IconTile, Illustration,
+  maxScale, Note, PlaceField, Radio, radii, ThreadBead, useKeyboardOpen, ease, RoundButton, RowView, Screen, Segmented, shadows, Stack, Steps, T, Title, type IconName, MotionSurface, RevealBlocks, Selectable, BlockGapContext, PressScale,
+  GlassFill, Photo, PHOTOS, tints,
 } from '../loom';
 import { COMMON_CURRENCIES, currencyName } from '../services/currency';
 
@@ -19,12 +21,13 @@ export const TERMS_URL = 'https://tripsloom.com/terms';
 export const PRIVACY_URL = 'https://tripsloom.com/privacy';
 
 function Wordmark() {
-  return <RowView gap={10} style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingLeft: 12, paddingRight: 14, borderRadius: radii.button, backgroundColor: 'rgba(255,255,255,0.9)' }}>
+  return <RowView gap={10} style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingLeft: 12, paddingRight: 14, borderRadius: radii.chip }}>
+    <GlassFill kind="glass" radius={radii.chip} />
     <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" strokeWidth={2.2} strokeLinecap="round">
       <Path d="M3 16c6 0 6-8 12-8s6 8 6 8" stroke={colors.ink} />
       <Path d="M3 8c6 0 6 8 12 8s6-8 6-8" stroke={colors.ember} />
     </Svg>
-    <Text maxFontSizeMultiplier={maxScale(15)} style={{ fontFamily: fonts.semibold, fontSize: 15, color: colors.ink }}>Trips Loom</Text>
+    <Text maxFontSizeMultiplier={maxScale(15)} style={{ fontFamily: fonts.regular, fontSize: 15, color: colors.ink }}>Trips Loom</Text>
   </RowView>;
 }
 
@@ -82,9 +85,9 @@ export function WelcomeScreen() {
   // The sign-in sheet needs ~330pt; the hero takes what is left (470 on a 6.3" phone, less on an SE), never under 300.
   const heroHeight = Math.max(300, Math.min(470, frame.height - 330 - insets.bottom));
   const spinner = (key: string, color = '#FFFFFF') => busy === key ? <ActivityIndicator color={color} /> : undefined;
-  return <ScrollView style={{ flex: 1, backgroundColor: colors.card }} contentContainerStyle={{ flexGrow: 1, backgroundColor: colors.canvas }} bounces={false} showsVerticalScrollIndicator={false}>
+  return <ScrollView style={{ flex: 1, backgroundColor: colors.ground }} contentContainerStyle={{ flexGrow: 1, backgroundColor: colors.ground }} bounces={false} showsVerticalScrollIndicator={false}>
     <View style={{ height: heroHeight }}>
-      <Illustration name="threadsBg" width="100%" height="100%" style={{ position: 'absolute' }} />
+      <Photo source={PHOTOS.sikkim} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: -20 }} />
       <WovenLines width={frame.width} top={insets.top + 64} bottom={heroHeight - (heroHeight < 420 ? 40 : 52) - 112} />
       <View style={{ position: 'absolute', top: insets.top + 10, left: 20 }}><Wordmark /></View>
       <View style={{ position: 'absolute', left: 20, right: 20, bottom: heroHeight < 420 ? 40 : 52, gap: 10 }}>
@@ -92,7 +95,8 @@ export function WelcomeScreen() {
         <HeroText v="hero" style={{ letterSpacing: -0.8 }}>Every trip,{'\n'}woven together.</HeroText>
       </View>
     </View>
-    <View style={{ flex: 1, marginTop: -20, backgroundColor: colors.card, borderTopLeftRadius: radii.sheet, borderTopRightRadius: radii.sheet, padding: 20, paddingTop: 28, paddingBottom: insets.bottom + 16, gap: 18, boxShadow: '0px -12px 40px rgba(30,30,30,0.08)' }}>
+    <View style={{ flex: 1, marginTop: -20, borderTopLeftRadius: radii.sheet, borderTopRightRadius: radii.sheet, padding: 20, paddingTop: 28, paddingBottom: insets.bottom + 16, gap: 18, overflow: 'hidden' }}>
+      <GlassFill kind="sheet" radius={radii.sheet} />
       <T v="body">Days, outfits and packing in one plan, built from your wardrobe and the forecast.</T>
       <View style={{ marginTop: 'auto', gap: 10 }}>
         {auth.appleAvailable ? <Button label="Continue with Apple" leading={spinner('apple') ?? <AppleMark />}
@@ -101,8 +105,8 @@ export function WelcomeScreen() {
           onPress={() => run('google', auth.signInWithGoogle)} />
         <Button label="Continue with email" kind="mist" onPress={() => router.push('/email-sign-in' as never)} />
         <T v="meta" center style={{ marginTop: 6, lineHeight: 18 }}>By continuing you agree to the{' '}
-          <Text accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(TERMS_URL)} style={{ fontFamily: fonts.semibold, color: colors.ink }}>Terms</Text> and{' '}
-          <Text accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(PRIVACY_URL)} style={{ fontFamily: fonts.semibold, color: colors.ink }}>Privacy Policy</Text>.</T>
+          <Text accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(TERMS_URL)} style={{ color: colors.ink, textDecorationLine: 'underline', textDecorationColor: colors.hairlineStrong }}>Terms</Text> and{' '}
+          <Text accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(PRIVACY_URL)} style={{ color: colors.ink, textDecorationLine: 'underline', textDecorationColor: colors.hairlineStrong }}>Privacy Policy</Text>.</T>
       </View>
     </View>
   </ScrollView>;
@@ -131,9 +135,9 @@ function EmberSheetLayout({ left, center, right, art, heading, compactTitle, foo
   const band = useAnimatedStyle(() => ({ height: full + (compact - full) * t.value }));
   const fadeOut = useAnimatedStyle(() => ({ opacity: 1 - t.value }));
   const fadeIn = useAnimatedStyle(() => ({ opacity: t.value }));
-  return <View style={{ flex: 1, backgroundColor: colors.canvas }}>
-    <Animated.View style={[{ backgroundColor: colors.ember, overflow: 'hidden' }, band]}>
-      <Illustration name="threadsBg" width="100%" height={full} style={{ position: 'absolute' }} />
+  return <MotionSurface enter><View style={{ flex: 1, backgroundColor: colors.canvas }}>
+    <Animated.View style={[{ backgroundColor: colors.ground, overflow: 'hidden' }, band]}>
+      <Photo source={PHOTOS.sikkim} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: full }} />
       <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: 0, left: 0, right: 0, height: full }, fadeOut]}>
         <WovenLines width={frame.width} top={insets.top + 56} bottom={heading ? full - 40 - 110 : full - 12} />
         {art ? <View style={{ position: 'absolute', left: 0, right: 0, top: (insets.top + 56 + full - 12) / 2 - 22, height: 44, alignItems: 'center', justifyContent: 'center' }}>{art}</View> : null}
@@ -144,19 +148,19 @@ function EmberSheetLayout({ left, center, right, art, heading, compactTitle, foo
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginHorizontal: 8 }}>
           <Animated.View style={fadeOut}>{center}</Animated.View>
           <Animated.View pointerEvents="none" style={[{ position: 'absolute' }, fadeIn]}>
-            <Text numberOfLines={1} maxFontSizeMultiplier={1.3} style={{ fontFamily: fonts.semibold, fontSize: 16, color: '#FFFFFF' }}>{compactTitle}</Text>
+            <Text numberOfLines={1} maxFontSizeMultiplier={1.3} style={{ fontFamily: fonts.regular, fontSize: 16, color: colors.ink }}>{compactTitle}</Text>
           </Animated.View>
         </View>
         {right ?? <View style={{ width: 48 }} />}
       </RowView>
     </Animated.View>
-    <ScrollView style={{ flex: 1, marginTop: -20, borderTopLeftRadius: radii.sheet, borderTopRightRadius: radii.sheet, backgroundColor: colors.canvas }}
+    <ScrollView style={{ flex: 1, marginTop: -20, borderTopLeftRadius: radii.sheet, borderTopRightRadius: radii.sheet, backgroundColor: colors.ground, borderTopWidth: 1, borderColor: colors.hairline }}
       contentContainerStyle={{ flexGrow: 1, padding: 20, paddingTop: 26, gap: 20 }} keyboardShouldPersistTaps="handled"
       keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets showsVerticalScrollIndicator={false}>
-      {children}
+      <BlockGapContext.Provider value={20}><RevealBlocks>{children}</RevealBlocks></BlockGapContext.Provider>
     </ScrollView>
     {footer ? <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: insets.bottom + 12, gap: 8, backgroundColor: colors.canvas }}>{footer}</View> : null}
-  </View>;
+  </View></MotionSurface>;
 }
 
 export function EmailSignInScreen() {
@@ -203,26 +207,26 @@ export function EmailSignInScreen() {
       <HeroText v="display" style={{ fontSize: 32, lineHeight: 36, letterSpacing: -0.6 }}>{title}</HeroText>
       <HeroText faint style={{ fontSize: 15 }}>{sub}</HeroText>
     </Stack>}>
-    {mode !== 'reset' ? <View accessibilityRole="tablist" style={{ flexDirection: 'row', padding: 4, borderRadius: 14, backgroundColor: colors.rule }}>
-      {(['sign-in', 'sign-up'] as const).map((m) => <Pressable key={m} accessibilityRole="tab" accessibilityState={{ selected: mode === m }} onPress={() => switchTo(m)}
-        style={{ flex: 1, minHeight: 44, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: mode === m ? colors.card : 'transparent', boxShadow: mode === m ? shadows.rest : undefined }}>
+    {mode !== 'reset' ? <View accessibilityRole="tablist" style={{ flexDirection: 'row', padding: 3, borderRadius: radii.card, backgroundColor: colors.controlGlass, borderWidth: 1, borderColor: colors.hairline }}>
+      {(['sign-in', 'sign-up'] as const).map((m) => <PressScale key={m} accessibilityRole="tab" accessibilityState={{ selected: mode === m }} onPress={() => switchTo(m)}
+        style={{ flex: 1, minHeight: 44, borderRadius: radii.chip, alignItems: 'center', justifyContent: 'center', backgroundColor: mode === m ? colors.surfaceRaised : 'transparent', boxShadow: mode === m ? shadows.rest : undefined }}>
         <T v="row" style={{ fontSize: 15, color: mode === m ? colors.ink : colors.stone }}>{m === 'sign-in' ? 'Sign in' : 'Create account'}</T>
-      </Pressable>)}
+      </PressScale>)}
     </View> : null}
-    {notice ? <View style={{ padding: 14, borderRadius: radii.card, backgroundColor: '#D6F0E3' }}><T v="small" color="#1C6B45">{notice}</T></View> : null}
+    {notice ? <View style={{ padding: 14, borderRadius: radii.card, backgroundColor: tints.mint.bg }}><T v="small" color={tints.mint.fg}>{notice}</T></View> : null}
     <Stack gap={14}>
       {mode === 'sign-up' ? <Field label="Your name" value={name} onChangeText={setName} icon="profile" kind="name" error={errors.name} returnKeyType="next" maxLength={80} /> : null}
       <Field label="Email" value={email} onChangeText={setEmail} icon="mail" kind="email" error={errors.email} returnKeyType={mode === 'reset' ? 'send' : 'next'}
         onSubmitEditing={mode === 'reset' ? () => void submit() : undefined} />
       {mode !== 'reset' ? <Field label="Password" value={password} onChangeText={setPassword} icon="lock" secure={!show} kind={show ? 'text' : 'password'} error={errors.password}
         hint={mode === 'sign-up' ? 'At least 8 characters.' : undefined} returnKeyType="go" onSubmitEditing={() => void submit()}
-        trailing={<Pressable accessibilityRole="button" accessibilityLabel={show ? 'Hide password' : 'Show password'} hitSlop={10} onPress={() => setShow(!show)}>
+        trailing={<PressScale accessibilityRole="button" accessibilityLabel={show ? 'Hide password' : 'Show password'} hitSlop={10} onPress={() => setShow(!show)}>
           <IconTile icon={show ? 'eyeOff' : 'eye'} size={32} bg="transparent" color={colors.stone} />
-        </Pressable>} /> : null}
+        </PressScale>} /> : null}
     </Stack>
-    {mode === 'sign-in' ? <Pressable accessibilityRole="button" onPress={() => switchTo('reset')} style={{ alignSelf: 'flex-start', paddingHorizontal: 4, minHeight: 44, justifyContent: 'center' }}>
-      <T v="small" style={{ fontFamily: fonts.semibold, fontSize: 14 }}>Forgot password?</T>
-    </Pressable> : null}
+    {mode === 'sign-in' ? <PressScale accessibilityRole="button" onPress={() => switchTo('reset')} style={{ alignSelf: 'flex-start', paddingHorizontal: 4, minHeight: 44, justifyContent: 'center' }}>
+      <T v="small" style={{ fontFamily: fonts.medium, fontSize: 14 }}>Forgot password?</T>
+    </PressScale> : null}
     {mode === 'sign-up' ? <Stack gap={10} style={{ paddingHorizontal: 4 }}>
       {([['cloud', 'Your trips sync between this phone and the web'], ['shield', 'Private by default; share a trip only when you invite someone']] as [IconName, string][]).map(([icon, text]) =>
         <RowView key={icon} gap={10} align="flex-start"><IconTile icon={icon} size={28} bg={colors.card} color={colors.ember} /><T v="small" style={{ flex: 1, paddingTop: 4 }}>{text}</T></RowView>)}
@@ -232,8 +236,8 @@ export function EmailSignInScreen() {
         leading={busy ? <ActivityIndicator color="#FFFFFF" /> : undefined} onPress={() => void submit()} />
       {mode === 'reset' ? <Button label="Back to sign in" kind="white" onPress={() => switchTo('sign-in')} /> : null}
       {mode === 'sign-up' ? <T v="meta" center style={{ lineHeight: 18 }}>By creating an account you agree to the{' '}
-        <Text accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(TERMS_URL)} style={{ fontFamily: fonts.semibold, color: colors.ink }}>Terms</Text> and{' '}
-        <Text accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(PRIVACY_URL)} style={{ fontFamily: fonts.semibold, color: colors.ink }}>Privacy Policy</Text>.</T> : null}
+        <Text accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(TERMS_URL)} style={{ fontFamily: fonts.medium, color: colors.ink }}>Terms</Text> and{' '}
+        <Text accessibilityRole="link" onPress={() => void WebBrowser.openBrowserAsync(PRIVACY_URL)} style={{ fontFamily: fonts.medium, color: colors.ink }}>Privacy Policy</Text>.</T> : null}
     </View>
   </EmberSheetLayout>;
 }
@@ -259,8 +263,8 @@ export function ResetPasswordScreen() {
 /* ------------------------------------------------------------------ Onboarding */
 
 /** Answers carried between the four onboarding steps. */
-const draft: { name: string; homeBase: string; intent: NativePreferences['intent']; focus: string[]; unit: 'metric' | 'imperial'; currency: string; seeded: boolean } = {
-  name: '', homeBase: '', intent: 'shaping', focus: ['outfits', 'budget', 'friends'], unit: 'metric', currency: 'EUR', seeded: false,
+const draft: { name: string; homeBase: string; intent: NativePreferences['intent']; party: Party; unit: 'metric' | 'imperial'; currency: string; seeded: boolean } = {
+  name: '', homeBase: '', intent: 'shaping', party: 'friends', unit: 'metric', currency: 'EUR', seeded: false,
 };
 
 /** Each onboarding step: its own floating illustration in the ember band, then the question on the sheet. */
@@ -272,11 +276,12 @@ function OnboardingFrame({ step, eyebrow, title, sub, onSkip, footer, children }
   return <EmberSheetLayout compactTitle={`Step ${step} of 4`} footer={footer}
     left={step > 1 ? <RoundButton icon="back" back label="Back" /> : undefined}
     center={<Steps n={step} light />}
-    right={<Pressable accessibilityRole="button" accessibilityLabel="Skip setup" onPress={onSkip}
-      style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 16, borderRadius: radii.button, backgroundColor: 'rgba(255,255,255,0.9)' }}>
-      <Text maxFontSizeMultiplier={1.4} style={{ fontFamily: fonts.semibold, fontSize: 14, color: colors.ink }}>Skip</Text>
-    </Pressable>}
-    art={<ThreadBead key={step}><Icon name={STEP_ICON[step] ?? 'globe'} size={20} color={colors.ember} strokeWidth={2} /></ThreadBead>}>
+    right={<PressScale accessibilityRole="button" accessibilityLabel="Skip setup" onPress={onSkip}
+      style={{ minHeight: 40, justifyContent: 'center', paddingHorizontal: 16, borderRadius: radii.chip }}>
+      <GlassFill kind="control" radius={radii.chip} />
+      <Text maxFontSizeMultiplier={1.4} style={{ fontFamily: fonts.regular, fontSize: 14, color: colors.ink }}>Skip</Text>
+    </PressScale>}
+    art={<ThreadBead key={step}><Icon name={STEP_ICON[step] ?? 'globe'} size={20} color={colors.onLight} strokeWidth={2} /></ThreadBead>}>
     <>
       <Stack gap={8} style={{ paddingHorizontal: 4 }}>
         <T v="eyebrow">{eyebrow}</T>
@@ -289,43 +294,38 @@ function OnboardingFrame({ step, eyebrow, title, sub, onSkip, footer, children }
 }
 
 function OptionCard({ icon, title, sub, on, onPress }: { icon: IconName; title: string; sub: string; on: boolean; onPress: () => void }) {
-  return <Pressable accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={`${title}. ${sub}`} onPress={onPress}
-    style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: radii.card, overflow: 'hidden', backgroundColor: on ? undefined : colors.card, boxShadow: on ? shadows.lift : shadows.rest }}>
-    {on ? <EmberBackdrop variant="option" /> : null}
-    <IconTile icon={icon} size={48} bg={on ? 'rgba(255,255,255,0.25)' : colors.canvas} color={on ? '#FFFFFF' : colors.ink} />
-    <View style={{ flex: 1, gap: 2 }}>
-      <T v="row" color={on ? '#FFFFFF' : undefined}>{title}</T>
-      <T v="small" color={on ? 'rgba(255,255,255,0.92)' : undefined}>{sub}</T>
-    </View>
-    <Radio on={on} />
-  </Pressable>;
-}
-
-const FOCUS: [string, IconName, string][] = [
-  ['outfits', 'wardrobe', 'Outfits & packing'], ['budget', 'card', 'Budget & splitting'], ['documents', 'doc', 'Documents'],
-  ['friends', 'shared', 'Travelling with friends'], ['adventure', 'mountain', 'Adventure & safety'], ['ai', 'sparkle', 'AI planning'],
-];
-
-function FocusTile({ icon, title, on, onPress }: { icon: IconName; title: string; on: boolean; onPress: () => void }) {
-  return <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} accessibilityLabel={title} onPress={onPress}
-    style={{ flex: 1, gap: 14, padding: 16, borderRadius: radii.card, backgroundColor: on ? colors.inkButton : colors.card, boxShadow: on ? shadows.dark : shadows.rest }}>
-    <RowView style={{ justifyContent: 'space-between' }}>
-      <IconTile icon={icon} size={40} bg={on ? 'rgba(255,255,255,0.14)' : colors.canvas} color={on ? '#FFFFFF' : colors.ink} />
-      <Checkbox checked={on} accent={colors.ember} />
-    </RowView>
-    <T v="row" style={{ fontSize: 15 }} color={on ? '#FFFFFF' : undefined}>{title}</T>
-  </Pressable>;
+  // Choosing one fades the ember look in over the white card (and the last choice back out).
+  return <PressScale accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={`${title}. ${sub}`} onPress={onPress}
+    style={{ borderRadius: radii.card, boxShadow: on ? shadows.lift : shadows.rest }}>
+    <Selectable on={on} render={(chosen) => <View style={{ flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: radii.card, overflow: 'hidden', backgroundColor: chosen ? colors.ember : colors.card }}>
+      {chosen ? <EmberBackdrop variant="option" /> : null}
+      <IconTile icon={icon} size={48} bg={chosen ? 'rgba(255,255,255,0.25)' : colors.canvas} color={chosen ? '#FFFFFF' : colors.ink} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <T v="row" color={chosen ? '#FFFFFF' : undefined}>{title}</T>
+        <T v="small" color={chosen ? 'rgba(255,255,255,0.92)' : undefined}>{sub}</T>
+      </View>
+      <Radio on={on} />
+    </View>} />
+  </PressScale>;
 }
 
 function CurrencyRow({ code, on, onPress }: { code: string; on: boolean; onPress: () => void }) {
-  return <Pressable accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={currencyName(code)} onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 12 }}>
+  return <PressScale accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={currencyName(code)} onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 12 }}>
     <View style={{ width: 52, height: 44, borderRadius: radii.iconTile, backgroundColor: colors.canvas, alignItems: 'center', justifyContent: 'center' }}>
-      <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: fonts.bold, fontSize: 13, color: colors.ink }}>{code}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: fonts.semibold, fontSize: 13, color: colors.ink }}>{code}</Text>
     </View>
     <T v="row" style={{ flex: 1, fontSize: 15 }}>{currencyName(code)}</T>
     <Radio on={on} />
-  </Pressable>;
+  </PressScale>;
 }
+
+/** "Who usually comes along?": sets the defaults for new trips (shared plan and splitting for groups). */
+const PARTY: [Party, IconName, string, string][] = [
+  ['friends', 'shared', 'Friends', 'Decide together, split costs fairly, settle up in one tap.'],
+  ['family', 'home', 'Family', 'One plan everyone can see, with the bookings and documents in one place.'],
+  ['partner', 'heart', 'My partner', 'Plan together and keep track of what you spend.'],
+  ['solo', 'profile', 'Just me', 'Your own plan, with someone at home able to follow along.'],
+];
 
 /** Where Finish lands for each answer to "What brings you here?". */
 const LANDING: Record<NativePreferences['intent'], string> = { booked: '/new-trip', shaping: '/planner', looking: '/discover' };
@@ -354,8 +354,9 @@ export function OnboardingScreen() {
     try {
       await auth.completeOnboarding({
         display_name: name, home_base: draft.homeBase.trim(), unit: draft.unit,
-        native: skip ? { currency: draft.currency } : { intent: draft.intent, focus: draft.focus, currency: draft.currency },
+        native: skip ? { currency: draft.currency } : { intent: draft.intent, party: draft.party, currency: draft.currency },
       });
+      track('onboarding_completed', { skipped: skip, intent: draft.intent, party: draft.party });
       draft.seeded = false;
     } catch (error) {
       setPendingLanding(null);
@@ -364,6 +365,8 @@ export function OnboardingScreen() {
   };
   const next = () => {
     if (step === 1 && !draft.name.trim()) { setNameError('Enter your name. It shows on trips you share.'); return; }
+    // Living in India: suggest rupees on the currency step (still changeable there).
+    if (step === 1 && /\bindia\b/i.test(draft.homeBase) && draft.currency !== 'INR') draft.currency = 'INR';
     if (step < 4) router.push(`/onboarding/${step + 1}` as never); else void finish(false);
   };
   const currencies = [...new Set([draft.currency, ...COMMON_CURRENCIES.slice(0, 4)])];
@@ -371,7 +374,7 @@ export function OnboardingScreen() {
   const COPY: Record<number, [string, string, string]> = {
     1: ['Let’s set you up', 'First, the basics', 'Your name goes on shared trips. Your home base sets time zones and currency defaults.'],
     2: ['Your next trip', 'What brings you here?', 'We’ll take you straight to the right place when you finish.'],
-    3: ['Focus', 'What matters most?', 'Pick as many as you like. We’ll put these first on every trip.'],
+    3: ['Your people', 'Who usually comes along?', 'Trips with others get shared plans, votes and fair splitting from the start.'],
     4: ['Almost there', 'Units & currency', 'Weather, distances and budgets will use these everywhere.'],
   };
   const [eyebrow, title, sub] = COPY[step];
@@ -389,16 +392,13 @@ export function OnboardingScreen() {
     {step === 2 ? <>
       <Stack gap={12}>
         <><OptionCard icon="plane" title="A trip that’s already booked" sub="Add the dates and bookings; we’ll build the days around them." on={draft.intent === 'booked'} onPress={() => set(() => { draft.intent = 'booked'; })} /></>
-        <><OptionCard icon="sparkle" title="A trip I’m still shaping" sub="Describe it and get a first draft of days, stays and packing." on={draft.intent === 'shaping'} onPress={() => set(() => { draft.intent = 'shaping'; })} /></>
+        <><OptionCard icon="sparkle" title="A trip I’m still shaping" sub="Describe it in a sentence and get a day-by-day outline to fill in." on={draft.intent === 'shaping'} onPress={() => set(() => { draft.intent = 'shaping'; })} /></>
         <><OptionCard icon="discover" title="Just looking for now" sub="Browse ideas, and start a trip whenever you’re ready." on={draft.intent === 'looking'} onPress={() => set(() => { draft.intent = 'looking'; })} /></>
       </Stack>
     </> : null}
     {step === 3 ? <>
-      <Stack gap={10}>
-        {[0, 2, 4].map((i) => <RowView key={i} align="stretch">
-          {FOCUS.slice(i, i + 2).map(([key, icon, title]) => <FocusTile key={key} icon={icon} title={title} on={draft.focus.includes(key)}
-            onPress={() => set(() => { draft.focus = draft.focus.includes(key) ? draft.focus.filter((f) => f !== key) : [...draft.focus, key]; })} />)}
-        </RowView>)}
+      <Stack gap={12}>
+        {PARTY.map(([key, icon, title, sub]) => <React.Fragment key={key}><OptionCard icon={icon} title={title} sub={sub} on={draft.party === key} onPress={() => set(() => { draft.party = key; })} /></React.Fragment>)}
       </Stack>
     </> : null}
     {step === 4 ? <>
@@ -408,10 +408,10 @@ export function OnboardingScreen() {
       <><Stack gap={8}><FieldLabel>Home currency</FieldLabel>
         <Group>
           {currencies.map((c) => <CurrencyRow key={c} code={c} on={draft.currency === c} onPress={() => set(() => { draft.currency = c; })} />)}
-          <Pressable accessibilityRole="button" onPress={() => setCurrencyOpen(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 }}>
+          <PressScale accessibilityRole="button" onPress={() => setCurrencyOpen(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 }}>
             <IconTile icon="search" size={44} />
             <T v="row" style={{ flex: 1, fontSize: 15 }}>Another currency…</T>
-          </Pressable>
+          </PressScale>
         </Group>
       </Stack></>
       <CurrencySheet visible={currencyOpen} value={draft.currency} onPick={(c) => set(() => { draft.currency = c; })} onClose={() => setCurrencyOpen(false)} />

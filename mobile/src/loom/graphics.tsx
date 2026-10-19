@@ -2,14 +2,15 @@ import React from 'react';
 import Animated, { useAnimatedProps } from 'react-native-reanimated';
 import { useEased } from './motion';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
-import Svg, { Circle, Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop, SvgXml } from 'react-native-svg';
+import Svg, { Circle, SvgXml } from 'react-native-svg';
 import { iconPaths, type IconName } from './iconPaths';
 import { illustrations, type IllustrationName } from './illustrations';
-import { colors, ember } from './tokens';
+import { colors } from './tokens';
+import { GlassFill, PhotoTone } from './glass';
 
 export type { IconName, IllustrationName };
 
-export function Icon({ name, size = 18, color = colors.ink, strokeWidth = 2, filled = false }: {
+export function Icon({ name, size = 18, color = colors.ink, strokeWidth = 1.7, filled = false }: {
   name: IconName; size?: number; color?: string; strokeWidth?: number; filled?: boolean;
 }) {
   const fill = filled ? color : 'none';
@@ -26,39 +27,21 @@ export function Illustration({ name, width, height, radius = 0, style, align = '
   name: IllustrationName; width: number | `${number}%`; height: number | `${number}%`; radius?: number; style?: StyleProp<ViewStyle>; align?: keyof typeof ALIGN;
 }) {
   const xml = align === 'center' ? illustrations[name] : illustrations[name].replace('xMidYMid slice', `${ALIGN[align]} slice`);
-  return <View style={[{ width, height, borderRadius: radius, overflow: 'hidden' }, style]}>
+  // Toned like the photos (sepia, a little darker) so the flat scenes sit quietly on the dark glass.
+  return <View style={[{ width, height, borderRadius: radius, overflow: 'hidden', isolation: 'isolate' }, style]}>
     <SvgXml xml={xml} width="100%" height="100%" />
+    <PhotoTone dim={0.5} />
   </View>;
 }
 
-/** The ember gradient with soft glows, drawn behind hero content. Measures its box so it always fills it. */
+/** The live fill behind a hero: khaki glass, as GymSync's live tile. (Named for the ember gradient it replaced.) */
 export function EmberBackdrop({ variant = 'hero' }: { variant?: 'hero' | 'option' }) {
-  const id = React.useId().replace(/:/g, '');
-  // Percent sizing with preserveAspectRatio="none" fills the box without waiting for a layout measurement,
-  // which some screens never re-delivered after their first pass.
-  return <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-    {<Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
-      <Defs>
-        <LinearGradient id={`g${id}`} x1="0" y1="0" x2="0.75" y2="1">
-          <Stop offset="0" stopColor={ember.from} />
-          <Stop offset={variant === 'option' ? '0.55' : '0.45'} stopColor={ember.mid} />
-          <Stop offset="1" stopColor={ember.to} />
-        </LinearGradient>
-        <RadialGradient id={`a${id}`} cx="50%" cy="50%" r="50%"><Stop offset="0" stopColor={ember.glowLight} stopOpacity="0.55" /><Stop offset="1" stopColor={ember.glowLight} stopOpacity="0" /></RadialGradient>
-        <RadialGradient id={`b${id}`} cx="50%" cy="50%" r="50%"><Stop offset="0" stopColor={ember.glowHot} stopOpacity="0.55" /><Stop offset="1" stopColor={ember.glowHot} stopOpacity="0" /></RadialGradient>
-        <RadialGradient id={`c${id}`} cx="50%" cy="50%" r="50%"><Stop offset="0" stopColor={ember.glowSoft} stopOpacity="0.6" /><Stop offset="1" stopColor={ember.glowSoft} stopOpacity="0" /></RadialGradient>
-      </Defs>
-      <Rect x="0" y="0" width="100" height="100" fill={`url(#g${id})`} />
-      <Ellipse cx="10" cy="5" rx="55" ry="45" fill={`url(#a${id})`} />
-      <Ellipse cx="100" cy="45" rx="50" ry="50" fill={`url(#b${id})`} />
-      <Ellipse cx="45" cy="105" rx="60" ry="35" fill={`url(#c${id})`} />
-    </Svg>}
-  </View>;
+  return <GlassFill kind="khaki" radius={0} edge={variant === 'option'} />;
 }
 
 /** A progress ring. `inner` fills the centre so the label stays readable on any background. The arc sweeps to its value. */
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-export function Ring({ pct, size = 64, thickness = 7, color = '#FFFFFF', track = 'rgba(255,255,255,0.35)', inner = 'rgba(255,106,43,0.92)', children }: {
+export function Ring({ pct, size = 64, thickness = 7, color = colors.ink, track = colors.track, inner = 'rgba(0, 0, 0, 0)', children }: {
   pct: number; size?: number; thickness?: number; color?: string; track?: string; inner?: string; children?: React.ReactNode;
 }) {
   const r = (size - thickness) / 2;

@@ -7,3 +7,6 @@ export * from './pickers';
 export * from './CurrencySheet';
 export * from './PlaceField';
 export * from './motion';
+export * from './glass';
+export * from './instruments';
+export { useMapStyle } from './mapStyle';

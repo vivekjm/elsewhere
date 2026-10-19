@@ -1,22 +1,30 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, Share, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Share, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useRouter } from '../core/nav';
+import { useOpenTripPage, useRouter } from '../core/nav';
 import * as Clipboard from 'expo-clipboard';
 import { reportError, useCurrentTrip, usePrefs, useSelection, useTrips } from '../core/state';
-import { ME, uid, useExtras, type Poll, type Trip, type TripExtras } from '../data';
-import { dateRange, initials, money, todayISO } from '../domain/format';
-import { balances, coverOf, nameOf, transfers } from '../domain/trips';
+import { addDays, daysBetween, ME, uid, useExtras, type DateOption, type Poll, type Rsvp, type Trip, type TripExtras } from '../data';
+import { dateRange, initials, money, plural, toDate, todayISO } from '../domain/format';
+import { balances, coverOf, nameOf, perPersonEstimate, transfers, type PerPerson } from '../domain/trips';
 import {
   Avatar, Button, Card, colors, CurrencyField, DateField, EmptyState, Field, FieldLabel, Group, Header, Icon, IconTile, Illustration, Note, Progress, Radio,
-  radii, RoundButton, Row, RowView, Screen, Section, Sheet, Stack, T, tints, type Tint,
-  useDirty,
+  radii, RoundButton, Row, RowView, Screen, Section, Sheet, Stack, T, tints,
+  useDirty, PressScale, Banner, SheetActions, Selectable, CheckToggle, Tag, haptic,
 } from '../loom';
 import { useRates } from '../services/currency';
-import { acceptInvite, decodeInvite, encodeInvite, inviteLink, makeInvite, MAX_LINK, type Invite } from '../services/invite';
+import { tripLink, useLive, type Preview } from '../core/live';
+import { payWithUpi } from '../services/upi';
+import { KittyCard, ReadyRow } from './organiser';
+import { tintFor } from '../domain/people';
+import { GroupSummaryCard, MyPrefs, ShortlistCard } from './shortlist';
+import { longWeekends } from '../domain/holidays';
+import { M } from '../domain/messages';
+import { inIndia } from '../domain/ideas';
+import { track } from '../core/analytics';
+import { acceptInvite, decodeInvite, type Invite } from '../services/invite';
 
-const PERSON_TINTS: Tint[] = ['lavender', 'mint', 'peach', 'rose', 'grey'];
-export const tintFor = (id: string): Tint => id === ME ? 'peach' : PERSON_TINTS[[...id].reduce((s, c) => s + c.charCodeAt(0), 0) % PERSON_TINTS.length];
+export { tintFor };
 
 function People({ extras, me }: { extras: TripExtras; me: string }) {
   const everyone = [{ id: ME, name: me }, ...extras.people];
@@ -30,6 +38,7 @@ function People({ extras, me }: { extras: TripExtras; me: string }) {
 
 function TripCosts({ trip, extras }: { trip: Trip; extras: TripExtras }) {
   const prefs = usePrefs();
+  const store = useExtras();
   const router = useRouter();
   const { select } = useSelection();
   const rates = useRates(trip.currency);
@@ -40,7 +49,7 @@ function TripCosts({ trip, extras }: { trip: Trip; extras: TripExtras }) {
   const open = extras.polls.filter((p) => !p.closesAt || p.closesAt >= todayISO());
   return <Stack gap={12}>
     <Card>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${trip.name}, people`} onPress={() => go('/people')}>
+      <PressScale accessibilityRole="button" accessibilityLabel={`${trip.name}, people`} onPress={() => go('/people')}>
         <RowView gap={14}>
           <Illustration name={coverOf(trip)} width={56} height={56} radius={12} />
           <View style={{ flex: 1, gap: 2 }}>
@@ -49,17 +58,34 @@ function TripCosts({ trip, extras }: { trip: Trip; extras: TripExtras }) {
           </View>
           <People extras={extras} me={prefs.name || 'You'} />
         </RowView>
-      </Pressable>
+      </PressScale>
     </Card>
+    {extras.live ? <WhosComing trip={trip} extras={extras} /> : <Card>
+      <RowView gap={12}><IconTile icon="link" tint="mint" /><View style={{ flex: 1, gap: 2 }}>
+        <T v="row" style={{ fontSize: 15 }}>Make it one shared trip</T>
+        <T v="meta">Send one link: everyone sees the same plan, says if they’re in and adds their own costs.</T>
+      </View></RowView>
+      <Button label="Get the link" icon="share" kind="mist" height={44} onPress={() => go('/invite')} />
+    </Card>}
+    <GroupSummaryCard trip={trip} extras={extras} myName={prefs.name} />
+    <DatePollCard trip={trip} extras={extras} onCreate={() => go('/date-poll')} />
+    <ShortlistCard trip={trip} extras={extras} onAdd={() => go('/plan')} onPlan={() => go('/plan')}
+      editExtras={(fn) => { select(trip.id); store.change(trip.id, fn); }} />
+    {extras.live && trip.end >= todayISO() ? <ReadyRow trip={trip} extras={extras} onOpen={() => go('/ready')} /> : null}
+    <KittyCard trip={trip} extras={extras} onStart={() => go('/kitty')} onTopUp={() => go('/kitty')} />
     <Section title="Settle up" action={mine.length ? 'Record a payment' : undefined} onAction={() => go('/settle-up')}>
       {mine.length ? <Group>{mine.map((t, i) => {
         const incoming = t.to === ME;
         const other = incoming ? t.from : t.to;
         return <Row key={i} leading={<Avatar initials={initials(name(other))} tint={tintFor(other)} size={44} />}
-          title={incoming ? `${name(other)} owes you` : `You owe ${name(other)}`} meta="Tap to record a payment"
+          title={incoming ? `${name(other)} owes you` : `You owe ${name(other)}`}
+          meta={incoming ? 'Tap when they’ve paid you' : trip.currency === 'INR' && extras.people.find((p) => p.id === other)?.upi ? 'Tap to pay with UPI' : 'Tap to record a payment'}
           onPress={() => go('/settle-up', { from: t.from, to: t.to, amount: String(t.amount) })}
           trailing={<T v="title" style={{ fontSize: 18 }} color={incoming ? tints.mint.fg : colors.danger}>{money(t.amount, trip.currency)}</T>} />;
-      })}</Group> : <Card><RowView gap={12}><IconTile icon="check" tint="mint" /><View style={{ flex: 1, gap: 2 }}>
+      })}</Group> : null}
+      {mine.some((t) => t.to === ME) && trip.currency === 'INR' && !prefs.native.upiId ? <Banner icon="card" tint="mint" title="Get paid back in one tap"
+        body="Add your UPI ID and friends can pay you from GPay, PhonePe or Paytm." action="Add" onAction={() => router.push('/preferences' as never)} /> : null}
+      {mine.length ? null : <Card><RowView gap={12}><IconTile icon="check" tint="mint" /><View style={{ flex: 1, gap: 2 }}>
         <T v="row" style={{ fontSize: 15 }}>All settled up</T>
         <T v="meta">Add an expense in Budget and split it to see who owes whom.</T>
       </View></RowView></Card>}
@@ -68,8 +94,161 @@ function TripCosts({ trip, extras }: { trip: Trip; extras: TripExtras }) {
       {open.length ? open.map((poll) => <VoteCard key={poll.id} poll={poll} extras={extras} tripId={trip.id} />)
         : <Card><T v="small">No open votes. Ask everyone where to eat or what to do on a free afternoon.</T></Card>}
     </Section>
-    <Button label="Share the latest with everyone" icon="share" kind="white" onPress={() => go('/invite')} />
+    <Button label={extras.live ? 'Invite more people' : 'Share the trip'} icon="share" kind="white" onPress={() => go('/invite')} />
   </Stack>;
+}
+
+const RSVP_LABEL: Record<Rsvp, string> = { in: 'I’m in', maybe: 'Maybe', out: 'Can’t make it' };
+
+/** Who's coming: your answer, everyone else's, and the cost each if the in-people go. */
+function WhosComing({ trip, extras }: { trip: Trip; extras: TripExtras }) {
+  const live = useLive();
+  const rates = useRates(trip.currency);
+  const mine = extras.members.find((m) => m.id === ME);
+  const counts = { in: 0, maybe: 0, out: 0, none: 0 };
+  for (const m of extras.members) counts[m.rsvp ?? 'none'] += 1;
+  const estimate = perPersonEstimate(trip, extras, rates);
+  return <Section title="Who’s coming">
+    <Card>
+      <RowView gap={8}>
+        {(['in', 'maybe', 'out'] as const).map((r) => <PressScale key={r} accessibilityRole="radio" accessibilityState={{ checked: mine?.rsvp === r }} style={{ flex: 1 }}
+          onPress={() => { haptic.select(); void live.setRsvp(trip.id, r); }}>
+          <Selectable on={mine?.rsvp === r} render={(on) => <View style={{ minHeight: 44, borderRadius: radii.button, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6,
+            backgroundColor: on ? (r === 'out' ? colors.danger : colors.inkButton) : colors.mist }}>
+            <T v="small" color={on ? '#FFFFFF' : colors.ink} style={{ fontSize: 14 }} lines={1}>{RSVP_LABEL[r]}</T>
+          </View>} />
+        </PressScale>)}
+      </RowView>
+      <Stack gap={0}>{extras.members.map((m) => <RowView key={m.id} gap={12} style={{ paddingVertical: 8 }}>
+        <Avatar initials={initials(m.name)} tint={tintFor(m.id)} size={36} />
+        <T v="row" style={{ flex: 1, fontSize: 15 }} lines={1}>{m.id === ME ? `${m.name} (you)` : m.name}{m.role === 'organiser' ? ' · organiser' : ''}</T>
+        <Tag text={m.rsvp ? RSVP_LABEL[m.rsvp] : 'Not yet'} tint={m.rsvp === 'in' ? 'mint' : m.rsvp === 'out' ? 'rose' : m.rsvp === 'maybe' ? 'peach' : 'grey'} />
+      </RowView>)}
+        {extras.people.filter((p) => p.id.startsWith('p-')).map((p) => <RowView key={p.id} gap={12} style={{ paddingVertical: 8 }}>
+          <Avatar initials={initials(p.name)} tint={tintFor(p.id)} size={36} />
+          <T v="row" style={{ flex: 1, fontSize: 15 }} lines={1}>{p.name}</T>
+          <Tag text="Not joined" tint="grey" />
+        </RowView>)}
+      </Stack>
+      <T v="meta">{counts.in} in · {counts.maybe} maybe{counts.none ? ` · ${counts.none} haven’t said` : ''}{estimate ? ` · ${estimateLabel(estimate, trip.currency)}` : ''}</T>
+      {mine ? <MyPrefs value={mine.prefs} onChange={(p) => void live.setPrefs(trip.id, p)} /> : null}
+    </Card>
+  </Section>;
+}
+
+/* ------------------------------------------------------------------ Dates */
+
+/** The date poll: which ranges work for whom, and the organiser locks one (which sets the trip's dates). */
+function DatePollCard({ trip, extras, onCreate }: { trip: Trip; extras: TripExtras; onCreate: () => void }) {
+  const current = useCurrentTrip();
+  const { select } = useSelection();
+  const poll = extras.datePoll;
+  const organiser = !extras.live || extras.live.role === 'organiser';
+  if (!poll) return organiser && trip.start > todayISO() ? <Button label="Ask when everyone can go" icon="calendar" kind="white" onPress={onCreate} /> : null;
+  const everyone = Math.max(1, extras.members.filter((m) => m.rsvp !== 'out').length || extras.people.length + 1);
+  const mine = poll.votes[ME] ?? [];
+  const edit = (fn: (d: TripExtras) => void) => { select(trip.id); current?.editExtras(fn); };
+  const toggle = (id: string) => {
+    haptic.select();
+    edit((d) => { if (!d.datePoll) return; const v = d.datePoll.votes[ME] ?? []; d.datePoll.votes[ME] = v.includes(id) ? v.filter((x) => x !== id) : [...v, id]; });
+    track('vote_cast', { poll: 'dates' });
+  };
+  const lock = (id: string) => {
+    const opt = poll.options.find((o) => o.id === id);
+    if (!opt || !current) return;
+    Alert.alert('Lock these dates?', `${dateRange(opt.start, opt.end)} becomes the trip’s dates for everyone. Plans move with the days.`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Lock dates', onPress: () => {
+        select(trip.id);
+        current.editTrip((t) => moveTrip(t, opt.start, opt.end));
+        current.editExtras((d) => { if (d.datePoll) d.datePoll.lockedId = id; });
+        track('dates_locked', { options: poll.options.length });
+      } },
+    ]);
+  };
+  const best = Math.max(...poll.options.map((o) => Object.values(poll.votes).filter((v) => v.includes(o.id)).length));
+  return <Section title={poll.lockedId ? 'Dates' : 'When can everyone go?'} action={organiser && !poll.lockedId ? 'Change' : undefined} onAction={onCreate}>
+    <Card>
+      {poll.options.map((o) => {
+        const yes = Object.values(poll.votes).filter((v) => v.includes(o.id)).length;
+        const locked = poll.lockedId === o.id;
+        return <Stack key={o.id} gap={6}>
+          <RowView gap={12}>
+            {poll.lockedId ? <IconTile icon={locked ? 'check' : 'calendar'} tint={locked ? 'mint' : undefined} size={36} />
+              : <CheckToggle checked={mine.includes(o.id)} label={`${dateRange(o.start, o.end)} works for me`} onChange={() => toggle(o.id)} />}
+            <View style={{ flex: 1, gap: 2 }}>
+              <T v="row" style={{ fontSize: 15 }}>{dateRange(o.start, o.end)}</T>
+              <T v="meta">{yes} of {everyone} can go{locked ? ' · locked' : yes === best && yes > 0 && !poll.lockedId ? ' · most popular' : ''}</T>
+            </View>
+            {organiser && !poll.lockedId && yes > 0 ? <Button label="Lock" kind="mist" full={false} height={36} onPress={() => lock(o.id)} /> : null}
+          </RowView>
+          {!poll.lockedId ? <Progress pct={(yes / everyone) * 100} color={yes === best && yes > 0 ? colors.ember : colors.dashed} /> : null}
+        </Stack>;
+      })}
+    </Card>
+  </Section>;
+}
+
+/** Moves a trip to new dates: plans and day notes shift with the days; any past the new end are dropped. */
+export function moveTrip(t: Trip, start: string, end: string) {
+  const offset = daysBetween(t.start, start);
+  t.activities = t.activities.map((a) => ({ ...a, date: addDays(a.date, offset) })).filter((a) => a.date >= start && a.date <= end);
+  t.days = Object.fromEntries(Object.entries(t.days).map(([d, day]) => [addDays(d, offset), day] as const).filter(([d]) => d >= start && d <= end));
+  t.start = start; t.end = end;
+}
+
+export function DatePollSheet() {
+  const current = useCurrentTrip();
+  const router = useRouter();
+  const existing = current?.extras.datePoll;
+  const length = current ? daysBetween(current.trip.start, current.trip.end) : 2;
+  const [options, setOptions] = useState<DateOption[]>(existing?.options ?? []);
+  const dirty = useDirty([options]);
+  if (!current) return <Sheet title="When can everyone go?"><EmptyState title="No trip" body="Open a trip first." /></Sheet>;
+  // The next few weekends with the trip's length, as quick picks (Friday start for trips of 2 or more nights).
+  const quick: DateOption[] = [];
+  for (let d = addDays(todayISO(), 1); quick.length < 6; d = addDays(d, 1)) {
+    if (toDate(d).getDay() !== (length >= 2 ? 5 : 6)) continue;
+    quick.push({ id: uid(), start: d, end: addDays(d, length) });
+  }
+  const prefs = usePrefs();
+  const holidays = inIndia(prefs.homeBase, prefs.currency) ? longWeekends('IN', addDays(todayISO(), 1)).map((w) => ({ ...w, id: uid() })) : [];
+  const has = (o: DateOption) => options.some((x) => x.start === o.start && x.end === o.end);
+  const toggle = (o: DateOption) => setOptions((list) => has(o) ? list.filter((x) => !(x.start === o.start && x.end === o.end)) : [...list, o].slice(0, 6));
+  const save = () => {
+    if (options.length < 2) { Alert.alert('Add at least two options', 'Pick a few date ranges for everyone to choose from.'); return; }
+    current.editExtras((d) => {
+      const keep = new Set(options.map((o) => o.id));
+      d.datePoll = { options: [...options].sort((a, b) => a.start.localeCompare(b.start)), lockedId: '', createdAt: d.datePoll?.createdAt || new Date().toISOString(),
+        votes: Object.fromEntries(Object.entries(d.datePoll?.votes ?? {}).map(([k, v]) => [k, v.filter((x) => keep.has(x))])) };
+    });
+    track('date_poll_created', { options: options.length });
+    router.back();
+  };
+  return <Sheet title="When can everyone go?" dirty={dirty} footer={<Button label="Ask everyone" icon="calendar" onPress={save} />}>
+    <Note>Pick up to six options. Everyone ticks the ones that work, and you lock the winner, which moves the trip to those dates.</Note>
+    <Stack gap={8}><FieldLabel>{`Coming weekends · ${plural(length + 1, 'day')}`}</FieldLabel>
+      <Group>{quick.map((o) => <Row key={o.start} icon="calendar" title={dateRange(o.start, o.end)} trailing={<CheckToggle checked={has(o)} label={dateRange(o.start, o.end)} onChange={() => toggle(o)} />} onPress={() => toggle(o)} />)}</Group>
+    </Stack>
+    {holidays.length ? <Stack gap={8}><FieldLabel>Long weekends</FieldLabel>
+      <Group>{holidays.map((w) => <Row key={w.start} icon="sun" tint="peach" title={dateRange(w.start, w.end)} meta={`${w.holiday}${w.leave ? ` · take ${w.leave} day off` : ' · no leave needed'}`}
+        trailing={<CheckToggle checked={has(w)} label={dateRange(w.start, w.end)} onChange={() => toggle(w)} />} onPress={() => toggle(w)} />)}</Group>
+    </Stack> : null}
+    {options.filter((o) => !quick.some((q) => q.start === o.start && q.end === o.end) && !holidays.some((q) => q.start === o.start && q.end === o.end)).length ? <Stack gap={8}><FieldLabel>Your other options</FieldLabel>
+      <Group>{options.filter((o) => !quick.some((q) => q.start === o.start && q.end === o.end) && !holidays.some((q) => q.start === o.start && q.end === o.end)).map((o) => <Row key={o.id} icon="calendar" title={dateRange(o.start, o.end)}
+        trailing={<CheckToggle checked label={dateRange(o.start, o.end)} onChange={() => toggle(o)} />} />)}</Group>
+    </Stack> : null}
+    <OtherDates length={length} onAdd={(o) => setOptions((list) => [...list, o].slice(0, 6))} />
+  </Sheet>;
+}
+
+function OtherDates({ length, onAdd }: { length: number; onAdd: (o: DateOption) => void }) {
+  const [start, setStart] = useState('');
+  if (!start) return <Button label="Add other dates" icon="plus" kind="white" height={48} onPress={() => setStart(addDays(todayISO(), 30))} />;
+  return <Card>
+    <DateField label="Starts" value={start} min={todayISO()} onChange={setStart} />
+    <Button label={`Add ${dateRange(start, addDays(start, length))}`} icon="plus" kind="mist" height={44} onPress={() => { onAdd({ id: uid(), start, end: addDays(start, length) }); setStart(''); }} />
+  </Card>;
 }
 
 function VoteCard({ poll, extras, tripId }: { poll: Poll; extras: TripExtras; tripId: string }) {
@@ -82,7 +261,7 @@ function VoteCard({ poll, extras, tripId }: { poll: Poll; extras: TripExtras; tr
   const vote = (optionId: string) => store.change(tripId, (d) => {
     const p = d.polls.find((x) => x.id === poll.id);
     if (!p) return;
-    if (p.votes[ME] === optionId) delete p.votes[ME]; else p.votes[ME] = optionId;
+    if (p.votes[ME] === optionId) delete p.votes[ME]; else { p.votes[ME] = optionId; track('vote_cast'); }
   });
   const remove = () => Alert.alert('Delete this vote?', poll.question, [{ text: 'Cancel', style: 'cancel' }, {
     text: 'Delete', style: 'destructive', onPress: () => store.change(tripId, (d) => { d.polls = d.polls.filter((x) => x.id !== poll.id); }),
@@ -93,40 +272,39 @@ function VoteCard({ poll, extras, tripId }: { poll: Poll; extras: TripExtras; tr
         <T v="row">{poll.question}</T>
         <T v="meta">{voted} of {total} voted{poll.closesAt ? ` · closes ${dateRange(poll.closesAt, poll.closesAt)}` : ''}</T>
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Delete vote" hitSlop={10} onPress={remove}><Icon name="trash" size={18} color={colors.stone} /></Pressable>
+      <PressScale accessibilityRole="button" accessibilityLabel="Delete vote" hitSlop={10} onPress={remove}><Icon name="trash" size={18} color={colors.stone} /></PressScale>
     </RowView>
-    {poll.options.map((o, i) => <Pressable key={o.id} accessibilityRole="radio" accessibilityState={{ checked: mine === o.id }} accessibilityLabel={`${o.label}, ${counts[i]} votes`} onPress={() => vote(o.id)} style={{ gap: 6, paddingVertical: 4 }}>
+    {poll.options.map((o, i) => <PressScale key={o.id} accessibilityRole="radio" accessibilityState={{ checked: mine === o.id }} accessibilityLabel={`${o.label}, ${counts[i]} votes`} onPress={() => vote(o.id)} style={{ gap: 6, paddingVertical: 4 }}>
       <RowView style={{ justifyContent: 'space-between' }}>
         <RowView gap={8} style={{ flex: 1 }}><Radio on={mine === o.id} /><T v="row" style={{ fontSize: 14, flex: 1 }}>{o.label}</T></RowView>
         <T v="small">{counts[i]}</T>
       </RowView>
       <Progress pct={total ? (counts[i] / total) * 100 : 0} color={counts[i] && counts[i] === lead ? colors.ember : colors.dashed} />
-    </Pressable>)}
+    </PressScale>)}
   </Card>;
 }
 
 export function SharedScreen() {
-  const prefs = usePrefs();
   const router = useRouter();
   const { trips } = useTrips();
   const store = useExtras();
   const { select } = useSelection();
-  const withPeople = trips.filter((t) => store.get(t.id).people.length > 0).sort((a, b) => a.start.localeCompare(b.start));
+  const withPeople = trips.filter((t) => store.get(t.id).people.length > 0 || store.get(t.id).live).sort((a, b) => a.start.localeCompare(b.start));
   const [active, setActive] = useState<string | null>(null);
   const trip = withPeople.find((t) => t.id === active) ?? withPeople.find((t) => t.end >= todayISO()) ?? withPeople[0];
   return <Screen bar="tabs">
     <Header big title="Shared" right={<RoundButton icon="plus" dark label="Join a trip with an invite" href="/join-trip" />} />
     {trip ? <>
       {withPeople.length > 1 ? <RowView gap={8} style={{ flexWrap: 'wrap' }}>
-        {withPeople.map((t) => <Pressable key={t.id} accessibilityRole="button" accessibilityState={{ selected: t.id === trip.id }} onPress={() => setActive(t.id)}
+        {withPeople.map((t) => <PressScale key={t.id} accessibilityRole="button" accessibilityState={{ selected: t.id === trip.id }} onPress={() => setActive(t.id)}
           style={{ paddingVertical: 8, paddingHorizontal: 12, borderRadius: radii.button, backgroundColor: t.id === trip.id ? colors.inkButton : colors.card }}>
           <T v="small" color={t.id === trip.id ? '#FFFFFF' : colors.ink} style={{ fontSize: 14 }}>{t.name}</T>
-        </Pressable>)}
+        </PressScale>)}
       </RowView> : null}
       <TripCosts trip={trip} extras={store.get(trip.id)} />
-    </> : <EmptyState art="compass" title="Travel with friends" body={`Add the people on a trip to split costs, settle up and vote on plans. ${prefs.firstName ? 'Your' : 'Their'} copy stays in sync when you share again.`}
+    </> : <EmptyState art="compass" title="Travel with friends" body="Send one link to the people on a trip. Everyone sees the same plan, says if they’re in, votes and splits costs, and settles up in one tap."
       action={<Stack gap={10}>
-        {trips.length ? <Button label="Add people to a trip" icon="users" onPress={() => { select((trips.find((t) => t.end >= todayISO()) ?? trips[0]).id); router.push('/people' as never); }} />
+        {trips.length ? <Button label="Invite people to a trip" icon="share" onPress={() => { select((trips.find((t) => t.end >= todayISO()) ?? trips[0]).id); router.push('/invite' as never); }} />
           : <Button label="Plan a trip first" icon="plus" onPress={() => router.push('/new-trip' as never)} />}
         <Button label="I have an invite" kind="white" icon="link" onPress={() => router.push('/join-trip' as never)} />
       </Stack>} />}
@@ -163,14 +341,14 @@ export function PeopleSheet() {
     ]);
   };
   return <Sheet title="Travelling with" footer={<Button label="Share the trip with them" icon="share" onPress={() => router.replace('/invite' as never)} />}>
-    <Note>{trip.name} · Add everyone sharing costs. They get their own copy when you send the invite.</Note>
+    <Note>{extras.live ? `${trip.name} · Add friends who haven’t joined yet so you can split costs with them now. When they join from the link, they pick their name and the costs become theirs.` : `${trip.name} · Add everyone sharing costs, then share the trip: everyone who opens the link joins this same trip.`}</Note>
     <Group>
-      <Row leading={prefs.name ? <Avatar initials={initials(prefs.name)} tint="peach" size={44} /> : <IconTile icon="profile" tint="peach" />} title={prefs.name ? `${prefs.name} (you)` : 'You'} meta="Trip organiser" trailing={null} />
-      {extras.people.map((p) => <Row key={p.id} leading={<Avatar initials={initials(p.name)} tint={tintFor(p.id)} size={44} />} title={p.name} meta="Shares costs and votes"
-        trailing={<Pressable accessibilityRole="button" accessibilityLabel={`Remove ${p.name}`} hitSlop={10} onPress={() => remove(p.id, p.name)}><Icon name="x" size={18} color={colors.stone} /></Pressable>} />)}
+      <Row leading={prefs.name ? <Avatar initials={initials(prefs.name)} tint="peach" size={44} /> : <IconTile icon="profile" tint="peach" />} title={prefs.name ? `${prefs.name} (you)` : 'You'} meta={extras.live?.role === 'member' ? 'On this trip' : 'Trip organiser'} trailing={null} />
+      {extras.people.map((p) => <Row key={p.id} leading={<Avatar initials={initials(p.name)} tint={tintFor(p.id)} size={44} />} title={p.name} meta={p.id.startsWith('u-') ? 'Joined the trip' : 'Added by name · not joined yet'}
+        trailing={<PressScale accessibilityRole="button" accessibilityLabel={`Remove ${p.name}`} hitSlop={10} onPress={() => remove(p.id, p.name)}><Icon name="x" size={18} color={colors.stone} /></PressScale>} />)}
     </Group>
     <Field label="Add a person" value={name} onChangeText={setName} icon="profile" kind="name" placeholder="Their name" returnKeyType="done" onSubmitEditing={add}
-      trailing={name.trim() ? <Pressable accessibilityRole="button" accessibilityLabel="Add" onPress={add} hitSlop={8}><Icon name="plus" size={20} color={colors.ember} /></Pressable> : null} />
+      trailing={name.trim() ? <PressScale accessibilityRole="button" accessibilityLabel="Add" onPress={add} hitSlop={8}><Icon name="plus" size={20} color={colors.ember} /></PressScale> : null} />
   </Sheet>;
 }
 
@@ -198,7 +376,7 @@ export function StartVoteSheet() {
     <Field label="Question" value={question} onChangeText={(t) => { setQuestion(t); setError(''); }} icon="help" placeholder="Where should we eat on Friday?" maxLength={200} />
     <Stack gap={8}><FieldLabel>Choices</FieldLabel>
       {options.map((o, i) => <Field key={i} label={`Choice ${i + 1}`} value={o} onChangeText={(t) => setOptions((list) => list.map((x, j) => j === i ? t : x))} maxLength={120}
-        trailing={options.length > 2 ? <Pressable accessibilityRole="button" accessibilityLabel={`Remove choice ${i + 1}`} hitSlop={8} onPress={() => setOptions(options.filter((_, j) => j !== i))}><Icon name="x" size={16} color={colors.stone} /></Pressable> : null} />)}
+        trailing={options.length > 2 ? <PressScale accessibilityRole="button" accessibilityLabel={`Remove choice ${i + 1}`} hitSlop={8} onPress={() => setOptions(options.filter((_, j) => j !== i))}><Icon name="x" size={16} color={colors.stone} /></PressScale> : null} />)}
       {options.length < 12 ? <Button label="Add a choice" icon="plus" kind="white" height={48} onPress={() => setOptions((list) => [...list, ''])} /> : null}
     </Stack>
     {closes ? <DateField label="Closes" value={closes} onChange={setCloses} min={todayISO()} />
@@ -225,12 +403,25 @@ export function SettleUpSheet() {
     if (!(value > 0)) { Alert.alert('Enter an amount', 'How much was paid back?'); return; }
     if (from === to || !to) { Alert.alert('Choose two people', 'Pick who paid and who received it.'); return; }
     current.editExtras((d) => { d.settlements.push({ id: uid(), from, to, amount: Math.round(value * 100) / 100, currency, date: todayISO() }); });
+    track('settlement_added');
     router.back();
   };
   const picker = (label: string, value: string, set: (id: string) => void, exclude: string) => <Stack gap={8}><FieldLabel>{label}</FieldLabel>
     <Group>{everyone.filter((p) => p.id !== exclude).map((p) => <Row key={p.id} leading={<Avatar initials={initials(p.name)} tint={tintFor(p.id)} size={40} />}
       title={p.name} trailing={<Radio on={value === p.id} />} onPress={() => set(p.id)} />)}</Group></Stack>;
-  return <Sheet title="Record a payment" dirty={dirty} footer={<Button label="Save payment" icon="check" onPress={save} />}>
+  // Paying a friend who has a UPI ID: open the UPI app, then come back and save it as paid.
+  const payee = current.extras.people.find((p) => p.id === to);
+  const canUpi = from === ME && !!payee?.upi && currency === 'INR' && value > 0;
+  const pay = async () => {
+    if (!payee?.upi) return;
+    track('upi_pay_opened');
+    const opened = await payWithUpi({ upi: payee.upi, name: payee.name }, value, `${current.trip.name} · Tripsloom`);
+    if (!opened) Alert.alert('No UPI app found', 'Install a UPI app such as GPay, PhonePe or Paytm, or pay another way and save it here.');
+  };
+  return <Sheet title={canUpi ? `Pay ${payee?.name ?? ''}` : 'Record a payment'} dirty={dirty} footer={canUpi ? <SheetActions
+    primary={<Button label={`Pay ${money(value, 'INR')} with UPI`} icon="card" onPress={() => void pay()} />}
+    actions={[{ icon: 'check', label: 'Save as paid', onPress: save }]} /> : <Button label="Save payment" icon="check" onPress={save} />}>
+    {canUpi ? <Note>Pays {payee?.upi} from your UPI app. When it has gone through, tap ✓ to save it here so everyone’s balance updates.</Note> : null}
     {picker('Who paid', from, (id) => { setFrom(id); if (id === to) setTo(''); }, '')}
     {picker('Paid to', to, setTo, from)}
     <RowView align="flex-start">
@@ -242,46 +433,186 @@ export function SettleUpSheet() {
 
 /* ------------------------------------------------------------------ Invites */
 
+/** "₹14k–17k each" from an estimate. */
+export function estimateLabel(e: PerPerson, currency: string): string {
+  const lo = money(e.low, currency, true), hi = money(e.high, currency, true);
+  return lo === hi ? `about ${lo} each` : `${lo}–${hi} each`;
+}
+
+/**
+ * Sharing a trip makes it live: one trip everyone on it sees and edits, opened from one link. Friends without
+ * the app can see it on the web page at the same link (the web Trip Room).
+ */
 export function InviteSheet() {
   const current = useCurrentTrip();
   const prefs = usePrefs();
   const router = useRouter();
-  const token = useMemo(() => current ? encodeInvite(makeInvite(current.trip, current.extras, prefs.name)) : '', [current, prefs.name]);
+  const live = useLive();
+  const rates = useRates(current?.trip.currency ?? 'EUR');
+  const [code, setCode] = useState<string | null>(current?.extras.live?.code ?? null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => { if (current?.extras.live?.code) setCode(current.extras.live.code); }, [current?.extras.live?.code]);
   if (!current) return <Sheet title="Share trip"><EmptyState title="No trip" body="Open a trip first." /></Sheet>;
-  const link = inviteLink(token);
-  const fits = link.length <= MAX_LINK;
-  const message = fits
-    ? `Join “${current.trip.name}” on Trips Loom (${dateRange(current.trip.start, current.trip.end)}): ${link}`
-    : `Join “${current.trip.name}” on Trips Loom. Copy this whole message, then open Trips Loom › Shared › + and paste it.\n\n${token}`;
-  const share = async () => {
-    try { await Share.share({ message }); } catch (error) { reportError(error, 'Couldn’t share'); }
+  const { trip, extras } = current;
+  const organiser = !extras.live || extras.live.role === 'organiser';
+  const estimate = perPersonEstimate(trip, extras, rates);
+  const ensure = async (): Promise<string | null> => {
+    if (code) return code;
+    setBusy(true); setError('');
+    try { const c = await live.share(trip.id); setCode(c); return c; } catch (e) { setError(e instanceof Error ? e.message : 'Couldn’t make the link. Check your connection.'); return null; } finally { setBusy(false); }
   };
-  const copy = async () => { await Clipboard.setStringAsync(fits ? link : token); Alert.alert('Copied', 'Paste it to the people on this trip.'); };
+  const message = (c: string) => M.invite(prefs.native.shareLanguage, trip.name, dateRange(trip.start, trip.end), trip.destination.split(',')[0] ?? '',
+    estimate ? estimateLabel(estimate, trip.currency) : '', tripLink(c));
+  const share = async () => {
+    const c = await ensure();
+    if (!c) return;
+    try { const r = await Share.share({ message: message(c) }); if (r.action === Share.sharedAction) track('invite_sent', { live: true }); } catch (e) { reportError(e, 'Couldn’t share'); }
+  };
+  const copy = async () => { const c = await ensure(); if (!c) return; await Clipboard.setStringAsync(tripLink(c)); Alert.alert('Link copied', 'Paste it in your group chat.'); };
+  const turnOff = () => Alert.alert('Make a new link?', 'The current link stops working. People already on the trip stay on it.', [
+    { text: 'Cancel', style: 'cancel' },
+    { text: 'New link', style: 'destructive', onPress: () => void live.rotate(trip.id).then(setCode).catch((e) => reportError(e)) },
+  ]);
+  const going = extras.members.filter((m) => m.rsvp === 'in').length;
   return <Sheet title="Share trip" footer={<Stack gap={10}>
-    <Button label="Send invite" icon="share" onPress={() => void share()} />
-    <Button label={fits ? 'Copy link' : 'Copy invite code'} icon="copy" kind="white" onPress={() => void copy()} />
+    <Button label={busy ? 'Making the link…' : 'Send invite'} icon={busy ? undefined : 'share'} leading={busy ? <ActivityIndicator color="#FFFFFF" /> : undefined} onPress={() => void share()} />
+    <Button label="Copy link" icon="copy" kind="white" onPress={() => void copy()} />
   </Stack>}>
     <RowView gap={14}>
-      <Illustration name={coverOf(current.trip)} width={72} height={72} radius={radii.card} />
-      <View style={{ flex: 1, gap: 4 }}><T v="title">{current.trip.name}</T><T v="small">{dateRange(current.trip.start, current.trip.end)} · {current.trip.destination}</T></View>
+      <Illustration name={coverOf(trip)} width={72} height={72} radius={radii.card} />
+      <View style={{ flex: 1, gap: 4 }}><T v="title">{trip.name}</T><T v="small">{dateRange(trip.start, trip.end)}{trip.destination ? ` · ${trip.destination}` : ''}</T></View>
     </RowView>
+    {error ? <Banner icon="cloud" tint="rose" title="Couldn’t make the link" body={error} /> : null}
+    {code ? <Card>
+      <RowView gap={12}><IconTile icon="link" tint="mint" /><View style={{ flex: 1, gap: 2 }}>
+        <T v="row" style={{ fontSize: 15 }}>Live trip</T>
+        <T v="meta" lines={1}>{tripLink(code)}</T>
+      </View></RowView>
+      <T v="small">{extras.members.length > 1 ? `${plural(extras.members.length, 'person', 'people')} on it · ${going} going. Changes anyone makes show for everyone.` : 'Everyone who opens the link joins this same trip. Changes anyone makes show for everyone.'}</T>
+      {organiser ? <Button label="Turn off this link" icon="refresh" kind="mist" height={44} onPress={turnOff} /> : null}
+    </Card> : <Card>
+      <T v="row" style={{ fontSize: 15 }}>One link for everyone</T>
+      <T v="small">Friends open it, say if they’re in, add the places they want and vote on the plan, and split costs, all on this same trip. Friends without the app can still open the link to see the plan and who’s coming.</T>
+    </Card>}
+    {code ? <Card>
+      <RowView gap={12}><IconTile icon="home" tint="lavender" /><View style={{ flex: 1, gap: 2 }}>
+        <T v="row" style={{ fontSize: 15 }}>For family at home</T>
+        <T v="meta">A view-only link: the plan, the stays and who’s going. It can’t join or change anything.</T>
+      </View></RowView>
+      <Button label="Send the family link" icon="share" kind="mist" height={44} onPress={() => void live.familyLink(trip.id).then((link) => Share.share({
+        message: `Here’s our plan for ${trip.name} (${dateRange(trip.start, trip.end)})${Object.values(trip.days).some((d) => d?.stay) ? ', with where we’re staying each night' : ''}: ${link}`,
+      })).catch((e) => reportError(e, 'Couldn’t make the link'))} />
+    </Card> : null}
+    {estimate ? <Card>
+      <RowView gap={12}><IconTile icon="card" tint="peach" /><View style={{ flex: 1, gap: 2 }}>
+        <T v="row" style={{ fontSize: 15 }}>{estimateLabel(estimate, trip.currency)}</T>
+        <T v="meta">{estimate.basis === 'budget' ? `From the trip budget, split ${estimate.people} ways` : `From costs planned so far, split ${estimate.people} ways; it may go up`}</T>
+      </View></RowView>
+    </Card> : <Note>Add a budget in Edit trip and the invite shows what it costs each person.</Note>}
     <Card>
-      <T v="row" style={{ fontSize: 15 }}>What they get</T>
-      <T v="small">The days and plans, the people, shared costs and votes. Opening a newer invite updates their copy.</T>
-      <T v="row" style={{ fontSize: 15 }}>What stays on your phone</T>
-      <T v="small">Your wardrobe, outfits, packing ticks, documents, check-ins and emergency contacts.</T>
+      <T v="row" style={{ fontSize: 15 }}>What stays private</T>
+      <T v="small">Your wardrobe, outfits, packing ticks, documents, check-ins and emergency contacts never leave your phone.</T>
     </Card>
-    {!current.extras.people.length ? <Button label="Add the people first" icon="users" kind="mist" onPress={() => router.replace('/people' as never)} /> : null}
+    {prefs.native.upiId || trip.currency !== 'INR' ? null : <Banner icon="card" tint="mint" title="Add your UPI ID" body="Friends can pay you back in one tap." action="Add" onAction={() => router.push('/preferences' as never)} />}
   </Sheet>;
 }
 
+/** The code in a live trip link: `https://tripsloom.com/t/<code>`, `tripsloom://t/<code>`, or the code itself. */
+export function liveCodeFrom(text: string): string | null {
+  const t = text.trim();
+  const m = t.match(/(?:^|\/)t\/([A-Za-z0-9]{10,16})(?:[/?#]|$)/) ?? t.match(/^([A-Za-z0-9]{12})$/);
+  return m ? m[1] : null;
+}
+
 export function JoinTripSheet() {
-  const params = useLocalSearchParams<{ d?: string }>();
+  const params = useLocalSearchParams<{ d?: string; code?: string }>();
+  const [text, setText] = useState(params.d ? `?d=${params.d}` : params.code ?? '');
+  const code = liveCodeFrom(text);
+  return code ? <LiveJoin code={code} onBack={() => setText('')} /> : <CopyJoin text={text} setText={setText} />;
+}
+
+/** Joining a live trip from its link: preview, then join, then (if the organiser added you by name) say which one is you. */
+function LiveJoin({ code, onBack }: { code: string; onBack: () => void }) {
+  const live = useLive();
   const router = useRouter();
+  const openTrip = useOpenTripPage();
+  const { select } = useSelection();
+  const { trips } = useTrips();
+  const store = useExtras();
+  const [preview, setPreview] = useState<Preview | null | 'loading'>('loading');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [joined, setJoined] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    setPreview('loading'); setError('');
+    void live.peek(code).then((p) => { if (active) setPreview(p); }).catch((e) => { if (active) { setPreview(null); setError(e instanceof Error ? e.message : 'Couldn’t open the invite.'); } });
+    return () => { active = false; };
+  }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
+  const open = (id: string) => { select(id); openTrip('/trip'); };
+  const join = async () => {
+    setBusy(true);
+    try {
+      // Added by name before joining? The next screen asks which guest is you, so past costs and votes become yours.
+      setJoined(await live.join(code));
+    } catch (e) { setError(e instanceof Error ? e.message : 'Couldn’t join. Check your connection.'); } finally { setBusy(false); }
+  };
+  const claim = (guestId: string | null) => {
+    if (!joined) return;
+    if (guestId) store.change(joined, (d) => claimGuest(d, guestId));
+    open(joined);
+  };
+  // Once the joined trip's people are on this phone: straight to the trip, unless there are guests to claim.
+  const joinedExtras = joined ? store.get(joined) : null;
+  const guests = joinedExtras ? joinedExtras.people.filter((p) => p.id.startsWith('p-')) : [];
+  const arrived = !!joinedExtras?.members.length;
+  useEffect(() => { if (joined && arrived && !guests.length) open(joined); }, [joined, arrived, guests.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (joined) {
+    if (!arrived) return <Sheet title="Join a trip"><Card><RowView gap={12}><ActivityIndicator color={colors.ember} /><T v="small">Bringing the trip to your phone…</T></RowView></Card></Sheet>;
+    return <Sheet title="Which one is you?" footer={<Button label="None of these" kind="white" onPress={() => claim(null)} />}>
+      <Note>The organiser added some people by name. If one of them is you, their share of costs and votes becomes yours.</Note>
+      <Group>{guests.map((p) => <Row key={p.id} leading={<Avatar initials={initials(p.name)} tint={tintFor(p.id)} size={44} />} title={p.name} meta="Added by name" onPress={() => claim(p.id)} />)}</Group>
+    </Sheet>;
+  }
+  const already = preview && preview !== 'loading' && trips.some((t) => t.id === preview.id && store.get(t.id).live);
+  return <Sheet title="Join a trip" footer={preview && preview !== 'loading'
+    ? (already ? <Button label="Open trip" icon="chev" onPress={() => open(preview.id)} />
+      : <Button label={busy ? 'Joining…' : 'Join trip'} icon={busy ? undefined : 'chev'} leading={busy ? <ActivityIndicator color="#FFFFFF" /> : undefined} onPress={() => void join()} />)
+    : <Button label="Use a different invite" kind="white" onPress={onBack} />}>
+    {preview === 'loading' ? <Card><RowView gap={12}><ActivityIndicator color={colors.ember} /><T v="small">Opening the invite…</T></RowView></Card>
+      : preview ? <>
+        <RowView gap={14}>
+          <Illustration name={coverOf({ theme: (preview.theme ?? undefined) as Trip['theme'] })} width={72} height={72} radius={radii.card} />
+          <View style={{ gap: 4, flex: 1 }}>
+            <T v="eyebrow">{preview.organiser ? `${preview.organiser} invited you` : 'You’re invited'}</T>
+            <T v="title">{preview.name}</T>
+            <T v="small">{dateRange(preview.start, preview.end)}{preview.destination ? ` · ${preview.destination}` : ''}</T>
+          </View>
+        </RowView>
+        <Card><T v="small">{plural(preview.members, 'person', 'people')} on this trip. Joining puts the same trip on your phone: say if you’re in, see the plan, vote and split costs together. Your wardrobe, packing and documents stay private.</T></Card>
+      </> : <Banner icon="link" tint="rose" title="This invite doesn’t work" body={error || 'It may have been turned off. Ask for a new link.'} />}
+    {error && preview && preview !== 'loading' ? <T v="meta" color={colors.danger}>{error}</T> : null}
+  </Sheet>;
+}
+
+/** A guest (added by name) turns out to be you: their costs, payments and votes become yours. */
+function claimGuest(d: TripExtras, guestId: string) {
+  const swap = (id: string) => (id === guestId ? ME : id);
+  d.people = d.people.filter((p) => p.id !== guestId);
+  d.expenses = d.expenses.map((e) => ({ ...e, paidBy: swap(e.paidBy), splitWith: [...new Set(e.splitWith.map(swap))] }));
+  d.settlements = d.settlements.map((x) => ({ ...x, from: swap(x.from), to: swap(x.to) })).filter((x) => x.from !== x.to);
+  for (const p of d.polls) if (p.votes[guestId]) { p.votes[ME] = p.votes[guestId]; delete p.votes[guestId]; }
+  if (d.datePoll?.votes[guestId]) { d.datePoll.votes[ME] = d.datePoll.votes[guestId]; delete d.datePoll.votes[guestId]; }
+}
+
+/** The earlier, copy-based invite (`tripsloom://join?d=…`): still opens, for links sent before live trips. */
+function CopyJoin({ text, setText }: { text: string; setText: (t: string) => void }) {
+  const router = useRouter();
+  const openTrip = useOpenTripPage();
   const { trips, edit } = useTrips();
   const store = useExtras();
   const { select } = useSelection();
-  const [text, setText] = useState(params.d ? `?d=${params.d}` : '');
   const [invite, setInvite] = useState<Invite | null>(null);
   const [me, setMe] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -300,8 +631,7 @@ export function JoinTripSheet() {
   const openOwn = () => {
     if (!existing) return;
     select(existing.id);
-    if (router.canDismiss()) router.dismissAll();
-    router.push('/trip' as never);
+    openTrip('/trip');
   };
   const join = (asNew: boolean) => {
     if (!invite || ownTrip) return;
@@ -327,8 +657,7 @@ export function JoinTripSheet() {
     const previous = store.get(copy.trip.id);
     store.put(copy.trip.id, { ...copy.extras, documents: previous.documents, adventure: { ...copy.extras.adventure, checkIns: previous.adventure.checkIns, emergency: previous.adventure.emergency }, rating: previous.rating, recapNote: previous.recapNote, places: previous.places, journal: previous.journal });
     select(copy.trip.id);
-    if (router.canDismiss()) router.dismissAll();
-    router.push('/trip' as never);
+    openTrip('/trip');
   };
   if (invite && ownTrip) return <Sheet title="Join a trip" footer={<Button label="Open trip" icon="chev" onPress={openOwn} />}>
     <RowView gap={14}>
@@ -344,7 +673,7 @@ export function JoinTripSheet() {
   return <Sheet title="Join a trip" footer={invite ? <Button label={existing ? 'Update my copy' : 'Join trip'} icon="chev" onPress={() => join(false)} /> : <Button label="Paste invite" icon="copy" onPress={() => void paste()} />}>
     {!invite ? <>
       <Note>Open the link someone sent you, or copy their invite and paste it here.</Note>
-      <Field label="Invite link or code" value={text} onChangeText={setText} icon="link" multiline placeholder="tripsloom://join?d=…" error={error} />
+      <Field label="Invite link or code" value={text} onChangeText={setText} icon="link" multiline placeholder="https://tripsloom.com/t/…" error={error} />
     </> : <>
       <RowView gap={14}>
         <Illustration name={coverOf(invite.trip)} width={72} height={72} radius={radii.card} />

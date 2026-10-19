@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, Text, TextInput, View } from 'react-native';
+import { FlatList, Modal, Text, TextInput, View } from 'react-native';
+import { PressScale } from './motion';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CURRENCIES } from '../data/model';
 import { COMMON_CURRENCIES, currencyName } from '../services/currency';
@@ -30,15 +31,15 @@ export function CurrencySheet({ visible, value, onPick, onClose }: { visible: bo
           accessibilityLabel="Search currencies" maxFontSizeMultiplier={1.6} style={[inputText, singleLine]} />
       </View>
       <FlatList data={list} keyExtractor={(c) => c.code} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 24 }}
-        renderItem={({ item }) => <Pressable accessibilityRole="radio" accessibilityState={{ checked: item.code === value }} accessibilityLabel={`${item.name}, ${item.code}`}
+        renderItem={({ item }) => <PressScale accessibilityRole="radio" accessibilityState={{ checked: item.code === value }} accessibilityLabel={`${item.name}, ${item.code}`}
           onPress={() => { onPick(item.code); onClose(); }}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.rule }}>
           <View style={{ width: 52, height: 40, borderRadius: radii.iconTile, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' }}>
-            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: fonts.bold, fontSize: 13, color: colors.ink }}>{item.code}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: fonts.semibold, fontSize: 13, color: colors.ink }}>{item.code}</Text>
           </View>
-          <Text maxFontSizeMultiplier={1.6} style={{ flex: 1, fontFamily: fonts.semibold, fontSize: 15, color: colors.ink }}>{item.name}</Text>
+          <Text maxFontSizeMultiplier={1.6} style={{ flex: 1, fontFamily: fonts.medium, fontSize: 15, color: colors.ink }}>{item.name}</Text>
           <Radio on={item.code === value} />
-        </Pressable>} />
+        </PressScale>} />
     </View>
   </Modal>;
 }

@@ -6,6 +6,9 @@
 import type { ACTIVITY_TYPES } from '../data/model';
 import type { TripKind } from '../data/extras';
 import { fromDate, toDate, todayISO } from './format';
+import { parseDays, parseDestination, parseTravellers } from './sentence';
+
+export { parseDays, parseDestination, parseTravellers };
 
 type Category = (typeof ACTIVITY_TYPES)[number];
 export type DraftStop = { time: string; title: string; category: Category };
@@ -17,20 +20,8 @@ export type Draft = {
 
 /* ------------------------------------------------------------------ facts */
 
-const WORD_NUMBERS: Record<string, number> = { two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, fourteen: 14 };
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 
-export function parseDays(text: string): number | null {
-  const m = text.match(/(\d{1,2})\s*(?:[a-z-]+\s+)?(day|night)/);
-  if (m) { const n = Number(m[1]); return Math.max(1, Math.min(m[2] === 'night' ? n + 1 : n, 30)); }
-  for (const [word, n] of Object.entries(WORD_NUMBERS)) if (text.includes(`${word} day`) || text.includes(`${word}-day`)) return n;
-  for (const [word, n] of Object.entries(WORD_NUMBERS)) if (text.includes(`${word} night`)) return n + 1;
-  if (text.includes('fortnight') || text.includes('two weeks')) return 14;
-  if (text.includes('long weekend')) return 4;
-  if (text.includes('weekend')) return 3;
-  if (/\b(a|one|1)\s+week\b|week-long|weeklong|\bweek in\b/.test(text)) return 7;
-  return null;
-}
 
 const nextWeekday = (iso: string, weekday: number) => { const d = toDate(iso); while (d.getDay() !== weekday) d.setDate(d.getDate() + 1); return fromDate(d); };
 
@@ -67,19 +58,6 @@ export function parseStart(text: string, today = todayISO()): string | null {
   return null;
 }
 
-export function parseTravellers(text: string): number | null {
-  let m = text.match(/(?:family|group) of (\d{1,2})/); if (m) return Math.min(Number(m[1]), 20);
-  m = text.match(/(\d{1,2})\s*(?:people|persons|adults|travellers|travelers|of us|friends|pax)/); if (m) return Math.max(1, Math.min(Number(m[1]) + (text.includes(`${m[1]} friends`) ? 1 : 0), 20));
-  m = text.match(/with (\d{1,2}) (?:friends?|colleagues?|others?|people|persons?)\b/); if (m) return Math.min(Number(m[1]) + 1, 20);
-  m = text.match(/with (a|one|two|three|four|five|six) (?:friends?|colleagues?|others?)\b/); if (m) return (m[1] === 'a' ? 1 : WORD_NUMBERS[m[1]] ?? 1) + 1;
-  if (/\bwith (?:a |my )?(?:friend|colleague|partner|wife|husband|girlfriend|boyfriend|mum|mom|dad|sister|brother)\b/.test(text)) return 2;
-  m = text.match(/\b(two|three|four|five|six) (?:of us|friends|people)\b/); if (m) return WORD_NUMBERS[m[1]] + (text.includes(`${m[1]} friends`) ? 1 : 0);
-  if (/\b(solo|alone|by myself)\b/.test(text)) return 1;
-  if (/\b(couple|honeymoon|two of us|my partner|my wife|my husband|girlfriend|boyfriend)\b/.test(text)) return text.includes('kids') ? 4 : 2;
-  if (/\b(kids|children|family)\b/.test(text)) return 4;
-  if (text.includes('friends')) return 4;
-  return null;
-}
 
 export function parseBudget(text: string): { amount: number; currency: string | null } | null {
   const re = /(budget(?:\s+of)?|under|within|max|up to|around|about|for)?\s*([$€£¥])?\s*(\d[\d,]*(?:\.\d+)?)\s*(k)?\s*(dollars|euros|pounds|yen|usd|eur|gbp|jpy|chf|aud|cad)?/g;
@@ -107,22 +85,6 @@ export function parseKind(text: string): TripKind {
 }
 
 /** "a week in Portugal" → "Portugal"; "Kyoto in autumn" → "Kyoto". */
-export function parseDestination(prompt: string): string {
-  const cleaned = prompt.replace(/\s+/g, ' ').trim();
-  const patterns = [
-    /\b(?:in|to|around|across|through|visit|visiting|explore|exploring)\s+(?:the\s+)?((?:[A-Z][\p{L}'’.-]+)(?:[ ,]+(?:[A-Z][\p{L}'’.-]+|de|del|da|di|do|la|le|el|of|the))*)/u,
-    /^((?:[A-Z][\p{L}'’.-]+)(?:[ ,]+[A-Z][\p{L}'’.-]+)*)\s+(?:in|for|with|on|,)/u,
-  ];
-  const skip = /^(January|February|March|April|May|June|July|August|September|October|November|December|Spring|Summer|Autumn|Fall|Winter|A|An|The|We|I|My|Our)$/;
-  for (const p of patterns) {
-    const m = cleaned.match(p);
-    if (!m) continue;
-    const words = m[1].split(/\s+/).filter((w) => !skip.test(w.replace(/[,.]/g, '')));
-    const place = words.join(' ').replace(/[,.]+$/, '').trim();
-    if (place.length >= 2) return place;
-  }
-  return '';
-}
 
 /* ------------------------------------------------------------------ templates */
 

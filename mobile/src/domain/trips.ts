@@ -138,6 +138,9 @@ export function budgetOf(trip: Trip, extras: TripExtras, rates: Record<string, n
 
 /* ------------------------------------------------------------------ shared costs */
 
+/** Where a plan is, when that adds something to its title (a shortlisted place is its own title). */
+export const placeOf = (a: { title: string; place: string }) => (a.place && a.place.trim().toLowerCase() !== a.title.trim().toLowerCase() ? a.place : '');
+
 export type Balance = { person: string; amount: number };
 export type Transfer = { from: string; to: string; amount: number };
 
@@ -158,8 +161,13 @@ export function balances(trip: Trip, extras: TripExtras, rates: Record<string, n
     add(e.paidBy, amount);
     for (const id of split) add(id, -amount / split.length);
   }
+  // Money put into the kitty is still the giver's until it's spent: top-ups count in proportion to what has been
+  // spent from the pot so far (all of it once the pot is used up). Otherwise a fresh top-up showed as a debt.
+  const pot = extras.settlements.filter((s) => s.kitty).reduce((a, s) => a + convert(s.amount, s.currency, trip.currency, rates, base), 0);
+  const spent = extras.expenses.filter((e) => e.fromKitty).reduce((a, e) => a + convert(e.amount, e.currency, trip.currency, rates, base), 0);
+  const used = extras.kitty && pot > 0 ? Math.min(1, spent / (pot + extras.kitty.each)) : 1;
   for (const s of extras.settlements) {
-    const amount = convert(s.amount, s.currency, trip.currency, rates, base);
+    const amount = convert(s.amount, s.currency, trip.currency, rates, base) * (s.kitty ? used : 1);
     add(s.from, amount);
     add(s.to, -amount);
   }
@@ -203,4 +211,27 @@ export function travelStats(trips: Trip[], today = todayISO(), countryOf: (desti
   const days = started.reduce((sum, t) => sum + daysFromToday(t.end < today ? t.end : today, t.start) + 1, 0);
   const longest = trips.reduce((max, t) => Math.max(max, daysFromToday(t.end, t.start) + 1), 0);
   return { trips: started.length, countries, days, upcoming: trips.filter((t) => t.start > today).length, longest };
+}
+
+/* ------------------------------------------------------------------ per-person estimate */
+
+export type PerPerson = { low: number; high: number; people: number; basis: 'budget' | 'plans' };
+
+/**
+ * "What will this cost me?": the trip's budget, or the costs planned and spent so far if they're higher, split
+ * across everyone going. A range, never one number: a budget is a plan (±10%), and planned costs are only the
+ * part already known (from that amount to a third more). Null when there's nothing to go on yet.
+ */
+export function perPersonEstimate(trip: Trip, extras: TripExtras, rates: Record<string, number> | null): PerPerson | null {
+  const known = budgetOf(trip, extras, rates, trip.currency).planned;
+  const going = extras.members.length
+    ? extras.members.filter((m) => m.rsvp !== 'out').length + extras.people.filter((p) => !p.id.startsWith('u-')).length
+    : Math.max(trip.travellers || 1, extras.people.length + 1);
+  const people = Math.max(1, going);
+  if (trip.budget > 0 && trip.budget >= known) {
+    const each = trip.budget / people;
+    return { low: each * 0.9, high: each * 1.1, people, basis: 'budget' };
+  }
+  if (known > 0) return { low: known / people, high: (known * 4) / 3 / people, people, basis: 'plans' };
+  return null;
 }

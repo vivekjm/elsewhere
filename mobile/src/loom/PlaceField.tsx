@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Keyboard, Pressable, Text, View } from 'react-native';
+import { Keyboard, Text, View } from 'react-native';
+import { PressScale } from './motion';
 import { suggest, type Place } from '../services/places';
 import { Icon } from './graphics';
 import { colors, fonts, radii, shadows } from './tokens';
@@ -22,12 +23,12 @@ export function PlaceField({ label, value, onChange, onPlace, error, placeholder
     <Field label={label} value={value} onChangeText={onChange} icon="pin" kind="place" placeholder={placeholder} error={error}
       onFocus={() => setFocused(true)} onBlur={() => setTimeout(() => setFocused(false), 200)} />
     {results.length ? <View style={{ backgroundColor: colors.card, borderRadius: radii.field, boxShadow: shadows.lift, paddingHorizontal: 14 }}>
-      {results.map((r, i) => <Pressable key={`${r.label}${i}`} accessibilityRole="button" accessibilityLabel={r.label}
+      {results.map((r, i) => <PressScale key={`${r.label}${i}`} accessibilityRole="button" accessibilityLabel={r.label}
         onPress={() => { picked.current = r.label; onChange(r.label); onPlace?.(r); setResults([]); Keyboard.dismiss(); }}
         style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderTopColor: colors.rule }}>
         <Icon name="pin" size={16} color={colors.stone} />
-        <Text maxFontSizeMultiplier={1.6} numberOfLines={1} style={{ flex: 1, fontFamily: fonts.medium, fontSize: 15, color: colors.ink }}>{r.label}</Text>
-      </Pressable>)}
+        <Text maxFontSizeMultiplier={1.6} numberOfLines={1} style={{ flex: 1, fontFamily: fonts.regular, fontSize: 15, color: colors.ink }}>{r.label}</Text>
+      </PressScale>)}
     </View> : null}
   </View>;
 }

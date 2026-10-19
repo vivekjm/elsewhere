@@ -13,6 +13,7 @@
   "exclude": [
     "node_modules",
     "scripts",
-    "legacy"
+    "legacy",
+    "src/**/__tests__/**"
   ]
 }

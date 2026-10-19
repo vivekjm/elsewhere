@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.tripsloom.ios",
       "buildNumber": "2",
@@ -112,7 +112,10 @@
             ]
           }
         ]
-      }
+      },
+      "associatedDomains": [
+        "applinks:tripsloom.com"
+      ]
     },
     "android": {
       "package": "com.tripsloom.app",
@@ -133,6 +136,28 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "tripsloom.com",
+              "pathPrefix": "/t/"
+            },
+            {
+              "scheme": "https",
+              "host": "tripsloom.com",
+              "pathPrefix": "/r/"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
       ]
     },
     "plugins": [
@@ -228,13 +253,29 @@
           "isIosBackgroundLocationEnabled": false,
           "isAndroidBackgroundLocationEnabled": false
         }
+      ],
+      [
+        "expo-share-intent",
+        {
+          "iosActivationRules": {
+            "NSExtensionActivationSupportsWebURLWithMaxCount": 1,
+            "NSExtensionActivationSupportsWebPageWithMaxCount": 1,
+            "NSExtensionActivationSupportsText": true
+          },
+          "iosShareExtensionName": "Trips Loom Share",
+          "iosAppGroupIdentifier": "group.com.tripsloom.ios",
+          "androidIntentFilters": [
+            "text/*"
+          ],
+          "disableAndroid": false
+        }
       ]
     ],
     "extra": {
       "apiBaseUrl": "https://tripsloom.com"
     },
-    "backgroundColor": "#EEEDEB",
-    "primaryColor": "#FF6A2B",
+    "backgroundColor": "#0D0C09",
+    "primaryColor": "#F2602A",
     "description": "Plan trips, share them with friends, pack, budget and follow each day."
   }
 }

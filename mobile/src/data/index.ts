@@ -4,7 +4,8 @@ import { ExtrasProvider } from './ExtrasContext';
 import { WorkspaceProvider } from './WorkspaceContext';
 
 export { useAuth, defaultNativePreferences } from './AuthContext';
-export type { AuthContextValue, AuthPhase, AuthProfile, FeedbackKind, NativePreferences, OnboardingInput, ProfilePatch, SupabaseConfig } from './AuthContext';
+export type { AuthContextValue, AuthPhase, AuthProfile, FeedbackKind, NativePreferences, OnboardingInput, Party, ProfilePatch, SupabaseConfig } from './AuthContext';
+export { isUpiId } from './AuthContext';
 export { useWorkspace } from './WorkspaceContext';
 export type { WorkspaceStatus } from './WorkspaceContext';
 export { useExtras } from './ExtrasContext';

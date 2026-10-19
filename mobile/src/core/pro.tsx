@@ -7,6 +7,8 @@ import { useAuth } from '../data';
 export const PRO_YEARLY = 'com.tripsloom.pro.yearly';
 export const PRO_MONTHLY = 'com.tripsloom.pro.monthly';
 export const PRO_SKUS = [PRO_YEARLY, PRO_MONTHLY];
+/** A one-off purchase (consumable) that unlocks organiser tools for one trip, for everyone organising it. */
+export const TRIP_PASS = 'com.tripsloom.trippass';
 /** Free accounts get this many AI trip drafts a calendar month. */
 export const FREE_DRAFTS_PER_MONTH = 3;
 /** Free accounts can keep this many documents on each trip. */
@@ -25,6 +27,10 @@ type ProValue = {
   buy: (sku: string) => Promise<boolean>;
   restore: () => Promise<boolean>;
   manage: () => void;
+  /** The Trip Pass price, or '' until the store answers. */
+  passPrice: string;
+  /** Buys a Trip Pass. True once paid (the caller then unlocks the trip). */
+  buyPass: () => Promise<boolean>;
   draftsLeft: number | null;
   /** Counts an AI draft; false when the free allowance for the month is used up. */
   useDraft: () => Promise<boolean>;
@@ -40,7 +46,8 @@ export function ProProvider({ children }: { children: ReactNode }) {
 
   const iap = useIAP({
     onPurchaseSuccess: (purchase: Purchase) => {
-      void iap.finishTransaction({ purchase, isConsumable: false }).catch(() => {});
+      const pass = purchase.productId === TRIP_PASS;
+      void iap.finishTransaction({ purchase, isConsumable: pass }).catch(() => {});
       void iap.getActiveSubscriptions(PRO_SKUS).catch(() => {});
       pendingBuy.current?.(true); pendingBuy.current = null;
     },
@@ -53,6 +60,7 @@ export function ProProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!iap.connected) return;
     void iap.fetchProducts({ skus: PRO_SKUS, type: 'subs' }).catch(() => {});
+    void iap.fetchProducts({ skus: [TRIP_PASS], type: 'in-app' }).catch(() => {});
     void iap.getActiveSubscriptions(PRO_SKUS).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [iap.connected]);
@@ -98,6 +106,21 @@ export function ProProvider({ children }: { children: ReactNode }) {
     return done;
   }, [iap, auth.user?.id]);
 
+  const passProduct = (iap.products as unknown as Product[]).find((p) => p.id === TRIP_PASS);
+  const passPrice = passProduct?.displayPrice ?? '';
+  const buyPass = useCallback(async () => {
+    if (!iap.connected || !passProduct) { Alert.alert('Trip Pass isn’t available right now', 'Check your connection and try again.'); return false; }
+    const done = new Promise<boolean>((resolve) => { pendingBuy.current = resolve; });
+    try {
+      await iap.requestPurchase({ type: 'in-app', request: { apple: { sku: TRIP_PASS, appAccountToken: auth.user?.id }, google: { skus: [TRIP_PASS] } } } as never);
+    } catch (error) {
+      pendingBuy.current = null;
+      if (!isUserCancelledError(error as never)) Alert.alert('Purchase didn’t go through', error instanceof Error ? error.message : 'Please try again.');
+      return false;
+    }
+    return done;
+  }, [iap, passProduct, auth.user?.id]);
+
   const restore = useCallback(async () => {
     try {
       await iap.restorePurchases();
@@ -126,8 +149,8 @@ export function ProProvider({ children }: { children: ReactNode }) {
   }, [isPro, draftsLeft, used, auth]);
 
   const value = useMemo<ProValue>(() => ({
-    isPro, ready: iap.connected, products, priceOf, trialOf, buy, restore, manage, draftsLeft, useDraft,
-  }), [isPro, iap.connected, products, priceOf, trialOf, buy, restore, manage, draftsLeft, useDraft]);
+    isPro, ready: iap.connected, products, priceOf, trialOf, buy, restore, manage, passPrice, buyPass, draftsLeft, useDraft,
+  }), [isPro, iap.connected, products, priceOf, trialOf, buy, restore, manage, passPrice, buyPass, draftsLeft, useDraft]);
   return <ProContext.Provider value={value}>{children}</ProContext.Provider>;
 }
 
@@ -135,4 +158,16 @@ export function usePro(): ProValue {
   const value = useContext(ProContext);
   if (!value) throw new Error('usePro must be used inside ProProvider.');
   return value;
+}
+
+/** Friends who need to join a shared trip for its organiser tools to unlock free (the referral reward). */
+export const FRIENDS_FOR_FREE_TOOLS = 3;
+
+/**
+ * Organiser tools (Ready Check nudges, the kitty, unlimited documents) are on for Pro members, for trips with a
+ * Trip Pass, and for live trips that 3 friends have joined.
+ */
+export function useOrganiserTools(extras: { pass: boolean; members?: unknown[] }): boolean {
+  const pro = usePro();
+  return pro.isPro || extras.pass || (extras.members?.length ?? 0) > FRIENDS_FOR_FREE_TOOLS;
 }

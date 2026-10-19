@@ -53,7 +53,11 @@ export async function draftWithModel(prompt: string, hints: { destination?: stri
 
 /* ------------------------------------------------------------------ receipts */
 
-type NativeText = { recognizeText(uri: string): Promise<string[]> };
+type NativeText = {
+  recognizeText(uri: string): Promise<string[]>;
+  pdfText?(uri: string): Promise<string>;
+  renderCard?(eyebrow: string, title: string, subtitle: string, lines: string[], footer: string): Promise<string>;
+};
 const TextNative = Platform.OS === 'ios' ? requireOptionalNativeModule<NativeText>('LoomIntelligence') : null;
 export const canScanReceipts = !!TextNative?.recognizeText;
 
@@ -106,4 +110,24 @@ export function parseReceipt(lines: string[]): ReceiptGuess {
 export async function scanReceipt(uri: string): Promise<ReceiptGuess> {
   if (!TextNative) throw new Error('Receipt scanning isn’t available on this device.');
   return parseReceipt(await TextNative.recognizeText(uri));
+}
+
+/** All the text in a photo or screenshot, line by line (on this phone). Empty where text recognition isn't available. */
+export async function readImageText(uri: string): Promise<string> {
+  if (!TextNative?.recognizeText) return '';
+  return (await TextNative.recognizeText(uri)).join('\n');
+}
+
+/** All the text in a PDF (a booking confirmation or e-ticket), read on this phone. */
+export const canReadPdf = !!TextNative?.pdfText;
+export async function readPdfText(uri: string): Promise<string> {
+  if (!TextNative?.pdfText) return '';
+  return TextNative.pdfText(uri);
+}
+
+/** A shareable image card (day plan, trip recap), drawn on this phone. Null where it isn't available. */
+export type Card = { eyebrow: string; title: string; subtitle: string; lines: string[]; footer: string };
+export async function renderCard(card: Card): Promise<string | null> {
+  if (!TextNative?.renderCard) return null;
+  try { return await TextNative.renderCard(card.eyebrow, card.title, card.subtitle, card.lines.slice(0, 10), card.footer); } catch { return null; }
 }

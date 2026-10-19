@@ -7,8 +7,11 @@ import { Alert, Linking, View } from 'react-native';
 import * as Localization from 'expo-localization';
 import { useCurrentTrip, usePrefs, useTrips } from '../core/state';
 import { adapterNeeded, COUNTRIES, timeDifference, zoneOffset, type CountryFacts } from '../domain/countries';
-import { money } from '../domain/format';
-import { Card, colors, EmptyState, Group, Header, Hero, HeroText, Icon, Loading, Note, Row, RowView, Screen, Section, T } from '../loom';
+import { money, shortDay } from '../domain/format';
+import { ENTRY_CHECKED, INDIAN_PASSPORT } from '../domain/entry';
+import * as WebBrowser from 'expo-web-browser';
+import { track } from '../core/analytics';
+import { Button, Card, colors, EmptyState, Group, Header, Hero, HeroText, Icon, IconTile, Loading, Note, Row, RowView, Screen, Section, T } from '../loom';
 import { currencyName, useRates } from '../services/currency';
 import { lookup, type Place } from '../services/places';
 import { NoTrip } from './trip';
@@ -64,6 +67,8 @@ export function EssentialsScreen() {
   const adapter = facts ? adapterNeeded(homeFacts, facts) : null;
   const voltageClash = facts && homeFacts && Math.abs(facts.volts - homeFacts.volts) > 60;
   const homeCurrency = prefs.currency;
+  // Indian home base: the entry rule for an Indian passport (the common case; other passports see the general note).
+  const entry = homeCode === 'IN' && place.countryCode !== 'IN' ? INDIAN_PASSPORT[place.countryCode] : undefined;
   const rate = homeCurrency !== trip.currency ? rates?.[homeCurrency] : undefined;
   const call = (number: string) => {
     const first = number.match(/\d{2,5}/)?.[0];
@@ -103,6 +108,14 @@ export function EssentialsScreen() {
         {facts ? <Row icon="star" title="Tipping" meta={facts.tip} trailing={null} /> : null}
       </Group>
     </Section>
+    {entry ? <Section title="Entry for Indian passports">
+      <Card>
+        <RowView gap={12}><IconTile icon={entry.kind === 'visa' ? 'doc' : 'check'} tint={entry.kind === 'free' || entry.kind === 'arrival' ? 'mint' : entry.kind === 'online' ? 'peach' : 'rose'} />
+          <View style={{ flex: 1, gap: 2 }}><T v="row" style={{ fontSize: 15 }}>{entry.summary}</T><T v="meta">{entry.detail}</T></View></RowView>
+        <Button label="Check on the official site" icon="globe" kind="mist" height={44} onPress={() => { track('entry_checked', { country: place.countryCode }); void WebBrowser.openBrowserAsync(entry.official); }} />
+        <T v="meta">{`Last checked ${shortDay(ENTRY_CHECKED)} ${ENTRY_CHECKED.slice(0, 4)}. Rules change: confirm before you book.`}</T>
+      </Card>
+    </Section> : null}
     <Note>Check entry, visa and health requirements with official government sources before you travel; they change often.</Note>
     <View style={{ height: 8 }} />
   </Screen>;
